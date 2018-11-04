@@ -12,6 +12,8 @@ START-OF-SELECTION.
         ii_view          = NEW zcl_abapgit_ci_alv_view( )
       )->run( ).
 
+      MESSAGE |abapGit CI run completed| TYPE 'S'.
+
     CATCH zcx_abapgit_exception INTO DATA(lx_error).
       MESSAGE lx_error TYPE 'S' DISPLAY LIKE 'E'.
   ENDTRY.
