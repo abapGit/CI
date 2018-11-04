@@ -3,12 +3,13 @@ CLASS zcl_abapgit_ci DEFINITION
   CREATE PUBLIC.
 
   PUBLIC SECTION.
+    CLASS-METHODS update_abapgit_repo
+      RAISING
+        zcx_abapgit_exception.
     METHODS:
-      constructor,
-
       process_repos
         IMPORTING
-          !it_repos         TYPE zif_abapgit_ci_definitions=>tty_repo
+          it_repos          TYPE zif_abapgit_ci_definitions=>tty_repo
         RETURNING
           VALUE(rt_ci_repo) TYPE zif_abapgit_ci_definitions=>tty_result.
 
@@ -23,12 +24,6 @@ CLASS zcl_abapgit_ci DEFINITION
 ENDCLASS.
 
 CLASS zcl_abapgit_ci IMPLEMENTATION.
-
-  METHOD constructor.
-
-    super->constructor( ).
-
-  ENDMETHOD.
 
   METHOD process_repo.
 
@@ -89,6 +84,37 @@ CLASS zcl_abapgit_ci IMPLEMENTATION.
       ENDIF.
 
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD update_abapgit_repo.
+
+    DATA: lo_abapgit TYPE REF TO zcl_abapgit_repo_online.
+
+    DATA(lt_list) = zcl_abapgit_repo_srv=>get_instance( )->list( ).
+
+    LOOP AT lt_list ASSIGNING FIELD-SYMBOL(<repo>).
+
+      IF <repo>->get_name( ) = 'abapGit'.
+        lo_abapgit ?= <repo>.
+      ENDIF.
+
+    ENDLOOP .
+
+    IF lo_abapgit IS NOT BOUND.
+      zcx_abapgit_exception=>raise( |Couldn't find abapGit repo| ).
+    ENDIF.
+
+    lo_abapgit->set_branch_name( 'refs/heads/master' ).
+
+    DATA(ls_checks) = lo_abapgit->deserialize_checks( ).
+
+    LOOP AT ls_checks-overwrite ASSIGNING FIELD-SYMBOL(<ls_overwrite>).
+      <ls_overwrite>-decision = abap_true.
+    ENDLOOP.
+
+    lo_abapgit->deserialize( ls_checks ).
 
   ENDMETHOD.
 
