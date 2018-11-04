@@ -11,8 +11,7 @@ for each repo the following steps are executed:
 
 If there is any error in these steps abapGit CI will indicate that.
 
-**0) Update abapGit repo
-Run report ZABAPGIT_CI_UPDATE_ABAPGIT
+Run report ZABAPGIT_CI_UPDATE_ABAPGIT to update the abapGit repo.
 
 There are currently two possibilities to run abapGit CI:
 
