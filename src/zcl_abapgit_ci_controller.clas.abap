@@ -15,7 +15,7 @@ CLASS zcl_abapgit_ci_controller DEFINITION
         RAISING
           zcx_abapgit_exception.
 
-protected section.
+  PROTECTED SECTION.
   PRIVATE SECTION.
     DATA:
       mi_view          TYPE REF TO zif_abapgit_ci_view,
@@ -27,7 +27,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_CONTROLLER IMPLEMENTATION.
+CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -46,8 +46,8 @@ CLASS ZCL_ABAPGIT_CI_CONTROLLER IMPLEMENTATION.
     DATA(lt_repos)  = mi_repo_provider->get_repos( ).
     DATA(ls_result) = mo_ci->process_repos( lt_repos ).
 
-    IF ms_options-push_results_to_git = abap_true.
-      NEW zcl_abapgit_ci_distributor( ms_options-destination_git_repo_url  )->push_to_git_repo( is_result = ls_result ).
+    IF ms_options-result_git_repo_url IS NOT INITIAL.
+      NEW zcl_abapgit_ci_distributor( ms_options-result_git_repo_url  )->push_to_git_repo( is_result = ls_result ).
     ENDIF.
 
     mi_view->display( CHANGING cs_result = ls_result ).
