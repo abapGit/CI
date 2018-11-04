@@ -23,8 +23,7 @@ INTERFACE zif_abapgit_ci_definitions
 
   TYPES:
     BEGIN OF ty_options,
-      push_results_to_git      TYPE abap_bool,
-      destination_git_repo_url TYPE string,
+      result_git_repo_url TYPE string,
     END OF ty_options.
 
   CONSTANTS:
