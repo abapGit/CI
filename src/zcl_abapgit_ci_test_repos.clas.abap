@@ -128,14 +128,6 @@ CLASS ZCL_ABAPGIT_CI_TEST_REPOS IMPLEMENTATION.
                        OR name CS |SPRX|
                        OR name CS |SUSC|.
 
-    LOOP AT rt_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
-
-      IF sy-tabix > 2.
-        DELETE rt_repos INDEX sy-tabix.
-      ENDIF.
-
-    ENDLOOP.
-
     SORT rt_repos BY name.
 
   ENDMETHOD.
