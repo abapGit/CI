@@ -60,7 +60,7 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
                         )->get_components( ).
 
     LOOP AT components ASSIGNING FIELD-SYMBOL(<component>)
-                       WHERE type->absolute_name CS 'STATUS'.
+                       WHERE type->absolute_name CP '*STATUS'.
       <component>-type ?= cl_abap_datadescr=>describe_by_name( |ICON_D| ).
     ENDLOOP.
 
@@ -106,9 +106,9 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
         IF <component>-type->absolute_name CS |STATUS|.
           <left> = SWITCH icon_d(
                      <right>
-                       WHEN zif_abapgit_ci_definitions=>status-ok        THEN icon_checked
-                       WHEN zif_abapgit_ci_definitions=>status-not_ok    THEN icon_incomplete
-                       WHEN zif_abapgit_ci_definitions=>status-undefined THEN icon_led_inactive ).
+                       WHEN zif_abapgit_ci_definitions=>co_status-ok        THEN icon_checked
+                       WHEN zif_abapgit_ci_definitions=>co_status-not_ok    THEN icon_incomplete
+                       WHEN zif_abapgit_ci_definitions=>co_status-undefined THEN icon_led_inactive ).
         ELSE.
           <left> = <right>.
         ENDIF.

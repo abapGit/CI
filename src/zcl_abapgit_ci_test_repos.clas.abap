@@ -3,9 +3,8 @@ CLASS zcl_abapgit_ci_test_repos DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
-
     INTERFACES:
-      zif_abapgit_ci_repo_provider .
+      zif_abapgit_ci_repo_provider.
 
   PRIVATE SECTION.
     METHODS:
@@ -95,5 +94,4 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
     SORT rt_repos BY name.
 
   ENDMETHOD.
-
 ENDCLASS.
