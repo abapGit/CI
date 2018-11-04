@@ -28,7 +28,7 @@ CLASS zcl_abapgit_ci_alv_view DEFINITION
 
       map
         IMPORTING
-          !it_table TYPE zif_abapgit_ci_definitions=>tty_result
+          !it_table TYPE zif_abapgit_ci_definitions=>tty_result_list
           !ir_table TYPE REF TO data.
 
 ENDCLASS.
@@ -127,10 +127,10 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
     DATA: lr_table TYPE REF TO data.
     FIELD-SYMBOLS: <table> TYPE INDEX TABLE.
 
-    DATA(lo_table_descr) = get_table_descr( ct_result ).
+    DATA(lo_table_descr) = get_table_descr( cs_result-list ).
     CREATE DATA lr_table TYPE HANDLE lo_table_descr.
 
-    map( it_table = ct_result
+    map( it_table = cs_result-list
          ir_table = lr_table ).
 
     ASSIGN lr_table->* TO <table>.

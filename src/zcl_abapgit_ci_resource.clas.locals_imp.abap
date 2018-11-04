@@ -6,7 +6,7 @@ CLASS lcl_data_receiver IMPLEMENTATION.
 
   METHOD zif_abapgit_ci_view~display.
 
-    mt_result = ct_result.
+    ms_result = cs_result.
 
   ENDMETHOD.
 
