@@ -10,7 +10,11 @@ for each repo the following steps are executed:
 - purge (uninstall)
 
 If there is any error in these steps abapGit CI will indicate that.
-There are currently two possibilities to run abapGit CI
+
+**0) Update abapGit repo
+Run report ZABAPGIT_CI_UPDATE_ABAPGIT
+
+There are currently two possibilities to run abapGit CI:
 
 **1) Report ZABAPGIT_CI**
 ![abapGit CI results](/img/ZABAPGIT_CI_result.png)
