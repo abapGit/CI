@@ -25,22 +25,53 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
 
   METHOD fetch_repo_page.
 
-    DATA: li_http_client TYPE REF TO if_http_client.
+    DATA: li_http_client TYPE REF TO if_http_client,
+          lv_rfcdes      TYPE rfcdes-rfcdest.
 
-    cl_http_client=>create_by_url(
-      EXPORTING
-        url                = 'https://api.github.com'
-        ssl_id             = 'ANONYM'
-      IMPORTING
-        client             = li_http_client
-      EXCEPTIONS
-        argument_not_found = 1
-        plugin_not_active  = 2
-        internal_error     = 3
-        OTHERS             = 4 ).
+    lv_rfcdes = |GITHUB_{ sy-uname }|.
 
-    IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise_t100( ).
+    SELECT SINGLE FROM rfcdes
+           FIELDS rfcdest
+           WHERE rfcdest = @lv_rfcdes
+           INTO @lv_rfcdes.
+
+    IF sy-subrc = 0.
+
+      cl_http_client=>create_by_destination(
+        EXPORTING
+          destination              = lv_rfcdes
+        IMPORTING
+          client                   = li_http_client
+        EXCEPTIONS
+          argument_not_found       = 1
+          destination_not_found    = 2
+          destination_no_authority = 3
+          plugin_not_active        = 4
+          internal_error           = 5
+          OTHERS                   = 6 ).
+
+      IF sy-subrc <> 0.
+        zcx_abapgit_exception=>raise_t100( ).
+      ENDIF.
+
+    ELSE.
+
+      cl_http_client=>create_by_url(
+        EXPORTING
+          url                = 'https://api.github.com'
+          ssl_id             = 'ANONYM'
+        IMPORTING
+          client             = li_http_client
+        EXCEPTIONS
+          argument_not_found = 1
+          plugin_not_active  = 2
+          internal_error     = 3
+          OTHERS             = 4 ).
+
+      IF sy-subrc <> 0.
+        zcx_abapgit_exception=>raise_t100( ).
+      ENDIF.
+
     ENDIF.
 
     DATA(lo_rest_client) = NEW cl_rest_http_client( li_http_client ).
@@ -52,6 +83,12 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
     lo_rest_client->if_rest_client~get( ).
 
     DATA(lo_response) = lo_rest_client->if_rest_client~get_response_entity( ).
+
+    DATA(lv_status) = lo_rest_client->if_rest_client~get_status( ).
+
+    IF lv_status <> cl_rest_status_code=>gc_success_ok.
+      zcx_abapgit_exception=>raise( |HTTP status code { lv_status } from api.github.com| ).
+    ENDIF.
 
     /ui2/cl_json=>deserialize(
       EXPORTING
