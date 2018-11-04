@@ -41,7 +41,7 @@ CLASS zcl_abapgit_ci_resource IMPLEMENTATION.
     ls_ci_result-result_table  = lo_receiver->mt_result.
     ls_ci_result-ci_has_errors = boolc(
                                    line_exists(
-                                     ls_ci_result-result_table[ status = zif_abapgit_ci_definitions=>status-not_ok ] ) ).
+                                     ls_ci_result-result_table[ status = zif_abapgit_ci_definitions=>co_status-not_ok ] ) ).
 
     lo_entity->set_string_data( /ui2/cl_json=>serialize( ls_ci_result ) ).
     mo_response->set_status( cl_rest_status_code=>gc_success_ok ).
