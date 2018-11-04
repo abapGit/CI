@@ -18,6 +18,18 @@
      <ENTRY>abapGit CI</ENTRY>
      <LENGTH>10</LENGTH>
     </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_PUSH</KEY>
+     <ENTRY>Push results to git repo</ENTRY>
+     <LENGTH>32</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_URL</KEY>
+     <ENTRY>URL</ENTRY>
+     <LENGTH>11</LENGTH>
+    </item>
    </TPOOL>
   </asx:values>
  </asx:abap>

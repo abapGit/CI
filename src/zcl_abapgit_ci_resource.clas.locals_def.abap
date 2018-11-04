@@ -9,6 +9,6 @@ CLASS lcl_data_receiver DEFINITION.
       zif_abapgit_ci_view.
 
     DATA:
-      mt_result TYPE zif_abapgit_ci_definitions=>tty_result READ-ONLY.
+      ms_result TYPE zif_abapgit_ci_definitions=>ty_result READ-ONLY.
 
 ENDCLASS.
