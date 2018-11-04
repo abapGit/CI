@@ -16,6 +16,7 @@ Run report ZABAPGIT_CI_UPDATE_ABAPGIT to update the abapGit repo.
 There are currently two possibilities to run abapGit CI:
 
 **1) Report ZABAPGIT_CI**
+![abapGit CI selection screen](/img/ZABAPGIT_CI_selection_screen.png)
 ![abapGit CI results](/img/ZABAPGIT_CI_result.png)
 
 **2) REST API**
