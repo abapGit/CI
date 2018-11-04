@@ -5,7 +5,6 @@
 *&---------------------------------------------------------------------*
 REPORT zabapgit_ci_update_abapgit.
 
-
 TRY.
     zcl_abapgit_ci=>update_abapgit_repo( ).
 
