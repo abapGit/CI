@@ -20,7 +20,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_TEST_REPOS IMPLEMENTATION.
 
 
   METHOD fetch_repo_page.
@@ -28,7 +28,7 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
     DATA: li_http_client TYPE REF TO if_http_client,
           lv_rfcdes      TYPE rfcdes-rfcdest.
 
-    lv_rfcdes = |GITHUB_{ sy-uname }|.
+    lv_rfcdes = |API_GITHUB_{ sy-uname }|.
 
     SELECT SINGLE FROM rfcdes
            FIELDS rfcdest
@@ -127,6 +127,14 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
                        OR name CS |SHI3|
                        OR name CS |SPRX|
                        OR name CS |SUSC|.
+
+    LOOP AT rt_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
+
+      IF sy-tabix > 2.
+        DELETE rt_repos INDEX sy-tabix.
+      ENDIF.
+
+    ENDLOOP.
 
     SORT rt_repos BY name.
 
