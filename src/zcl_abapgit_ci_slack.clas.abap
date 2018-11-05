@@ -100,7 +100,7 @@ CLASS zcl_abapgit_ci_slack IMPLEMENTATION.
     ENDTRY.
 
     IF lv_status <> cl_rest_status_code=>gc_success_ok.
-      zcx_abapgit_exception=>raise( |HTTP status code { lv_status } from api.github.com| ).
+      zcx_abapgit_exception=>raise( |HTTP status code { lv_status } from slack.com| ).
     ENDIF.
 
   ENDMETHOD.
