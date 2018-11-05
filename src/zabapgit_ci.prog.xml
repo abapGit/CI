@@ -14,11 +14,6 @@
    </PROGDIR>
    <TPOOL>
     <item>
-     <ID>R</ID>
-     <ENTRY>abapGit CI</ENTRY>
-     <LENGTH>10</LENGTH>
-    </item>
-    <item>
      <ID>I</ID>
      <KEY>000</KEY>
      <ENTRY>Options</ENTRY>
@@ -53,6 +48,12 @@
      <KEY>B02</KEY>
      <ENTRY>Options</ENTRY>
      <LENGTH>17</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>B03</KEY>
+     <ENTRY>Slack Integration</ENTRY>
+     <LENGTH>27</LENGTH>
     </item>
     <item>
      <ID>I</ID>
@@ -127,10 +128,27 @@
      <LENGTH>50</LENGTH>
     </item>
     <item>
+     <ID>R</ID>
+     <ENTRY>abapGit CI</ENTRY>
+     <LENGTH>10</LENGTH>
+    </item>
+    <item>
      <ID>S</ID>
      <KEY>P_URL</KEY>
      <ENTRY>URL</ENTRY>
      <LENGTH>11</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>SLACK</KEY>
+     <ENTRY>Post errors to Slack channel</ENTRY>
+     <LENGTH>36</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>TOKEN</KEY>
+     <ENTRY>Slack OAuth Token</ENTRY>
+     <LENGTH>25</LENGTH>
     </item>
    </TPOOL>
   </asx:values>

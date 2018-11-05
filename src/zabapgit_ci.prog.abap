@@ -30,13 +30,19 @@ PARAMETERS:
   p_url  TYPE string LOWER CASE.
 SELECTION-SCREEN END OF BLOCK b2.
 
+SELECTION-SCREEN BEGIN OF BLOCK b3  WITH FRAME TITLE TEXT-b03.
+PARAMETERS:
+  slack TYPE abap_bool AS CHECKBOX,
+  token TYPE string LOWER CASE.
+SELECTION-SCREEN END OF BLOCK b3.
+
 INITIALIZATION.
   descr01 = TEXT-d01.
   descr02 = TEXT-d02.
   descr03 = TEXT-d03.
   descr04 = TEXT-d04.
   descr05 = TEXT-d05.
-  descr06 = text-d06.
+  descr06 = TEXT-d06.
   descr07 = TEXT-d07.
   descr08 = TEXT-d08.
   descr09 = TEXT-d09.
@@ -45,18 +51,60 @@ INITIALIZATION.
   opt02 = TEXT-o02.
   opt03 = TEXT-o03.
 
+CLASS lcl_abapgit_ci DEFINITION.
+
+  PUBLIC SECTION.
+    METHODS:
+      run.
+
+  PRIVATE SECTION.
+    METHODS:
+      send_to_slack
+        IMPORTING
+          ix_error TYPE REF TO zcx_abapgit_exception.
+
+ENDCLASS.
+
+CLASS lcl_abapgit_ci IMPLEMENTATION.
+
+  METHOD run.
+
+    TRY.
+        NEW zcl_abapgit_ci_controller(
+          ii_repo_provider = NEW zcl_abapgit_ci_test_repos( )
+          ii_view          = NEW zcl_abapgit_ci_alv_view( )
+          is_options       = VALUE #(
+            result_git_repo_url  = p_url
+            post_errors_to_slack = slack
+            slack_oauth_token    = token
+          )
+        )->run( ).
+
+        MESSAGE |abapGit CI run completed| TYPE 'S'.
+
+      CATCH zcx_abapgit_exception INTO DATA(lx_error).
+
+        IF slack = abap_true.
+          send_to_slack( lx_error ).
+        ENDIF.
+
+        MESSAGE lx_error TYPE 'S' DISPLAY LIKE 'E'.
+
+    ENDTRY.
+
+  ENDMETHOD.
+
+
+  METHOD send_to_slack.
+    TRY.
+        NEW zcl_abapgit_ci_slack( token )->post( |abapGit CI error: abapGit CI run failed with "{ ix_error->get_text( ) }"| ).
+
+      CATCH zcx_abapgit_exception INTO DATA(lx_error).
+        MESSAGE lx_error TYPE 'S' DISPLAY LIKE 'E'.
+    ENDTRY.
+  ENDMETHOD.
+
+ENDCLASS.
+
 START-OF-SELECTION.
-  TRY.
-      NEW zcl_abapgit_ci_controller(
-        ii_repo_provider = NEW zcl_abapgit_ci_test_repos( )
-        ii_view          = NEW zcl_abapgit_ci_alv_view( )
-        is_options       = VALUE #(
-          result_git_repo_url = p_url
-        )
-      )->run( ).
-
-      MESSAGE |abapGit CI run completed| TYPE 'S'.
-
-    CATCH zcx_abapgit_exception INTO DATA(lx_error).
-      MESSAGE lx_error TYPE 'S' DISPLAY LIKE 'E'.
-  ENDTRY.
+  NEW lcl_abapgit_ci( )->run( ).
