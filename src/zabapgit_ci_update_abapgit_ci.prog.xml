@@ -18,6 +18,18 @@
      <ENTRY>abapGit CI: Update abapGit CI repo</ENTRY>
      <LENGTH>34</LENGTH>
     </item>
+    <item>
+     <ID>S</ID>
+     <KEY>SLACK</KEY>
+     <ENTRY>Post errors to Slack channel</ENTRY>
+     <LENGTH>36</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>TOKEN</KEY>
+     <ENTRY>Slack OAuth Token</ENTRY>
+     <LENGTH>25</LENGTH>
+    </item>
    </TPOOL>
   </asx:values>
  </asx:abap>
