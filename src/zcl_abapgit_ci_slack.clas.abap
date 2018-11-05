@@ -103,7 +103,5 @@ CLASS zcl_abapgit_ci_slack IMPLEMENTATION.
       zcx_abapgit_exception=>raise( |HTTP status code { lv_status } from api.github.com| ).
     ENDIF.
 
-    cl_demo_output=>display( lo_response->get_string_data( ) ).
-
   ENDMETHOD.
 ENDCLASS.
