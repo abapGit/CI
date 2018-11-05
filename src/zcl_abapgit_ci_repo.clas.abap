@@ -50,9 +50,6 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         RAISING
           zcx_abapgit_exception.
 
-    DATA:
-      mo_popup_provider TYPE REF TO lcl_abapgit_popup_provider.
-
 ENDCLASS.
 
 
@@ -83,10 +80,13 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     cs_ri_repo-purge = zif_abapgit_ci_definitions=>co_status-not_ok.
 
-    mo_popup_provider->set_popup_to_confirm_answer( '1' ).
-
     TRY.
-        zcl_abapgit_services_repo=>purge( io_repo->get_key( ) ).
+        DATA(ls_checks) = io_repo->delete_checks( ).
+
+        zcl_abapgit_repo_srv=>get_instance( )->purge( io_repo   = io_repo
+                                                      is_checks = ls_checks ).
+
+        COMMIT WORK AND WAIT.
       CATCH zcx_abapgit_cancel INTO DATA(error).
         zcx_abapgit_exception=>raise( error->get_text( ) ).
     ENDTRY.
@@ -121,9 +121,6 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD constructor.
 
-    CREATE OBJECT mo_popup_provider.
-    zcl_abapgit_ui_injector=>set_popups( mo_popup_provider ).
-
     zcl_abapgit_ui_injector=>set_gui_functions( NEW lcl_mock_ui_functions( ) ).
 
   ENDMETHOD.
@@ -132,11 +129,14 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     cs_ri_repo-clone = zif_abapgit_ci_definitions=>co_status-not_ok.
 
-    mo_popup_provider->set_url( cs_ri_repo-clone_url ).
-    mo_popup_provider->set_package( cs_ri_repo-package ).
-
     TRY.
-        ro_repo = zcl_abapgit_services_repo=>new_online( cs_ri_repo-clone_url ).
+        ro_repo = zcl_abapgit_repo_srv=>get_instance( )->new_online(
+          iv_url         = cs_ri_repo-clone_url
+          iv_branch_name = 'refs/heads/master'
+          iv_package     = cs_ri_repo-package ).
+
+        COMMIT WORK AND WAIT.
+
       CATCH zcx_abapgit_cancel INTO DATA(error).
         zcx_abapgit_exception=>raise( error->get_text( ) ).
     ENDTRY.
