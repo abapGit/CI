@@ -20,6 +20,13 @@ CLASS zcl_abapgit_ci DEFINITION
           VALUE(rs_result) TYPE zif_abapgit_ci_definitions=>ty_result.
 
   PRIVATE SECTION.
+    CLASS-METHODS:
+      update_repo
+        IMPORTING
+          iv_repo_name TYPE string
+        RAISING
+          zcx_abapgit_exception.
+
     METHODS:
       process_repo
         CHANGING
@@ -102,35 +109,17 @@ CLASS zcl_abapgit_ci IMPLEMENTATION.
 
   METHOD update_abapgit_repo.
 
-    DATA: lo_abapgit TYPE REF TO zcl_abapgit_repo_online.
-
-    DATA(lt_list) = zcl_abapgit_repo_srv=>get_instance( )->list( ).
-
-    LOOP AT lt_list ASSIGNING FIELD-SYMBOL(<repo>).
-
-      IF <repo>->get_name( ) = 'abapGit'.
-        lo_abapgit ?= <repo>.
-      ENDIF.
-
-    ENDLOOP .
-
-    IF lo_abapgit IS NOT BOUND.
-      zcx_abapgit_exception=>raise( |Couldn't find abapGit repo| ).
-    ENDIF.
-
-    lo_abapgit->set_branch_name( 'refs/heads/master' ).
-
-    DATA(ls_checks) = lo_abapgit->deserialize_checks( ).
-
-    LOOP AT ls_checks-overwrite ASSIGNING FIELD-SYMBOL(<ls_overwrite>).
-      <ls_overwrite>-decision = abap_true.
-    ENDLOOP.
-
-    lo_abapgit->deserialize( ls_checks ).
+    update_repo( 'abapGit' ).
 
   ENDMETHOD.
 
   METHOD update_abapgit_ci_repo.
+
+    update_repo( 'CI' ).
+
+  ENDMETHOD.
+
+  METHOD update_repo.
 
     DATA: lo_abapgit_ci TYPE REF TO zcl_abapgit_repo_online.
 
@@ -138,14 +127,14 @@ CLASS zcl_abapgit_ci IMPLEMENTATION.
 
     LOOP AT lt_list ASSIGNING FIELD-SYMBOL(<repo>).
 
-      IF <repo>->get_name( ) = 'CI'.
+      IF <repo>->get_name( ) = iv_repo_name.
         lo_abapgit_ci ?= <repo>.
       ENDIF.
 
     ENDLOOP .
 
     IF lo_abapgit_ci IS NOT BOUND.
-      zcx_abapgit_exception=>raise( |Couldn't find abapGit CI repo| ).
+      zcx_abapgit_exception=>raise( |Couldn't find { iv_repo_name } repo| ).
     ENDIF.
 
     lo_abapgit_ci->set_branch_name( 'refs/heads/master' ).
