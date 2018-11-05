@@ -13,6 +13,8 @@ If there is any error in these steps abapGit CI will indicate that.
 
 Run report ZABAPGIT_CI_UPDATE_ABAPGIT to update the abapGit repo.
 
+Run report ZABAPGIT_CI_UPDATE_ABAPGIT_CI to update the abapGit CI repo.
+
 There are currently two possibilities to run abapGit CI:
 
 **1) Report ZABAPGIT_CI**
