@@ -20,7 +20,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_TEST_REPOS IMPLEMENTATION.
+CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
 
 
   METHOD fetch_repo_page.
@@ -122,8 +122,7 @@ CLASS ZCL_ABAPGIT_CI_TEST_REPOS IMPLEMENTATION.
     ENDDO.
 
     " skip because they call the UI...
-    DELETE rt_repos WHERE name CS |SCP1|
-                       OR name CS |CUS0|
+    DELETE rt_repos WHERE name CS |CUS0|
                        OR name CS |SHI3|
                        OR name CS |SPRX|
                        OR name CS |SUSC|.
