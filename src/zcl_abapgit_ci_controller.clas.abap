@@ -76,7 +76,7 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
                                          WHERE ( status = zif_abapgit_ci_definitions=>co_status-not_ok )
                                          NEXT result = result && |\nRepo: { line-name } Message: { line-message }\n| ).
 
-    NEW zcl_abapgit_ci_slack( ms_options-slack_oauth_token )->post( |abapGit CI errors: { lv_error_text } \n|
+    NEW zcl_abapgit_ci_slack( ms_options-slack_oauth_token )->post( |*abapGit CI errors:*\n { lv_error_text } \n|
                                                                  && |Details: { co_url } | ).
 
   ENDMETHOD.
