@@ -123,9 +123,9 @@ CLASS zcl_abapgit_ci IMPLEMENTATION.
 
     DATA: lo_abapgit_ci TYPE REF TO zcl_abapgit_repo_online.
 
-    DATA(lt_list) = zcl_abapgit_repo_srv=>get_instance( )->list( ).
+    DATA(lt_repo_list) = zcl_abapgit_repo_srv=>get_instance( )->list( ).
 
-    LOOP AT lt_list ASSIGNING FIELD-SYMBOL(<repo>).
+    LOOP AT lt_repo_list ASSIGNING FIELD-SYMBOL(<repo>).
 
       IF <repo>->get_name( ) = iv_repo_name.
         lo_abapgit_ci ?= <repo>.
@@ -146,6 +146,17 @@ CLASS zcl_abapgit_ci IMPLEMENTATION.
     ENDLOOP.
 
     lo_abapgit_ci->deserialize( ls_checks ).
+
+    DATA(lt_list) = zcl_abapgit_factory=>get_syntax_check( lo_abapgit_ci->get_package( )
+                                      )->run( ).
+
+    ASSIGN lt_list[ kind = 'E' ] TO FIELD-SYMBOL(<ls_error>).
+    IF sy-subrc = 0.
+      zcx_abapgit_exception=>raise( |Syntax error in repo { iv_repo_name } |
+                                 && |object { <ls_error>-objtype } { <ls_error>-text } |
+                                 && |{ <ls_error>-text }| ).
+    ENDIF.
+
 
   ENDMETHOD.
 
