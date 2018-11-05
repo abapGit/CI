@@ -6,7 +6,9 @@ CLASS zcl_abapgit_ci_slack DEFINITION
     METHODS:
       constructor
         IMPORTING
-          iv_token TYPE string,
+          iv_token TYPE string
+        RAISING
+          zcx_abapgit_exception,
 
       post
         IMPORTING
@@ -26,6 +28,10 @@ CLASS zcl_abapgit_ci_slack IMPLEMENTATION.
 
 
   METHOD constructor.
+
+    IF iv_token IS INITIAL.
+      zcx_abapgit_exception=>raise( |Please supply OAuth token| ).
+    ENDIF.
 
     mv_token = iv_token.
 
