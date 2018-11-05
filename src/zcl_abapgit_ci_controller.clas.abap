@@ -15,7 +15,6 @@ CLASS zcl_abapgit_ci_controller DEFINITION
         RAISING
           zcx_abapgit_exception.
 
-  PROTECTED SECTION.
   PRIVATE SECTION.
     DATA:
       mi_view          TYPE REF TO zif_abapgit_ci_view,
@@ -73,7 +72,7 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
     DATA(lv_error_text) = REDUCE string( INIT result = ||
                                          FOR line IN is_result-list
                                          WHERE ( status = zif_abapgit_ci_definitions=>co_status-not_ok )
-                                         NEXT result = result && |{ line-name } { line-message }\n| ).
+                                         NEXT result = result && |\nRepo: { line-name } Message: { line-message }\n| ).
 
     NEW zcl_abapgit_ci_slack( ms_options-slack_oauth_token )->post( |abapGit CI detected error: { lv_error_text }| ).
 
