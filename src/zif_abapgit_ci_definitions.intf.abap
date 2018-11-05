@@ -23,7 +23,9 @@ INTERFACE zif_abapgit_ci_definitions
 
   TYPES:
     BEGIN OF ty_options,
-      result_git_repo_url TYPE string,
+      result_git_repo_url  TYPE string,
+      post_errors_to_slack TYPE abap_bool,
+      slack_oauth_token    TYPE string,
     END OF ty_options.
 
   CONSTANTS:

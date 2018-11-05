@@ -23,6 +23,13 @@ CLASS zcl_abapgit_ci_controller DEFINITION
       mo_ci            TYPE REF TO zcl_abapgit_ci,
       ms_options       TYPE zif_abapgit_ci_definitions=>ty_options.
 
+    METHODS:
+      post_errors_to_slack
+        IMPORTING
+          is_result TYPE zif_abapgit_ci_definitions=>ty_result
+        RAISING
+          zcx_abapgit_exception.
+
 ENDCLASS.
 
 
@@ -50,7 +57,26 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
       NEW zcl_abapgit_ci_distributor( ms_options-result_git_repo_url  )->push_to_git_repo( is_result = ls_result ).
     ENDIF.
 
+    IF ls_result-ci_has_errors = abap_true
+    AND ms_options-post_errors_to_slack = abap_true.
+
+      post_errors_to_slack( ls_result ).
+
+    ENDIF.
+
     mi_view->display( CHANGING cs_result = ls_result ).
 
   ENDMETHOD.
+
+  METHOD post_errors_to_slack.
+
+    DATA(lv_error_text) = REDUCE string( INIT result = ||
+                                         FOR line IN is_result-list
+                                         WHERE ( status = zif_abapgit_ci_definitions=>co_status-not_ok )
+                                         NEXT result = result && |{ line-name } { line-message }\n| ).
+
+    NEW zcl_abapgit_ci_slack( ms_options-slack_oauth_token )->post( |abapGit CI detected error: { lv_error_text }| ).
+
+  ENDMETHOD.
+
 ENDCLASS.
