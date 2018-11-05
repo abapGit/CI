@@ -75,6 +75,10 @@ CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
 
     DATA(ls_checks) = lo_repo->deserialize_checks( ).
 
+    LOOP AT ls_checks-overwrite ASSIGNING FIELD-SYMBOL(<ls_overwrite>).
+      <ls_overwrite>-decision = abap_true.
+    ENDLOOP.
+
     lo_repo->deserialize( ls_checks ).
 
     save_results_in_mime_repo( is_result ).
@@ -163,9 +167,10 @@ CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
 
   METHOD save_results_in_mime_repo.
 
+    DATA(lo_mime_api) = cl_mime_repository_api=>get_api( ).
+
     DATA(json) = /ui2/cl_json=>serialize( is_result ).
 
-    DATA(lo_mime_api) = cl_mime_repository_api=>get_api( ).
 
     TRY.
         DATA(xstring) = cl_bcs_convert=>string_to_xstring( json ).
@@ -178,6 +183,34 @@ CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
     lo_mime_api->put(
       EXPORTING
         i_url                   = '/SAP/PUBLIC/abapGit_CI_result.json'
+        i_content               = xstring
+        i_description           = 'abapGit CI results'
+        i_dev_package           = co_package
+      EXCEPTIONS
+        parameter_missing       = 1
+        error_occured           = 2
+        cancelled               = 3
+        permission_failure      = 4
+        data_inconsistency      = 5
+        new_loio_already_exists = 6
+        is_folder               = 7
+        OTHERS                  = 8 ).
+
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+    TRY.
+        xstring = cl_bcs_convert=>string_to_xstring( NEW zcl_abapgit_ci_html( is_result )->render( ) ).
+
+      CATCH cx_bcs INTO lx_bcs.
+        zcx_abapgit_exception=>raise( iv_text     = lx_bcs->get_text( )
+                                      ix_previous = lx_bcs ).
+    ENDTRY.
+
+    lo_mime_api->put(
+      EXPORTING
+        i_url                   = '/SAP/PUBLIC/abapGit_CI_result.html'
         i_content               = xstring
         i_description           = 'abapGit CI results'
         i_dev_package           = co_package

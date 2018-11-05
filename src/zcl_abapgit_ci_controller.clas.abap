@@ -69,12 +69,15 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
 
   METHOD post_errors_to_slack.
 
+    CONSTANTS: co_url TYPE string VALUE `https://christianguenter2.github.io/abapGit_CI_results/src/08002743b1381ed8b8a29429c189dd50.smim.abapgit_ci_result.html`.
+
     DATA(lv_error_text) = REDUCE string( INIT result = ||
                                          FOR line IN is_result-list
                                          WHERE ( status = zif_abapgit_ci_definitions=>co_status-not_ok )
                                          NEXT result = result && |\nRepo: { line-name } Message: { line-message }\n| ).
 
-    NEW zcl_abapgit_ci_slack( ms_options-slack_oauth_token )->post( |abapGit CI detected error: { lv_error_text }| ).
+    NEW zcl_abapgit_ci_slack( ms_options-slack_oauth_token )->post( |abapGit CI errors: { lv_error_text } \n|
+                                                                 && |Details: { co_url } | ).
 
   ENDMETHOD.
 
