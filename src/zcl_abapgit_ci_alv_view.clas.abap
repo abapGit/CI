@@ -181,6 +181,10 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
                        iv_text   = 'Purge'
                        iv_width  = 8 ).
 
+        config_column( iv_column = 'CHECK_LEFTOVERS'
+                       iv_text   = 'Check leftovers'
+                       iv_width  = 15 ).
+
         config_column( iv_column = 'STATUS'
                        iv_text   = 'Status'
                        iv_width  = 8 ).

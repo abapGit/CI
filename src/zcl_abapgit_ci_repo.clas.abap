@@ -56,6 +56,11 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         CHANGING
           cs_ri_repo TYPE zabapgit_ci_result
         RAISING
+          zcx_abapgit_exception,
+      check_leftovers
+        CHANGING
+          cs_ri_repo TYPE zabapgit_ci_result
+        RAISING
           zcx_abapgit_exception.
 
 ENDCLASS.
@@ -104,6 +109,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     CALL FUNCTION 'DEQUEUE_ALL'
       EXPORTING
         _synchron = abap_true.
+
+    check_leftovers( CHANGING cs_ri_repo = cs_ri_repo ).
 
   ENDMETHOD.
 
@@ -246,6 +253,28 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ENDLOOP.
 
     cs_ri_repo-object_check = zif_abapgit_ci_definitions=>co_status-ok.
+
+  ENDMETHOD.
+
+
+  METHOD check_leftovers.
+
+    cs_ri_repo-check_leftovers = zif_abapgit_ci_definitions=>co_status-not_ok.
+
+    DATA(lt_tadir) = zcl_abapgit_factory=>get_tadir(
+                                       )->read( cs_ri_repo-package ).
+
+    LOOP AT lt_tadir ASSIGNING FIELD-SYMBOL(<ls_tadir>)
+                     WHERE object <> 'DEVC'.
+      zcx_abapgit_exception=>raise( |Left over object { <ls_tadir>-object } { <ls_tadir>-obj_name }| ).
+    ENDLOOP.
+
+    LOOP AT lt_tadir ASSIGNING <ls_tadir>
+                     WHERE object = 'DEVC'.
+      zcx_abapgit_exception=>raise( |Left over package { <ls_tadir>-obj_name }| ).
+    ENDLOOP.
+
+    cs_ri_repo-check_leftovers = zif_abapgit_ci_definitions=>co_status-ok.
 
   ENDMETHOD.
 
