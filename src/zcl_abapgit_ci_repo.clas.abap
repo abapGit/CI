@@ -48,6 +48,14 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         CHANGING
           cs_ri_repo TYPE zabapgit_ci_result
         RAISING
+          zcx_abapgit_exception,
+
+      check_objects
+        IMPORTING
+          io_repo    TYPE REF TO zcl_abapgit_repo_online
+        CHANGING
+          cs_ri_repo TYPE zabapgit_ci_result
+        RAISING
           zcx_abapgit_exception.
 
 ENDCLASS.
@@ -115,6 +123,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     io_repo->deserialize( ls_checks ).
 
+    io_repo->refresh( iv_drop_cache = abap_true ).
+
     cs_ri_repo-pull = zif_abapgit_ci_definitions=>co_status-ok.
 
   ENDMETHOD.
@@ -177,6 +187,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
         syntax_check( CHANGING cs_ri_repo = cs_ri_repo ).
 
+        check_objects( EXPORTING io_repo  = lo_repo
+                       CHANGING cs_ri_repo = cs_ri_repo ).
+
       CATCH zcx_abapgit_exception INTO DATA(lx_error).
 
         " ensure uninstall
@@ -190,6 +203,49 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     purge( EXPORTING io_repo   = lo_repo
            CHANGING  cs_ri_repo = cs_ri_repo ).
+
+  ENDMETHOD.
+
+
+  METHOD check_objects.
+
+    DATA: lt_items TYPE zif_abapgit_definitions=>ty_items_ts,
+          ls_files TYPE zif_abapgit_definitions=>ty_stage_files.
+
+    FIELD-SYMBOLS: <ls_item>        TYPE zif_abapgit_definitions=>ty_item,
+                   <ls_local_file>  TYPE zif_abapgit_definitions=>ty_file_item,
+                   <ls_remote_file> LIKE LINE OF ls_files-remote.
+
+    cs_ri_repo-object_check = zif_abapgit_ci_definitions=>co_status-not_ok.
+
+    lt_items = zcl_abapgit_file_status=>identify_objects(
+                   it_files   = io_repo->get_files_remote( )
+                   iv_package = io_repo->get_package( )
+                   io_dot     = io_repo->get_dot_abapgit( ) ).
+
+    LOOP AT lt_items ASSIGNING <ls_item>.
+
+      IF zcl_abapgit_objects=>exists( <ls_item> ) = abap_false.
+        zcx_abapgit_exception=>raise( |Object { <ls_item>-obj_type } { <ls_item>-obj_name } doesn't exist| ).
+      ENDIF.
+
+      IF zcl_abapgit_objects=>is_active( <ls_item> ) = abap_false.
+        zcx_abapgit_exception=>raise( |Object { <ls_item>-obj_type } { <ls_item>-obj_name } isn't active| ).
+      ENDIF.
+
+    ENDLOOP.
+
+    ls_files = zcl_abapgit_factory=>get_stage_logic( )->get( io_repo ).
+
+    LOOP AT ls_files-local ASSIGNING <ls_local_file>.
+      zcx_abapgit_exception=>raise( |Local file diffs to remote: { <ls_local_file>-file-filename }| ).
+    ENDLOOP.
+
+    LOOP AT ls_files-remote ASSIGNING <ls_remote_file>.
+      zcx_abapgit_exception=>raise( |Remote file diffs to local: { <ls_remote_file>-filename }| ).
+    ENDLOOP.
+
+    cs_ri_repo-object_check = zif_abapgit_ci_definitions=>co_status-ok.
 
   ENDMETHOD.
 

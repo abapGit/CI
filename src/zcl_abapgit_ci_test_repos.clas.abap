@@ -6,7 +6,7 @@ CLASS zcl_abapgit_ci_test_repos DEFINITION
     INTERFACES:
       zif_abapgit_ci_repo_provider.
 
-protected section.
+  PROTECTED SECTION.
   PRIVATE SECTION.
     METHODS:
       fetch_repo_page
@@ -21,7 +21,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_TEST_REPOS IMPLEMENTATION.
+CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
 
 
   METHOD fetch_repo_page.
