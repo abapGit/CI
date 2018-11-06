@@ -25,6 +25,17 @@ CLASS zcl_abapgit_ci DEFINITION
         IMPORTING
           iv_repo_name TYPE string
         RAISING
+          zcx_abapgit_exception,
+
+      syntax_check
+        IMPORTING
+          iv_package TYPE devclass
+        RAISING
+          zcx_abapgit_exception,
+      run_abap_unit_tests
+        IMPORTING
+          iv_package TYPE devclass
+        RAISING
           zcx_abapgit_exception.
 
     METHODS:
@@ -147,16 +158,37 @@ CLASS zcl_abapgit_ci IMPLEMENTATION.
 
     lo_abapgit_ci->deserialize( ls_checks ).
 
-    DATA(lt_list) = zcl_abapgit_factory=>get_syntax_check( lo_abapgit_ci->get_package( )
-                                      )->run( ).
+    syntax_check( lo_abapgit_ci->get_package( ) ).
+    run_abap_unit_tests( lo_abapgit_ci->get_package( ) ).
+
+  ENDMETHOD.
+
+
+  METHOD syntax_check.
+
+    DATA(lt_list) = zcl_abapgit_factory=>get_syntax_check( iv_package )->run( ).
 
     ASSIGN lt_list[ kind = 'E' ] TO FIELD-SYMBOL(<ls_error>).
     IF sy-subrc = 0.
-      zcx_abapgit_exception=>raise( |Syntax error in repo { iv_repo_name } |
+      zcx_abapgit_exception=>raise( |Syntax error in repo { iv_package } |
                                  && |object { <ls_error>-objtype } { <ls_error>-text } |
                                  && |{ <ls_error>-text }| ).
     ENDIF.
 
+  ENDMETHOD.
+
+
+  METHOD run_abap_unit_tests.
+
+    DATA(lt_list) = zcl_abapgit_factory=>get_abap_unit_tests( iv_package
+                                      )->run( ).
+
+    ASSIGN lt_list[ kind = 'E' ] TO FIELD-SYMBOL(<ls_error>).
+    IF sy-subrc = 0.
+      zcx_abapgit_exception=>raise( |Unit test failed in package { iv_package } |
+                                 && |object { <ls_error>-objtype } { <ls_error>-text } |
+                                 && |{ <ls_error>-text }| ).
+    ENDIF.
 
   ENDMETHOD.
 
