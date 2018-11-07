@@ -31,11 +31,11 @@ CLASS zcl_abapgit_ci_generic_tests IMPLEMENTATION.
 
     DATA(lt_tests) = get_test_cases( ).
 
-    LOOP AT lt_tests ASSIGNING FIELD-SYMBOL(<test>).
+    LOOP AT lt_tests ASSIGNING FIELD-SYMBOL(<ls_test>).
 
       CLEAR: ls_result.
 
-      CREATE OBJECT li_test TYPE (<test>).
+      CREATE OBJECT li_test TYPE (<ls_test>-clsname).
 
       ls_result-status = zif_abapgit_ci_definitions=>co_status-not_ok.
 
