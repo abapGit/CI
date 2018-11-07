@@ -128,6 +128,8 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
                        OR name CS |SPRX|
                        OR name CS |SUSC|.
 
+    DELETE rt_repos WHERE name NS |PARA|.
+
     SORT rt_repos BY name.
 
   ENDMETHOD.
