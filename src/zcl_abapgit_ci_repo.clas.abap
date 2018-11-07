@@ -148,7 +148,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     TRY.
         ro_repo = zcl_abapgit_repo_srv=>get_instance( )->new_online(
-          iv_url         = cs_ri_repo-clone_url
+          iv_url         = |{ cs_ri_repo-clone_url }|
           iv_branch_name = 'refs/heads/master'
           iv_package     = cs_ri_repo-package ).
 

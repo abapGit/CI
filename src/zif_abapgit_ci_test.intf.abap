@@ -3,7 +3,7 @@ INTERFACE zif_abapgit_ci_test
   METHODS:
     get_description
       RETURNING
-        VALUE(rv_description) TYPE char255,
+        VALUE(rv_description) TYPE zabapgit_ci_description,
 
     execute
       RAISING

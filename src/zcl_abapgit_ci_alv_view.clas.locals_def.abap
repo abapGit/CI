@@ -2,67 +2,75 @@
 *"* definitions, interfaces or type declarations) you need for
 *"* components in the private section
 
-CLASS lcl_alv DEFINITION ABSTRACT.
+CLASS lcl_view DEFINITION ABSTRACT.
 
   PUBLIC SECTION.
     METHODS:
       constructor
         IMPORTING
-          io_container TYPE REF TO cl_gui_container
-          it_table     TYPE INDEX TABLE,
+          it_table TYPE INDEX TABLE,
 
-      display
+      display ABSTRACT
         RAISING
           zcx_abapgit_exception.
 
   PROTECTED SECTION.
+    TYPES: BEGIN OF ty_column_width,
+             column TYPE lvc_fname,
+             width  TYPE lvc_outlen,
+           END OF ty_column_width,
+           tty_column_width TYPE HASHED TABLE OF ty_column_width
+                            WITH UNIQUE KEY column.
+
+    DATA:
+      mo_alv          TYPE REF TO cl_salv_table,
+      mr_table        TYPE REF TO data,
+      mt_column_width TYPE tty_column_width.
+
+  PRIVATE SECTION.
     METHODS:
-      before_display ABSTRACT
-        RAISING
-          cx_salv_error,
+      map_status_to_icon
+        IMPORTING
+          it_table TYPE ANY TABLE
+          ir_table TYPE REF TO data,
 
       config_column
         IMPORTING
           iv_column TYPE lvc_fname
-          iv_text   TYPE csequence
-          iv_width  TYPE lvc_outlen
-        RAISING
-          cx_salv_error.
+          iv_width  TYPE lvc_outlen.
 
-    DATA:
-      mo_alv TYPE REF TO cl_salv_table.
+ENDCLASS.
+
+CLASS lcl_alv DEFINITION INHERITING FROM lcl_view.
+
+  PUBLIC SECTION.
+    METHODS:
+      constructor
+        IMPORTING
+          it_table     TYPE INDEX TABLE
+          io_container TYPE REF TO cl_gui_container,
+
+      display REDEFINITION.
 
   PRIVATE SECTION.
-    METHODS:
-      get_table_descr
-        IMPORTING
-          it_table              TYPE INDEX TABLE
-        RETURNING
-          VALUE(ro_table_descr) TYPE REF TO cl_abap_tabledescr,
-
-      map
-        IMPORTING
-          it_table TYPE ANY TABLE
-          ir_table TYPE REF TO data.
-
     DATA:
-      mr_table     TYPE REF TO data,
       mo_container TYPE REF TO cl_gui_container.
 
 ENDCLASS.
 
-CLASS lcl_repo_result_list_alv DEFINITION INHERITING FROM lcl_alv.
 
-  PROTECTED SECTION.
+CLASS lcl_list DEFINITION INHERITING FROM lcl_view.
+
+  PUBLIC SECTION.
     METHODS:
-      before_display REDEFINITION.
+      constructor
+        IMPORTING
+          it_table   TYPE INDEX TABLE
+          iv_tabname TYPE slis_tabname,
 
-ENDCLASS.
+      display REDEFINITION.
 
-CLASS lcl_generic_result_list_alv DEFINITION INHERITING FROM lcl_alv.
-
-  PROTECTED SECTION.
-    METHODS:
-      before_display REDEFINITION.
+  PRIVATE SECTION.
+    DATA mv_tabname TYPE slis_tabname.
 
 ENDCLASS.
