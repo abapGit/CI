@@ -29,7 +29,7 @@ CLASS lcl_abapgit_update IMPLEMENTATION.
   METHOD run.
 
     TRY.
-        zcl_abapgit_ci=>update_abapgit_repo( ).
+        zcl_abapgit_ci_repos=>update_abapgit_repo( ).
         MESSAGE |abapGit updated successfully| TYPE 'S'.
 
       CATCH zcx_abapgit_exception INTO DATA(lx_error).

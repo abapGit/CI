@@ -1,4 +1,4 @@
-CLASS zcl_abapgit_ci DEFINITION
+CLASS zcl_abapgit_ci_repos DEFINITION
   PUBLIC
   CREATE PUBLIC.
 
@@ -15,9 +15,9 @@ CLASS zcl_abapgit_ci DEFINITION
     METHODS:
       process_repos
         IMPORTING
-          it_repos         TYPE zif_abapgit_ci_definitions=>tty_repo
+          it_repos              TYPE zif_abapgit_ci_definitions=>tty_repo
         RETURNING
-          VALUE(rs_result) TYPE zif_abapgit_ci_definitions=>ty_result.
+          VALUE(rt_result_list) TYPE zif_abapgit_ci_definitions=>ty_result-repo_result_list.
 
   PRIVATE SECTION.
     CLASS-METHODS:
@@ -47,7 +47,7 @@ CLASS zcl_abapgit_ci DEFINITION
 
 ENDCLASS.
 
-CLASS zcl_abapgit_ci IMPLEMENTATION.
+CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
   METHOD process_repo.
 
@@ -76,12 +76,10 @@ CLASS zcl_abapgit_ci IMPLEMENTATION.
 
   METHOD process_repos.
 
-    GET TIME STAMP FIELD rs_result-timestamp.
-
     LOOP AT it_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
 
       INSERT CORRESPONDING #( <ls_repo> )
-             INTO TABLE rs_result-list
+             INTO TABLE rt_result_list
              ASSIGNING FIELD-SYMBOL(<ls_ci_repo>).
 
       TRY.
@@ -110,10 +108,6 @@ CLASS zcl_abapgit_ci IMPLEMENTATION.
       ENDIF.
 
     ENDLOOP.
-
-    rs_result-ci_has_errors = boolc(
-                                line_exists(
-                                  rs_result-list[ status = zif_abapgit_ci_definitions=>co_status-not_ok ] ) ).
 
   ENDMETHOD.
 

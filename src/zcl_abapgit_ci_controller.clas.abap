@@ -19,7 +19,7 @@ CLASS zcl_abapgit_ci_controller DEFINITION
     DATA:
       mi_view          TYPE REF TO zif_abapgit_ci_view,
       mi_repo_provider TYPE REF TO zif_abapgit_ci_repo_provider,
-      mo_ci            TYPE REF TO zcl_abapgit_ci,
+      mo_ci_repos      TYPE REF TO zcl_abapgit_ci_repos,
       ms_options       TYPE zif_abapgit_ci_definitions=>ty_options.
 
     METHODS:
@@ -42,15 +42,23 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
     mi_repo_provider = ii_repo_provider.
     ms_options       = is_options.
 
-    mo_ci = NEW zcl_abapgit_ci( ).
+    mo_ci_repos = NEW zcl_abapgit_ci_repos( ).
 
   ENDMETHOD.
 
 
   METHOD run.
 
+    DATA: ls_result TYPE zif_abapgit_ci_definitions=>ty_result.
+
     DATA(lt_repos)  = mi_repo_provider->get_repos( ).
-    DATA(ls_result) = mo_ci->process_repos( lt_repos ).
+    ls_result-repo_result_list = mo_ci_repos->process_repos( lt_repos ).
+
+    ls_result-ci_has_errors = boolc(
+                                line_exists(
+                                  ls_result-repo_result_list[ status = zif_abapgit_ci_definitions=>co_status-not_ok ] ) ).
+
+    GET TIME STAMP FIELD ls_result-timestamp.
 
     IF ms_options-result_git_repo_url IS NOT INITIAL.
       NEW zcl_abapgit_ci_distributor( ms_options-result_git_repo_url  )->push_to_git_repo( is_result = ls_result ).
@@ -72,7 +80,7 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
     CONSTANTS: co_url TYPE string VALUE `https://christianguenter2.github.io/abapGit_CI_results/src/08002743b1381ed8b8a29429c189dd50.smim.abapgit_ci_result.html`.
 
     DATA(lv_error_text) = REDUCE string( INIT result = ||
-                                         FOR line IN is_result-list
+                                         FOR line IN is_result-repo_result_list
                                          WHERE ( status = zif_abapgit_ci_definitions=>co_status-not_ok )
                                          NEXT result = result && |\nRepo: { line-name } Message: { line-message }\n| ).
 
