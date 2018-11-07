@@ -19,8 +19,20 @@ CLASS zcl_abapgit_ci_alv_view DEFINITION
 
       prepare_header
         IMPORTING
-          iv_text     TYPE string
-          io_cotainer TYPE REF TO cl_gui_container
+          iv_text      TYPE string
+          io_container TYPE REF TO cl_gui_container
+        RAISING
+          zcx_abapgit_exception,
+
+      display_alv
+        CHANGING
+          cs_result TYPE zif_abapgit_ci_definitions=>ty_result
+        RAISING
+          zcx_abapgit_exception,
+
+      display_list
+        CHANGING
+          cs_result TYPE zif_abapgit_ci_definitions=>ty_result
         RAISING
           zcx_abapgit_exception.
 
@@ -32,26 +44,12 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
 
   METHOD zif_abapgit_ci_view~display.
 
-    prepare_splitter(
-      IMPORTING
-        eo_row_1 = DATA(lo_row_1)
-        eo_row_2 = DATA(lo_row_2)
-        eo_row_3 = DATA(lo_row_3)
-        eo_row_4 = DATA(lo_row_4) ).
+*    IF zcl_abapgit_ui_factory=>get_gui_functions( )->gui_is_available( ).
+*      display_alv( CHANGING cs_result = cs_result ).
+*    ELSE.
 
-    prepare_header( iv_text     = |abapGit CI repository tests from: https://github.com/abapGit-tests|
-                    io_cotainer = lo_row_1 ).
-
-    NEW lcl_repo_result_list_alv( io_container = lo_row_2
-                                  it_table     = cs_result-repo_result_list )->display( ).
-
-    prepare_header( iv_text     = |abapGit CI: Generic tests|
-                    io_cotainer = lo_row_3 ).
-
-    NEW lcl_generic_result_list_alv( io_container = lo_row_4
-                                     it_table     = cs_result-generic_result_list )->display( ).
-
-    WRITE: ''.
+    display_list( CHANGING cs_result = cs_result ).
+*    ENDIF.
 
   ENDMETHOD.
 
@@ -202,7 +200,7 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
                        ( |  </body>| )
                        ( |</html>| ) ).
 
-    DATA(lo_html_viewer) = NEW cl_gui_html_viewer( io_cotainer ).
+    DATA(lo_html_viewer) = NEW cl_gui_html_viewer( io_container ).
 
     lo_html_viewer->load_data(
       IMPORTING
@@ -222,7 +220,7 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
 
     lo_html_viewer->show_url(
       EXPORTING
-        url                    = lv_url    " URL
+        url                    = lv_url
       EXCEPTIONS
         cntl_error             = 1
         cnht_error_not_allowed = 2
@@ -233,6 +231,123 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
     IF sy-subrc <> 0.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
+  ENDMETHOD.
+
+
+  METHOD display_alv.
+
+    prepare_splitter(
+      IMPORTING
+        eo_row_1 = DATA(lo_row_1)
+        eo_row_2 = DATA(lo_row_2)
+        eo_row_3 = DATA(lo_row_3)
+        eo_row_4 = DATA(lo_row_4) ).
+
+    prepare_header( iv_text      = |abapGit CI repository tests from: https://github.com/abapGit-tests|
+                    io_container = lo_row_1 ).
+
+    NEW lcl_repo_result_list_alv( io_container = lo_row_2
+                                  it_table     = cs_result-repo_result_list )->display( ).
+
+    prepare_header( iv_text      = |abapGit CI: Generic tests|
+                    io_container = lo_row_3 ).
+
+    NEW lcl_generic_result_list_alv( io_container = lo_row_4
+                                     it_table     = cs_result-generic_result_list )->display( ).
+
+    WRITE: ''.
+
+  ENDMETHOD.
+
+
+  METHOD display_list.
+
+    DATA:
+      lt_fieldcat TYPE slis_t_fieldcat_alv,
+      ls_layout   TYPE slis_layout_alv,
+      lt_events   TYPE slis_t_event.
+
+    CALL FUNCTION 'REUSE_ALV_BLOCK_LIST_INIT'
+      EXPORTING
+        i_callback_program = sy-cprog.
+
+    CALL FUNCTION 'REUSE_ALV_FIELDCATALOG_MERGE'
+      EXPORTING
+        i_structure_name       = 'ZABAPGIT_CI_RESULT'
+      CHANGING
+        ct_fieldcat            = lt_fieldcat
+      EXCEPTIONS
+        inconsistent_interface = 1
+        program_error          = 2
+        OTHERS                 = 3.
+
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+    ls_layout-box_tabname = 'ZABAPGIT_CI_RESULT'.
+
+    CALL FUNCTION 'REUSE_ALV_BLOCK_LIST_APPEND'
+      EXPORTING
+        is_layout                  = ls_layout
+        it_fieldcat                = lt_fieldcat
+        i_tabname                  = 'ZABAPGIT_CI_RESULT'
+        it_events                  = lt_events
+      TABLES
+        t_outtab                   = cs_result-repo_result_list
+      EXCEPTIONS
+        program_error              = 1
+        maximum_of_appends_reached = 2
+        OTHERS                     = 3.
+
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+    CLEAR: lt_fieldcat.
+
+    CALL FUNCTION 'REUSE_ALV_FIELDCATALOG_MERGE'
+      EXPORTING
+        i_structure_name       = 'ZABAPGIT_CI_RESULT_GEN'
+      CHANGING
+        ct_fieldcat            = lt_fieldcat
+      EXCEPTIONS
+        inconsistent_interface = 1
+        program_error          = 2
+        OTHERS                 = 3.
+
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+    ls_layout-box_tabname = 'ZABAPGIT_CI_RESULT_GEN'.
+
+    CALL FUNCTION 'REUSE_ALV_BLOCK_LIST_APPEND'
+      EXPORTING
+        is_layout                  = ls_layout
+        it_fieldcat                = lt_fieldcat
+        i_tabname                  = 'ZABAPGIT_CI_RESULT_GEN'
+        it_events                  = lt_events
+      TABLES
+        t_outtab                   = cs_result-generic_result_list
+      EXCEPTIONS
+        program_error              = 1
+        maximum_of_appends_reached = 2
+        OTHERS                     = 3.
+
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+    CALL FUNCTION 'REUSE_ALV_BLOCK_LIST_DISPLAY'
+      EXCEPTIONS
+        program_error = 1
+        OTHERS        = 2.
+
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
   ENDMETHOD.
 
 ENDCLASS.
