@@ -44,12 +44,11 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
 
   METHOD zif_abapgit_ci_view~display.
 
-*    IF zcl_abapgit_ui_factory=>get_gui_functions( )->gui_is_available( ).
-*      display_alv( CHANGING cs_result = cs_result ).
-*    ELSE.
-
-    display_list( CHANGING cs_result = cs_result ).
-*    ENDIF.
+    IF zcl_abapgit_ui_factory=>get_gui_functions( )->gui_is_available( ).
+      display_alv( CHANGING cs_result = cs_result ).
+    ELSE.
+      display_list( CHANGING cs_result = cs_result ).
+    ENDIF.
 
   ENDMETHOD.
 
@@ -231,6 +230,7 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
     IF sy-subrc <> 0.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
+
   ENDMETHOD.
 
 
@@ -246,14 +246,14 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
     prepare_header( iv_text      = |abapGit CI repository tests from: https://github.com/abapGit-tests|
                     io_container = lo_row_1 ).
 
-    NEW lcl_repo_result_list_alv( io_container = lo_row_2
-                                  it_table     = cs_result-repo_result_list )->display( ).
+    NEW lcl_alv( io_container = lo_row_2
+                 it_table     = cs_result-repo_result_list )->display( ).
 
     prepare_header( iv_text      = |abapGit CI: Generic tests|
                     io_container = lo_row_3 ).
 
-    NEW lcl_generic_result_list_alv( io_container = lo_row_4
-                                     it_table     = cs_result-generic_result_list )->display( ).
+    NEW lcl_alv( io_container = lo_row_4
+                 it_table     = cs_result-generic_result_list )->display( ).
 
     WRITE: ''.
 
@@ -262,82 +262,15 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
 
   METHOD display_list.
 
-    DATA:
-      lt_fieldcat TYPE slis_t_fieldcat_alv,
-      ls_layout   TYPE slis_layout_alv,
-      lt_events   TYPE slis_t_event.
-
     CALL FUNCTION 'REUSE_ALV_BLOCK_LIST_INIT'
       EXPORTING
         i_callback_program = sy-cprog.
 
-    CALL FUNCTION 'REUSE_ALV_FIELDCATALOG_MERGE'
-      EXPORTING
-        i_structure_name       = 'ZABAPGIT_CI_RESULT'
-      CHANGING
-        ct_fieldcat            = lt_fieldcat
-      EXCEPTIONS
-        inconsistent_interface = 1
-        program_error          = 2
-        OTHERS                 = 3.
+    NEW lcl_list( it_table   = cs_result-repo_result_list
+                  iv_tabname = 'ZABAPGIT_CI_RESULT' )->display( ).
 
-    IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise_t100( ).
-    ENDIF.
-
-    ls_layout-box_tabname = 'ZABAPGIT_CI_RESULT'.
-
-    CALL FUNCTION 'REUSE_ALV_BLOCK_LIST_APPEND'
-      EXPORTING
-        is_layout                  = ls_layout
-        it_fieldcat                = lt_fieldcat
-        i_tabname                  = 'ZABAPGIT_CI_RESULT'
-        it_events                  = lt_events
-      TABLES
-        t_outtab                   = cs_result-repo_result_list
-      EXCEPTIONS
-        program_error              = 1
-        maximum_of_appends_reached = 2
-        OTHERS                     = 3.
-
-    IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise_t100( ).
-    ENDIF.
-
-    CLEAR: lt_fieldcat.
-
-    CALL FUNCTION 'REUSE_ALV_FIELDCATALOG_MERGE'
-      EXPORTING
-        i_structure_name       = 'ZABAPGIT_CI_RESULT_GEN'
-      CHANGING
-        ct_fieldcat            = lt_fieldcat
-      EXCEPTIONS
-        inconsistent_interface = 1
-        program_error          = 2
-        OTHERS                 = 3.
-
-    IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise_t100( ).
-    ENDIF.
-
-    ls_layout-box_tabname = 'ZABAPGIT_CI_RESULT_GEN'.
-
-    CALL FUNCTION 'REUSE_ALV_BLOCK_LIST_APPEND'
-      EXPORTING
-        is_layout                  = ls_layout
-        it_fieldcat                = lt_fieldcat
-        i_tabname                  = 'ZABAPGIT_CI_RESULT_GEN'
-        it_events                  = lt_events
-      TABLES
-        t_outtab                   = cs_result-generic_result_list
-      EXCEPTIONS
-        program_error              = 1
-        maximum_of_appends_reached = 2
-        OTHERS                     = 3.
-
-    IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise_t100( ).
-    ENDIF.
+    NEW lcl_list( it_table   = cs_result-generic_result_list
+                  iv_tabname = 'ZABAPGIT_CI_RESULT_GEN' )->display( ).
 
     CALL FUNCTION 'REUSE_ALV_BLOCK_LIST_DISPLAY'
       EXCEPTIONS

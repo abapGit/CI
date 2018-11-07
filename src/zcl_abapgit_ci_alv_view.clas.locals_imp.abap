@@ -2,40 +2,59 @@
 *"* local helper classes, interface definitions and type
 *"* declarations
 
-CLASS lcl_alv IMPLEMENTATION.
+CLASS lcl_view IMPLEMENTATION.
 
   METHOD constructor.
 
-    mo_container = io_container.
+    CREATE DATA mr_table LIKE it_table.
 
-    DATA(lo_table_descr) = get_table_descr( it_table ).
-    CREATE DATA mr_table TYPE HANDLE lo_table_descr.
-
-    map( it_table = it_table
+    map_status_to_icon( it_table = it_table
          ir_table = mr_table ).
 
+    config_column( iv_column = 'NAME'
+                   iv_width  = 20 ).
+
+    config_column( iv_column = 'CLONE_URL'
+                   iv_width  = 60 ).
+
+    config_column( iv_column = 'PACKAGE'
+                   iv_width  = 20 ).
+
+    config_column( iv_column = 'CREATE_PACKAGE'
+                   iv_width  = 15 ).
+
+    config_column( iv_column = 'CLONE'
+                   iv_width  = 8 ).
+
+    config_column( iv_column = 'PULL'
+                   iv_width  = 8 ).
+
+    config_column( iv_column = 'SYNTAX_CHECK'
+                   iv_width  = 15 ).
+
+    config_column( iv_column = 'OBJECT_CHECK'
+                   iv_width  = 15 ).
+
+    config_column( iv_column = 'PURGE'
+                   iv_width  = 8 ).
+
+    config_column( iv_column = 'CHECK_LEFTOVERS'
+                   iv_width  = 15 ).
+
+    config_column( iv_column = 'STATUS'
+                   iv_width  = 8 ).
+
+    config_column( iv_column = 'MESSAGE'
+                   iv_width  = 60 ).
+
+    config_column( iv_column = 'DESCRIPTION'
+                   iv_width  = 60 ).
+
+
   ENDMETHOD.
 
 
-  METHOD get_table_descr.
-
-    DATA(lo_table_descr) = CAST cl_abap_tabledescr(
-                             cl_abap_tabledescr=>describe_by_data( it_table ) ).
-
-    DATA(components) = CAST cl_abap_structdescr( lo_table_descr->get_table_line_type( )
-                        )->get_components( ).
-
-    LOOP AT components ASSIGNING FIELD-SYMBOL(<component>)
-                       WHERE type->absolute_name CP '*STATUS'.
-      <component>-type ?= cl_abap_datadescr=>describe_by_name( |ICON_D| ).
-    ENDLOOP.
-
-    ro_table_descr = cl_abap_tabledescr=>create( cl_abap_structdescr=>create( components )  ).
-
-  ENDMETHOD.
-
-
-  METHOD map.
+  METHOD map_status_to_icon.
 
     DATA: lr_line TYPE REF TO data.
 
@@ -69,7 +88,8 @@ CLASS lcl_alv IMPLEMENTATION.
                TO <left>.
         ASSERT sy-subrc = 0.
 
-        IF <component>-type->absolute_name CS |STATUS|.
+
+        IF <component>-type->get_ddic_header( )-refname CS |STATUS|.
           <left> = SWITCH icon_d(
                      <right>
                        WHEN zif_abapgit_ci_definitions=>co_status-ok        THEN icon_checked
@@ -90,16 +110,25 @@ CLASS lcl_alv IMPLEMENTATION.
 
   METHOD config_column.
 
-    DATA(lo_column) = CAST cl_salv_column_table( mo_alv->get_columns( )->get_column( iv_column ) ).
-
-    lo_column->set_short_text( CONV #( iv_text ) ).
-    lo_column->set_medium_text( CONV #( iv_text ) ).
-    lo_column->set_long_text( CONV #( iv_text ) ).
-
-    lo_column->set_output_length( iv_width ).
+    INSERT VALUE #( column = iv_column
+                    width  = iv_width )
+           INTO TABLE mt_column_width.
 
   ENDMETHOD.
 
+
+ENDCLASS.
+
+
+CLASS lcl_alv IMPLEMENTATION.
+
+  METHOD constructor.
+
+    super->constructor( it_table = it_table ).
+
+    mo_container = io_container.
+
+  ENDMETHOD.
 
   METHOD display.
 
@@ -119,7 +148,16 @@ CLASS lcl_alv IMPLEMENTATION.
 
         mo_alv->get_functions( )->set_all( ).
 
-        before_display( ).
+        LOOP AT mt_column_width ASSIGNING FIELD-SYMBOL(<ls_column_width>).
+
+          TRY.
+              DATA(lo_column) = CAST cl_salv_column_table( mo_alv->get_columns( )->get_column( <ls_column_width>-column ) ).
+              lo_column->set_output_length( <ls_column_width>-width ).
+            CATCH cx_salv_error.
+              CONTINUE.
+          ENDTRY.
+
+        ENDLOOP.
 
         mo_alv->display( ).
 
@@ -132,76 +170,70 @@ CLASS lcl_alv IMPLEMENTATION.
 
 ENDCLASS.
 
-CLASS lcl_repo_result_list_alv IMPLEMENTATION.
+CLASS lcl_list IMPLEMENTATION.
 
-  METHOD before_display.
+  METHOD constructor.
 
-    config_column( iv_column = 'NAME'
-                   iv_text   = 'Name'
-                   iv_width  = 20 ).
+    super->constructor( it_table = it_table ).
 
-    config_column( iv_column = 'CLONE_URL'
-                   iv_text   = 'Clone url'
-                   iv_width  = 40 ).
+    mv_tabname = iv_tabname.
 
-    config_column( iv_column = 'PACKAGE'
-                   iv_text   = 'Package'
-                   iv_width  = 10 ).
-
-    config_column( iv_column = 'CREATE_PACKAGE'
-                   iv_text   = 'Create package'
-                   iv_width  = 15 ).
-
-    config_column( iv_column = 'CLONE'
-                   iv_text   = 'Clone'
-                   iv_width  = 8 ).
-
-    config_column( iv_column = 'PULL'
-                   iv_text   = 'Pull'
-                   iv_width  = 8 ).
-
-    config_column( iv_column = 'SYNTAX_CHECK'
-                   iv_text   = 'Syntax check'
-                   iv_width  = 15 ).
-
-    config_column( iv_column = 'OBJECT_CHECK'
-                   iv_text   = 'Object check'
-                   iv_width  = 15 ).
-
-    config_column( iv_column = 'PURGE'
-                   iv_text   = 'Purge'
-                   iv_width  = 8 ).
-
-    config_column( iv_column = 'CHECK_LEFTOVERS'
-                   iv_text   = 'Check leftovers'
-                   iv_width  = 15 ).
-
-    config_column( iv_column = 'STATUS'
-                   iv_text   = 'Status'
-                   iv_width  = 8 ).
-
-    config_column( iv_column = 'MESSAGE'
-                   iv_text   = 'Message'
-                   iv_width  = 60 ).
   ENDMETHOD.
 
-ENDCLASS.
+  METHOD display.
 
-CLASS lcl_generic_result_list_alv IMPLEMENTATION.
+    DATA:
+      lt_fieldcat TYPE slis_t_fieldcat_alv,
+      ls_layout   TYPE slis_layout_alv,
+      lt_events   TYPE slis_t_event.
 
-  METHOD before_display.
+    FIELD-SYMBOLS: <table> TYPE STANDARD TABLE.
 
-    config_column( iv_column = 'DESCRIPTION'
-                   iv_text   = 'Description'
-                   iv_width  = 80 ).
+    ASSIGN mr_table->* TO <table>.
+    ASSERT sy-subrc = 0.
 
-    config_column( iv_column = 'STATUS'
-                   iv_text   = 'Status'
-                   iv_width  = 8 ).
+    CALL FUNCTION 'REUSE_ALV_FIELDCATALOG_MERGE'
+      EXPORTING
+        i_structure_name       = mv_tabname
+      CHANGING
+        ct_fieldcat            = lt_fieldcat
+      EXCEPTIONS
+        inconsistent_interface = 1
+        program_error          = 2
+        OTHERS                 = 3.
 
-    config_column( iv_column = 'MESSAGE'
-                   iv_text   = 'Message'
-                   iv_width  = 80 ).
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+    LOOP AT lt_fieldcat ASSIGNING FIELD-SYMBOL(<ls_fieldcat>).
+
+      ASSIGN mt_column_width[ column = <ls_fieldcat>-fieldname ] TO FIELD-SYMBOL(<ls_column_width>).
+      IF sy-subrc = 0.
+        <ls_fieldcat>-outputlen = <ls_column_width>-width.
+      ENDIF.
+
+    ENDLOOP.
+
+    ls_layout-box_tabname = 'ZABAPGIT_CI_RESULT'.
+
+    CALL FUNCTION 'REUSE_ALV_BLOCK_LIST_APPEND'
+      EXPORTING
+        is_layout                  = ls_layout
+        it_fieldcat                = lt_fieldcat
+        i_tabname                  = mv_tabname
+        it_events                  = lt_events
+      TABLES
+        t_outtab                   = <table>
+      EXCEPTIONS
+        program_error              = 1
+        maximum_of_appends_reached = 2
+        OTHERS                     = 3.
+
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
   ENDMETHOD.
 
 ENDCLASS.
