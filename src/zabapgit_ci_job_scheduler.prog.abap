@@ -53,6 +53,7 @@ CLASS controller IMPLEMENTATION.
         iv_pred_jobname  = co_job_name-update_abapgit
         iv_new_jobname   = co_job_name-update_abapgit_ci
         iv_report        = |ZABAPGIT_CI_UPDATE_ABAPGIT_CI|
+        iv_variant       = |BACKGROUND|
       RECEIVING
         rv_new_jobcount  = DATA(jobcount_update_abapgit_ci) ).
 
@@ -90,6 +91,7 @@ CLASS controller IMPLEMENTATION.
         jobcount                = rv_jobcount
         jobname                 = co_job_name-update_abapgit
         report                  = 'ZABAPGIT_CI_UPDATE_ABAPGIT'
+        variant                 = 'BACKGROUND'
       EXCEPTIONS
         bad_priparams           = 1
         bad_xpgflags            = 2
