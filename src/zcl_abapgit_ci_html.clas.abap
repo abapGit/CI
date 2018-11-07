@@ -122,7 +122,7 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
 
   METHOD render_table_lines.
 
-    LOOP AT ms_result-list ASSIGNING FIELD-SYMBOL(<ls_line>).
+    LOOP AT ms_result-repo_result_list ASSIGNING FIELD-SYMBOL(<ls_line>).
 
       rv_html = rv_html
              && |<tr>|
