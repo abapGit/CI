@@ -20,7 +20,8 @@ CLASS zcl_abapgit_ci_controller DEFINITION
       mi_view          TYPE REF TO zif_abapgit_ci_view,
       mi_repo_provider TYPE REF TO zif_abapgit_ci_repo_provider,
       mo_ci_repos      TYPE REF TO zcl_abapgit_ci_repos,
-      ms_options       TYPE zif_abapgit_ci_definitions=>ty_options.
+      ms_options       TYPE zif_abapgit_ci_definitions=>ty_options,
+      mo_ci_generic    TYPE REF TO zcl_abapgit_ci_generic_tests.
 
     METHODS:
       post_errors_to_slack
@@ -43,6 +44,7 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
     ms_options       = is_options.
 
     mo_ci_repos = NEW zcl_abapgit_ci_repos( ).
+    mo_ci_generic = NEW zcl_abapgit_ci_generic_tests( ).
 
   ENDMETHOD.
 
@@ -53,6 +55,8 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
 
     DATA(lt_repos)  = mi_repo_provider->get_repos( ).
     ls_result-repo_result_list = mo_ci_repos->process_repos( lt_repos ).
+
+    ls_result-generic_result_list = mo_ci_generic->execute( ).
 
     ls_result-ci_has_errors = boolc(
                                 line_exists(
