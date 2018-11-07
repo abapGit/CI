@@ -58,9 +58,10 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
 
     ls_result-generic_result_list = mo_ci_generic->execute( ).
 
-    ls_result-ci_has_errors = boolc(
-                                line_exists(
-                                  ls_result-repo_result_list[ status = zif_abapgit_ci_definitions=>co_status-not_ok ] ) ).
+    ls_result-ci_has_errors = boolc( line_exists(
+                                       ls_result-repo_result_list[ status = zif_abapgit_ci_definitions=>co_status-not_ok ] )
+                                  OR line_exists(
+                                       ls_result-generic_result_list[ status = zif_abapgit_ci_definitions=>co_status-not_ok ] ) ).
 
     GET TIME STAMP FIELD ls_result-timestamp.
 

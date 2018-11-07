@@ -116,7 +116,7 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
     lo_splitter->set_row_height(
       EXPORTING
         id                = 2
-        height            = 30
+        height            = 20
       EXCEPTIONS
         cntl_error        = 1
         cntl_system_error = 2
@@ -170,7 +170,7 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
     lo_splitter->set_row_height(
       EXPORTING
         id                = 4
-        height            = 30
+        height            = 40
       EXCEPTIONS
         cntl_error        = 1
         cntl_system_error = 2
