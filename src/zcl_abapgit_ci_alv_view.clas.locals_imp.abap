@@ -191,8 +191,17 @@ CLASS lcl_generic_result_list_alv IMPLEMENTATION.
 
   METHOD before_display.
 
-    mo_alv->get_columns(  )->set_optimize( ).
+    config_column( iv_column = 'DESCRIPTION'
+                   iv_text   = 'Description'
+                   iv_width  = 80 ).
 
+    config_column( iv_column = 'STATUS'
+                   iv_text   = 'Status'
+                   iv_width  = 8 ).
+
+    config_column( iv_column = 'MESSAGE'
+                   iv_text   = 'Message'
+                   iv_width  = 80 ).
   ENDMETHOD.
 
 ENDCLASS.
