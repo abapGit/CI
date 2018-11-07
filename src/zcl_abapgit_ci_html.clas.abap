@@ -118,7 +118,7 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
                      COND #( WHEN ms_result-ci_has_errors = abap_true
                              THEN |CI failed|
                              ELSE |CI successful| ) }</h2>|
-           && |<h3>Date: { date DATE = USER } Time: { time TIME = USER }</h3>|.
+           && |<h3>Date: { date DATE = USER } Time: { time TIME = USER } { lv_timezone }</h3>|.
 
   ENDMETHOD.
 
