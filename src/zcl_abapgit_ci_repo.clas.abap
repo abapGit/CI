@@ -182,6 +182,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD run.
 
     create_package( CHANGING cs_ri_repo = cs_ri_repo ).
@@ -219,25 +220,20 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     DATA: lt_items TYPE zif_abapgit_definitions=>ty_items_ts,
           ls_files TYPE zif_abapgit_definitions=>ty_stage_files.
 
-    FIELD-SYMBOLS: <ls_item>        TYPE zif_abapgit_definitions=>ty_item,
-                   <ls_local_file>  TYPE zif_abapgit_definitions=>ty_file_item,
+    FIELD-SYMBOLS: <ls_local_file>  TYPE zif_abapgit_definitions=>ty_file_item,
                    <ls_remote_file> LIKE LINE OF ls_files-remote.
 
     cs_ri_repo-object_check = zif_abapgit_ci_definitions=>co_status-not_ok.
 
-    lt_items = zcl_abapgit_file_status=>identify_objects(
-                   it_files   = io_repo->get_files_remote( )
-                   iv_package = io_repo->get_package( )
-                   io_dot     = io_repo->get_dot_abapgit( ) ).
+    DATA(lt_tadir) = zcl_abapgit_factory=>get_tadir( )->read( io_repo->get_package( ) ).
 
-    LOOP AT lt_items ASSIGNING <ls_item>.
+    LOOP AT lt_tadir ASSIGNING FIELD-SYMBOL(<ls_tadir>).
 
-      IF zcl_abapgit_objects=>exists( <ls_item> ) = abap_false.
-        zcx_abapgit_exception=>raise( |Object { <ls_item>-obj_type } { <ls_item>-obj_name } doesn't exist| ).
-      ENDIF.
+      DATA(ls_item) = CORRESPONDING zif_abapgit_definitions=>ty_item( <ls_tadir> MAPPING obj_name = obj_name
+                                                                                         obj_type = object ).
 
-      IF zcl_abapgit_objects=>is_active( <ls_item> ) = abap_false.
-        zcx_abapgit_exception=>raise( |Object { <ls_item>-obj_type } { <ls_item>-obj_name } isn't active| ).
+      IF zcl_abapgit_objects=>is_active( ls_item ) = abap_false.
+        zcx_abapgit_exception=>raise( |Object { ls_item-obj_type } { ls_item-obj_name } isn't active| ).
       ENDIF.
 
     ENDLOOP.
