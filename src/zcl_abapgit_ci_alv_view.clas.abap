@@ -243,17 +243,17 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
         eo_row_3 = DATA(lo_row_3)
         eo_row_4 = DATA(lo_row_4) ).
 
-    prepare_header( iv_text      = |abapGit CI repository tests from: https://github.com/abapGit-tests|
+    prepare_header( iv_text      = |abapGit CI: Generic tests|
                     io_container = lo_row_1 ).
 
     NEW lcl_alv( io_container = lo_row_2
-                 it_table     = cs_result-repo_result_list )->display( ).
+                 it_table     = cs_result-generic_result_list )->display( ).
 
-    prepare_header( iv_text      = |abapGit CI: Generic tests|
+    prepare_header( iv_text      = |abapGit CI repository tests from: https://github.com/abapGit-tests|
                     io_container = lo_row_3 ).
 
     NEW lcl_alv( io_container = lo_row_4
-                 it_table     = cs_result-generic_result_list )->display( ).
+                 it_table     = cs_result-repo_result_list )->display( ).
 
     WRITE: ''.
 
@@ -266,11 +266,11 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
       EXPORTING
         i_callback_program = sy-cprog.
 
-    NEW lcl_list( it_table   = cs_result-repo_result_list
-                  iv_tabname = 'ZABAPGIT_CI_RESULT' )->display( ).
-
     NEW lcl_list( it_table   = cs_result-generic_result_list
                   iv_tabname = 'ZABAPGIT_CI_RESULT_GEN' )->display( ).
+
+    NEW lcl_list( it_table   = cs_result-repo_result_list
+                  iv_tabname = 'ZABAPGIT_CI_RESULT' )->display( ).
 
     CALL FUNCTION 'REUSE_ALV_BLOCK_LIST_DISPLAY'
       EXCEPTIONS

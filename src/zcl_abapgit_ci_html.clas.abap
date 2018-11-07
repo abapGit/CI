@@ -19,33 +19,23 @@ CLASS zcl_abapgit_ci_html DEFINITION
       ms_result TYPE zif_abapgit_ci_definitions=>ty_result.
 
     METHODS:
+      render_style
+        RETURNING
+          VALUE(rv_html) TYPE string,
+
       render_head
         RETURNING
           VALUE(rv_html) TYPE string
         RAISING
           zcx_abapgit_exception,
 
-      render_style
-        RETURNING
-          VALUE(rv_html) TYPE string,
-
       render_table
-        RETURNING
-          VALUE(rv_html) TYPE string,
-
-      render_table_head
-        RETURNING
-          VALUE(rv_html) TYPE string,
-
-      render_table_lines
-        RETURNING
-          VALUE(rv_html) TYPE string,
-
-      get_css_class_for_status
         IMPORTING
-          iv_status           TYPE zabapgit_ci_status
+          it_table       TYPE INDEX TABLE
         RETURNING
-          VALUE(rv_css_class) TYPE string.
+          VALUE(rv_html) TYPE string
+        RAISING
+          zcx_abapgit_exception.
 
 ENDCLASS.
 
@@ -69,7 +59,9 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
            && |  </head>|
            && |  <body>|
            && |    { render_head( ) }|
-           && |    { render_table( ) }|
+           && |    { render_table( ms_result-generic_result_list ) }|
+           && |    <br/><br/>|
+           && |    { render_table( ms_result-repo_result_list ) }|
            && |  </body>|
            && |</html>|.
 
@@ -94,63 +86,10 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
 
   METHOD render_table.
 
-    rv_html = |<table class="tg">|
-           && |  { render_table_head( ) }|
-           && |  { render_table_lines( ) }|
-           && |</table>|.
+    rv_html = NEW lcl_table_renderer( it_table )->render( ).
 
   ENDMETHOD.
 
-
-  METHOD render_table_head.
-
-    rv_html = |<tr>|
-           && |  <th class="tg-kiyi">Name</th>|
-           && |  <th class="tg-kiyi">Clone url</th>|
-           && |  <th class="tg-kiyi">Package</th>|
-           && |  <th class="tg-kiyi">Create package</th>|
-           && |  <th class="tg-kiyi">Clone</th>|
-           && |  <th class="tg-kiyi">Pull</th>|
-           && |  <th class="tg-kiyi">Syntax check</th>|
-           && |  <th class="tg-kiyi">Purge </th>|
-           && |  <th class="tg-kiyi">Status</th>|
-           && |  <th class="tg-kiyi">Message</th>|
-           && |</tr>|.
-
-  ENDMETHOD.
-
-
-  METHOD render_table_lines.
-
-    LOOP AT ms_result-repo_result_list ASSIGNING FIELD-SYMBOL(<ls_line>).
-
-      rv_html = rv_html
-             && |<tr>|
-             && |  <td class="tg-xldj">{ <ls_line>-name }</td>|
-             && |  <td class="tg-xldj">{ <ls_line>-clone_url }</td>|
-             && |  <td class="tg-xldj">{ <ls_line>-package }</td>|
-             && |  <td class="tg-xldj { get_css_class_for_status( <ls_line>-create_package ) }">{ <ls_line>-create_package }</td>|
-             && |  <td class="tg-xldj { get_css_class_for_status( <ls_line>-clone ) }">{ <ls_line>-clone }</td>|
-             && |  <td class="tg-xldj { get_css_class_for_status( <ls_line>-pull ) }">{ <ls_line>-pull }</td>|
-             && |  <td class="tg-xldj { get_css_class_for_status( <ls_line>-syntax_check ) }">{ <ls_line>-syntax_check }</td>|
-             && |  <td class="tg-xldj { get_css_class_for_status( <ls_line>-purge ) }">{ <ls_line>-purge }</td>|
-             && |  <td class="tg-xldj { get_css_class_for_status( <ls_line>-status ) }">{ <ls_line>-status }</td>|
-             && |  <td class="tg-xldj">{ <ls_line>-message }</td>|
-             && |</tr>|.
-
-    ENDLOOP.
-
-  ENDMETHOD.
-
-  METHOD get_css_class_for_status.
-
-    rv_css_class = SWITCH #(
-                     iv_status
-                       WHEN zif_abapgit_ci_definitions=>co_status-ok THEN |ok|
-                       WHEN zif_abapgit_ci_definitions=>co_status-not_ok THEN |not_ok|
-                       ELSE || ).
-
-  ENDMETHOD.
 
   METHOD render_head.
 
@@ -182,5 +121,6 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
            && |<h3>Date: { date DATE = USER } Time: { time TIME = USER }</h3>|.
 
   ENDMETHOD.
+
 
 ENDCLASS.
