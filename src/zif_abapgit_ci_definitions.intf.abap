@@ -13,12 +13,22 @@ INTERFACE zif_abapgit_ci_definitions
   TYPES: ty_status TYPE char6.
 
   TYPES:
-    tty_repo_result_list TYPE STANDARD TABLE OF zabapgit_ci_result
+    BEGIN OF ty_generic_result,
+      description TYPE char255,
+      status      TYPE zabapgit_ci_status,
+      message     TYPE char255,
+    END OF ty_generic_result.
+
+  TYPES:
+    tty_repo_result_list    TYPE STANDARD TABLE OF zabapgit_ci_result
                          WITH NON-UNIQUE DEFAULT KEY,
+    tty_generic_result_list TYPE STANDARD TABLE OF ty_generic_result
+                                 WITH NON-UNIQUE DEFAULT KEY,
     BEGIN OF ty_result,
-      ci_has_errors    TYPE abap_bool,
-      timestamp        TYPE timestampl,
-      repo_result_list TYPE tty_repo_result_list,
+      ci_has_errors       TYPE abap_bool,
+      timestamp           TYPE timestampl,
+      repo_result_list    TYPE tty_repo_result_list,
+      generic_result_list TYPE tty_generic_result_list,
     END OF ty_result.
 
   TYPES:
