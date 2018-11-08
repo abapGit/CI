@@ -37,7 +37,7 @@ SELECTION-SCREEN PUSHBUTTON 50(25) but3 USER-COMMAND cli3.
 SELECTION-SCREEN END OF LINE.
 SELECTION-SCREEN END OF BLOCK b1.
 
-CLASS controller DEFINITION INHERITING FROM zcl_abapgit_ci_job_scheduler.
+CLASS controller DEFINITION.
 
   PUBLIC SECTION.
     CLASS-METHODS:
@@ -108,7 +108,7 @@ CLASS controller IMPLEMENTATION.
 
         CALL FUNCTION 'RS_VARIANT_SCREEN'
           EXPORTING
-            report  = co_report-update_abapgit
+            report  = zcl_abapgit_ci_job_scheduler=>co_report-update_abapgit
             variant = p_var1
           IMPORTING
             variant = p_var1.
@@ -117,7 +117,7 @@ CLASS controller IMPLEMENTATION.
 
         CALL FUNCTION 'RS_VARIANT_SCREEN'
           EXPORTING
-            report  = co_report-update_abapgit_ci
+            report  = zcl_abapgit_ci_job_scheduler=>co_report-update_abapgit_ci
             variant = p_var2
           IMPORTING
             variant = p_var2.
@@ -126,7 +126,7 @@ CLASS controller IMPLEMENTATION.
 
         CALL FUNCTION 'RS_VARIANT_SCREEN'
           EXPORTING
-            report  = co_report-run_abapgit_ci
+            report  = zcl_abapgit_ci_job_scheduler=>co_report-run_abapgit_ci
             variant = p_var3
           IMPORTING
             variant = p_var3.
@@ -176,21 +176,21 @@ ENDCLASS.
 AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_var1.
   controller=>program_variant_f4(
     EXPORTING
-      iv_program = controller=>co_report-update_abapgit
+      iv_program = zcl_abapgit_ci_job_scheduler=>co_report-update_abapgit
     CHANGING
       cv_variant = p_var1 ).
 
 AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_var2.
   controller=>program_variant_f4(
     EXPORTING
-      iv_program = controller=>co_report-update_abapgit_ci
+      iv_program = zcl_abapgit_ci_job_scheduler=>co_report-update_abapgit_ci
     CHANGING
       cv_variant = p_var2 ).
 
 AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_var3.
   controller=>program_variant_f4(
     EXPORTING
-      iv_program = controller=>co_report-run_abapgit_ci
+      iv_program = zcl_abapgit_ci_job_scheduler=>co_report-run_abapgit_ci
     CHANGING
       cv_variant = p_var3 ).
 
