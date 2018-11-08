@@ -38,8 +38,11 @@ POST /sap/zabapgit_ci/run
 **3) Schedule job sequence with report ZABAPGIT_CI_JOB_SCHEDULE**
 
 A job sequence is created with
+
 a) update abapGit repo
+
 b) update abapGit CI repo
+
 c) run abapGit CI
 
 **Prerequisites:**
