@@ -200,18 +200,14 @@ CLASS zcl_abapgit_ci_job_scheduler IMPLEMENTATION.
 
     DATA(jobcount_update_abapgit) = schedule_update_abapgit( ).
 
-    schedule_job_with_predecessor(
-      EXPORTING
+    DATA(jobcount_update_abapgit_ci) = schedule_job_with_predecessor(
         iv_pred_jobcount = jobcount_update_abapgit
         iv_pred_jobname  = co_job_name-update_abapgit
         iv_new_jobname   = co_job_name-update_abapgit_ci
         iv_report        = co_report-update_abapgit_ci
-        iv_variant       = mv_variant_update_abapgit_ci
-      RECEIVING
-        rv_new_jobcount  = DATA(jobcount_update_abapgit_ci) ).
+        iv_variant       = mv_variant_update_abapgit_ci ).
 
     schedule_job_with_predecessor(
-      EXPORTING
         iv_pred_jobcount = jobcount_update_abapgit_ci
         iv_pred_jobname  = co_job_name-update_abapgit_ci
         iv_new_jobname   = co_job_name-run_abapgit_ci
