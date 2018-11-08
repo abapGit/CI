@@ -45,6 +45,8 @@ b) update abapGit CI repo
 
 c) run abapGit CI
 
+![abapGit CI job scheduler](/img/ZABAPGIT_CI_JOB_SCHEDULER.png)
+
 **Prerequisites:**
 - abapGit repo
 - NW >= 7.50
