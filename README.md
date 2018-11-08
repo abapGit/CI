@@ -39,11 +39,11 @@ POST /sap/zabapgit_ci/run
 
 A job sequence is created with
 
-a) update abapGit repo
+1) update abapGit repo
 
-b) update abapGit CI repo
+2) update abapGit CI repo
 
-c) run abapGit CI
+3) run abapGit CI
 
 ![abapGit CI job scheduler](/img/ZABAPGIT_CI_JOB_SCHEDULER.png)
 
