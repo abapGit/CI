@@ -9,15 +9,17 @@ for each repo the following steps are executed:
 - syntax check
 - purge (uninstall)
 
+Additionally the latest abapGit build is checked.
+
 If there is any error in these steps abapGit CI will indicate that.
 
 Run report ZABAPGIT_CI_UPDATE_ABAPGIT to update the abapGit repo.
 
 Run report ZABAPGIT_CI_UPDATE_ABAPGIT_CI to update the abapGit CI repo.
 
-There are currently two possibilities to run abapGit CI:
+There are currently three possibilities to run abapGit CI:
 
-**1) Report ZABAPGIT_CI**
+**1) Adhoc CI with report ZABAPGIT_CI**
 
 Selection screen:
 
@@ -33,6 +35,12 @@ POST /sap/zabapgit_ci/run
 
 [response.json](/test/response.json)
 
+**3) Schedule job sequence with report ZABAPGIT_CI_JOB_SCHEDULE**
+
+A job sequence is created with
+a) update abapGit repo
+b) update abapGit CI repo
+c) run abapGit CI
 
 **Prerequisites:**
 - abapGit repo
