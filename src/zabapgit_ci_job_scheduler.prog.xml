@@ -18,6 +18,90 @@
      <ENTRY>abapGit CI: submit job queue</ENTRY>
      <LENGTH>28</LENGTH>
     </item>
+    <item>
+     <ID>I</ID>
+     <KEY>000</KEY>
+     <ENTRY>Description</ENTRY>
+     <LENGTH>21</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>001</KEY>
+     <ENTRY>Program Variants</ENTRY>
+     <LENGTH>25</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>B01</KEY>
+     <ENTRY>Maintain variant</ENTRY>
+     <LENGTH>26</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>C01</KEY>
+     <ENTRY>This report schedules abapGit CI reports:</ENTRY>
+     <LENGTH>82</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>C02</KEY>
+     <ENTRY>1. Update abapGit repo</ENTRY>
+     <LENGTH>44</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>C03</KEY>
+     <ENTRY>2. Update abapGit CI repo</ENTRY>
+     <LENGTH>50</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>C04</KEY>
+     <ENTRY>3. Run abapGit CI</ENTRY>
+     <LENGTH>27</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>C05</KEY>
+     <ENTRY>You can schedule this report to run the abapGit CI chain periodically</ENTRY>
+     <LENGTH>96</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_VAR1</KEY>
+     <ENTRY>ZABAPGIT_CI_UPDATE_ABAPGIT</ENTRY>
+     <LENGTH>34</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_VAR2</KEY>
+     <ENTRY>ZABAPGIT_CI_UPDATE_ABAPGIT_CI</ENTRY>
+     <LENGTH>37</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_VAR3</KEY>
+     <ENTRY>ZABAPGIT_CI</ENTRY>
+     <LENGTH>19</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>V01</KEY>
+     <ENTRY>ZABAPGIT_CI_UPDATE_ABAPGIT</ENTRY>
+     <LENGTH>26</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>V02</KEY>
+     <ENTRY>ZABAPGIT_CI_UPDATE_ABAPGIT_CI</ENTRY>
+     <LENGTH>29</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>V03</KEY>
+     <ENTRY>ZABAPGIT_CI</ENTRY>
+     <LENGTH>11</LENGTH>
+    </item>
    </TPOOL>
   </asx:values>
  </asx:abap>
