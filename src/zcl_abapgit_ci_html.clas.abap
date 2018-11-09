@@ -106,7 +106,7 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
-    CONVERT TIME STAMP ms_result-timestamp
+    CONVERT TIME STAMP ms_result-statistics-finish_timestamp
        TIME ZONE lv_timezone
        INTO DATE DATA(date) TIME DATA(time).
 
@@ -118,7 +118,7 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
                      COND #( WHEN ms_result-ci_has_errors = abap_true
                              THEN |CI failed|
                              ELSE |CI successful| ) }</h2>|
-           && |<h3>Date: { date DATE = USER } Time: { time TIME = USER } { lv_timezone }</h3>|.
+           && |<h3>Date: { date DATE = USER } - Time: { time TIME = USER } { lv_timezone } - Duration { ms_result-statistics-duration_in_seconds } seconds</h3>|
            && |<h3>Repo links: |
            && |<a href='https://github.com/larshp/abapGit'>abapGit</a> |
            && |<a href='https://github.com/abapGit/CI'>abapGit CI</a> |

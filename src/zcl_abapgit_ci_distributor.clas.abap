@@ -101,7 +101,7 @@ CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
-    CONVERT TIME STAMP is_result-timestamp
+    CONVERT TIME STAMP is_result-statistics-finish_timestamp
       TIME ZONE lv_timezone
       INTO DATE DATA(start_date)
            TIME DATA(start_time).
