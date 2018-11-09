@@ -121,7 +121,7 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
                                                                   iv_status = zif_abapgit_ci_definitions=>co_status-ok ).
 
     cs_result-statistics-test_cases-failed = count_by_status( is_result = cs_result
-                                                              iv_status = zif_abapgit_ci_definitions=>co_status-ok ).
+                                                              iv_status = zif_abapgit_ci_definitions=>co_status-not_ok ).
 
     cs_result-statistics-test_cases-total = cs_result-statistics-test_cases-successful + cs_result-statistics-test_cases-failed.
 

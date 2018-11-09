@@ -120,10 +120,11 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
                              ELSE |CI successful| ) }</h2>|
            && |<h3>Date: { date DATE = USER } - Time: { time TIME = USER } { lv_timezone } - Duration { ms_result-statistics-duration_in_seconds } seconds</h3>|
            && |<h3>Repo links: |
-           && |<a href='https://github.com/larshp/abapGit'>abapGit</a> |
-           && |<a href='https://github.com/abapGit/CI'>abapGit CI</a> |
+           && |<a href='https://github.com/larshp/abapGit'>abapGit</a> \| |
+           && |<a href='https://github.com/abapGit/CI'>abapGit CI</a> \| |
            && |<a href='https://github.com/abapGit/ci.abapgit.org'>abapGit CI results</a></h3>|
-           && |<h3>Test cases: Total { ms_result-statistics-test_cases-total } successful { ms_result-statistics-test_cases-successful } failed { ms_result-statistics-test_cases-failed } |.
+           && |<h3>Test cases: Total { ms_result-statistics-test_cases-total } \| Successful { ms_result-statistics-test_cases-successful } \| Failed { ms_result-statistics-test_cases-failed } |
+           && |<br/>|.
 
   ENDMETHOD.
 
