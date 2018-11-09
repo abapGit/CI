@@ -89,7 +89,7 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
 
   METHOD post_errors_to_slack.
 
-    CONSTANTS: co_url TYPE string VALUE `http://ci.abapgit.org/index_ui5.html`.
+    CONSTANTS: co_url TYPE string VALUE `https://ci.abapgit.org`.
 
     DATA(lv_error_text) = REDUCE string( INIT result = ||
                                          FOR line IN is_result-repo_result_list
