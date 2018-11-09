@@ -28,7 +28,18 @@ CLASS zcl_abapgit_ci_controller DEFINITION
         IMPORTING
           is_result TYPE zif_abapgit_ci_definitions=>ty_result
         RAISING
-          zcx_abapgit_exception.
+          zcx_abapgit_exception,
+
+      calculate_statistics
+        CHANGING
+          cs_result TYPE zif_abapgit_ci_definitions=>ty_result,
+
+      count_by_status
+        IMPORTING
+          is_result       TYPE zif_abapgit_ci_definitions=>ty_result
+          iv_status       TYPE zabapgit_ci_status
+        RETURNING
+          VALUE(rv_count) TYPE i.
 
 ENDCLASS.
 
@@ -72,6 +83,8 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
                                                  iv_timestamp0 = lv_start_timestamp
                                                  iv_timestamp1 = ls_result-statistics-finish_timestamp ).
 
+    calculate_statistics( CHANGING cs_result = ls_result ).
+
     IF ms_options-result_git_repo_url IS NOT INITIAL.
       NEW zcl_abapgit_ci_distributor( ms_options-result_git_repo_url  )->push_to_git_repo( is_result = ls_result ).
     ENDIF.
@@ -98,6 +111,33 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
 
     NEW zcl_abapgit_ci_slack( ms_options-slack_oauth_token )->post( |*abapGit CI errors:*\n { lv_error_text } \n|
                                                                  && |Details: { co_url } | ).
+
+  ENDMETHOD.
+
+
+  METHOD calculate_statistics.
+
+    cs_result-statistics-test_cases-successful = count_by_status( is_result = cs_result
+                                                                  iv_status = zif_abapgit_ci_definitions=>co_status-ok ).
+
+    cs_result-statistics-test_cases-failed = count_by_status( is_result = cs_result
+                                                              iv_status = zif_abapgit_ci_definitions=>co_status-ok ).
+
+    cs_result-statistics-test_cases-total = cs_result-statistics-test_cases-successful + cs_result-statistics-test_cases-failed.
+
+  ENDMETHOD.
+
+
+  METHOD count_by_status.
+
+    rv_count = REDUCE #( INIT result = 0
+                         FOR gen_result IN is_result-generic_result_list
+                         WHERE ( status = iv_status )
+                         NEXT result = result + 1 )
+             + REDUCE #( INIT result = 0
+                         FOR repo_result IN is_result-repo_result_list
+                         WHERE ( status = iv_status )
+                         NEXT result = result + 1 ).
 
   ENDMETHOD.
 
