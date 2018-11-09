@@ -123,6 +123,7 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
            && |<a href='https://github.com/larshp/abapGit'>abapGit</a> |
            && |<a href='https://github.com/abapGit/CI'>abapGit CI</a> |
            && |<a href='https://github.com/abapGit/ci.abapgit.org'>abapGit CI results</a></h3>|
+           && |<h3>Test cases: Total { ms_result-statistics-test_cases-total } successful { ms_result-statistics-test_cases-successful } failed { ms_result-statistics-test_cases-failed } |.
 
   ENDMETHOD.
 
