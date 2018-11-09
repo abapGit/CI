@@ -31,11 +31,6 @@ CLASS zcl_abapgit_ci_repos DEFINITION
         IMPORTING
           iv_package TYPE devclass
         RAISING
-          zcx_abapgit_exception,
-      run_abap_unit_tests
-        IMPORTING
-          iv_package TYPE devclass
-        RAISING
           zcx_abapgit_exception.
 
     METHODS:
@@ -126,34 +121,33 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
   METHOD update_repo.
 
-    DATA: lo_abapgit_ci TYPE REF TO zcl_abapgit_repo_online.
+    DATA: lo_repo TYPE REF TO zcl_abapgit_repo_online.
 
     DATA(lt_repo_list) = zcl_abapgit_repo_srv=>get_instance( )->list( ).
 
     LOOP AT lt_repo_list ASSIGNING FIELD-SYMBOL(<repo>).
 
       IF <repo>->get_name( ) = iv_repo_name.
-        lo_abapgit_ci ?= <repo>.
+        lo_repo ?= <repo>.
       ENDIF.
 
-    ENDLOOP .
+    ENDLOOP.
 
-    IF lo_abapgit_ci IS NOT BOUND.
+    IF lo_repo IS NOT BOUND.
       zcx_abapgit_exception=>raise( |Couldn't find { iv_repo_name } repo| ).
     ENDIF.
 
-    lo_abapgit_ci->set_branch_name( 'refs/heads/master' ).
+    lo_repo->set_branch_name( 'refs/heads/master' ).
 
-    DATA(ls_checks) = lo_abapgit_ci->deserialize_checks( ).
+    DATA(ls_checks) = lo_repo->deserialize_checks( ).
 
     LOOP AT ls_checks-overwrite ASSIGNING FIELD-SYMBOL(<ls_overwrite>).
       <ls_overwrite>-decision = abap_true.
     ENDLOOP.
 
-    lo_abapgit_ci->deserialize( ls_checks ).
+    lo_repo->deserialize( ls_checks ).
 
-    syntax_check( lo_abapgit_ci->get_package( ) ).
-    run_abap_unit_tests( lo_abapgit_ci->get_package( ) ).
+    syntax_check( lo_repo->get_package( ) ).
 
   ENDMETHOD.
 
@@ -165,21 +159,6 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
     ASSIGN lt_list[ kind = 'E' ] TO FIELD-SYMBOL(<ls_error>).
     IF sy-subrc = 0.
       zcx_abapgit_exception=>raise( |Syntax error in repo { iv_package } |
-                                 && |object { <ls_error>-objtype } { <ls_error>-text } |
-                                 && |{ <ls_error>-text }| ).
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD run_abap_unit_tests.
-
-    DATA(lt_list) = zcl_abapgit_factory=>get_abap_unit_tests( iv_package
-                                      )->run( ).
-
-    ASSIGN lt_list[ kind = 'E' ] TO FIELD-SYMBOL(<ls_error>).
-    IF sy-subrc = 0.
-      zcx_abapgit_exception=>raise( |Unit test failed in package { iv_package } |
                                  && |object { <ls_error>-objtype } { <ls_error>-text } |
                                  && |{ <ls_error>-text }| ).
     ENDIF.
