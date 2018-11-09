@@ -51,7 +51,10 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
 
   METHOD run.
 
-    DATA: ls_result TYPE zif_abapgit_ci_definitions=>ty_result.
+    DATA: ls_result          TYPE zif_abapgit_ci_definitions=>ty_result,
+          lv_start_timestamp TYPE timestampl.
+
+    GET TIME STAMP FIELD lv_start_timestamp.
 
     DATA(lt_repos)  = mi_repo_provider->get_repos( ).
     ls_result-repo_result_list = mo_ci_repos->process_repos( lt_repos ).
@@ -63,7 +66,11 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
                                   OR line_exists(
                                        ls_result-generic_result_list[ status = zif_abapgit_ci_definitions=>co_status-not_ok ] ) ).
 
-    GET TIME STAMP FIELD ls_result-timestamp.
+    GET TIME STAMP FIELD ls_result-statistics-finish_timestamp.
+
+    ls_result-statistics-duration_in_seconds = cl_abap_timestamp_util=>get_instance( )->tstmpl_seconds_between(
+                                                 iv_timestamp0 = lv_start_timestamp
+                                                 iv_timestamp1 = ls_result-statistics-finish_timestamp ).
 
     IF ms_options-result_git_repo_url IS NOT INITIAL.
       NEW zcl_abapgit_ci_distributor( ms_options-result_git_repo_url  )->push_to_git_repo( is_result = ls_result ).

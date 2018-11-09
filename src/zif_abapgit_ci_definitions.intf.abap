@@ -20,6 +20,8 @@ INTERFACE zif_abapgit_ci_definitions
     BEGIN OF ty_result,
       ci_has_errors       TYPE abap_bool,
       BEGIN OF statistics,
+        finish_timestamp    TYPE timestampl,
+        duration_in_seconds TYPE i,
         BEGIN OF test_cases,
           total      TYPE i,
           successful TYPE i,
