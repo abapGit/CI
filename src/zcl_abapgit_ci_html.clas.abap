@@ -119,6 +119,10 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
                              THEN |CI failed|
                              ELSE |CI successful| ) }</h2>|
            && |<h3>Date: { date DATE = USER } Time: { time TIME = USER } { lv_timezone }</h3>|.
+           && |<h3>Repo links: |
+           && |<a href='https://github.com/larshp/abapGit'>abapGit</a> |
+           && |<a href='https://github.com/abapGit/CI'>abapGit CI</a> |
+           && |<a href='https://github.com/abapGit/ci.abapgit.org'>abapGit CI results</a></h3>|
 
   ENDMETHOD.
 
