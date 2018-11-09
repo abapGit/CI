@@ -123,10 +123,17 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
     ENDDO.
 
     " skip because they call the UI...
-    DELETE rt_repos WHERE name CS |CUS0|
-                       OR name CS |SHI3|
-                       OR name CS |SPRX|
-                       OR name CS |SUSC|.
+    DELETE rt_repos WHERE name = |CUS0|
+                       OR name = |SHI3|
+                       OR name = |SPRX|
+                       OR name = |SUSC|
+                       OR name = |SUSC_and_SUSO|.
+
+    " Skip because old testcase. abapGit indicates diff because migration to new format
+    DELETE rt_repos WHERE name = |DDLX_old|.
+
+    " Skip because of diffs due to component info not supported in NW752 dev edition
+    DELETE rt_repos WHERE name = |DEVC_component|.
 
     SORT rt_repos BY name.
 
