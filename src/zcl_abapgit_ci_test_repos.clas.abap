@@ -122,12 +122,16 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
 
     ENDDO.
 
-    " skip because they call the UI...
+    " skip because they call the UI.. .
+    "
     DELETE rt_repos WHERE name = |CUS0|
-                       OR name = |SHI3|
-                       OR name = |SPRX|
-                       OR name = |SUSC|
-                       OR name = |SUSC_and_SUSO|.
+                       OR name = |SHI3| " https://github.com/larshp/abapGit/issues/2035
+                       OR name = |SPRX| " https://github.com/larshp/abapGit/issues/87
+                       OR name = |SUSC| " https://github.com/larshp/abapGit/issues/2036
+                       OR name = |SUSC_and_SUSO| " https://github.com/larshp/abapGit/issues/2036
+                       OR name = |IEXT| " https://github.com/larshp/abapGit/issues/2044
+                       OR name = |IDOC| " https://github.com/larshp/abapGit/issues/2044
+                       .
 
     " Skip because old testcase. abapGit indicates diff because migration to new format
     DELETE rt_repos WHERE name = |DDLX_old|.
