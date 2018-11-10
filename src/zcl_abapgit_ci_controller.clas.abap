@@ -67,10 +67,14 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
 
     GET TIME STAMP FIELD lv_start_timestamp.
 
-    DATA(lt_repos)  = mi_repo_provider->get_repos( ).
-    ls_result-repo_result_list = mo_ci_repos->process_repos( lt_repos ).
+    IF ms_options-exec_repository_checks = abap_true.
+      DATA(lt_repos)  = mi_repo_provider->get_repos( ).
+      ls_result-repo_result_list = mo_ci_repos->process_repos( lt_repos ).
+    ENDIF.
 
-    ls_result-generic_result_list = mo_ci_generic->execute( ).
+    IF ms_options-exec_generic_checks = abap_true.
+      ls_result-generic_result_list = mo_ci_generic->execute( ).
+    ENDIF.
 
     ls_result-ci_has_errors = boolc( line_exists(
                                        ls_result-repo_result_list[ status = zif_abapgit_ci_definitions=>co_status-not_ok ] )

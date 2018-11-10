@@ -57,6 +57,12 @@
     </item>
     <item>
      <ID>I</ID>
+     <KEY>B04</KEY>
+     <ENTRY>Checks</ENTRY>
+     <LENGTH>16</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>D01</KEY>
      <ENTRY>This report starts the abapGit CI process.</ENTRY>
      <LENGTH>112</LENGTH>
@@ -134,9 +140,21 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>GENERIC</KEY>
+     <ENTRY>Generic checks</ENTRY>
+     <LENGTH>22</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_URL</KEY>
      <ENTRY>URL</ENTRY>
      <LENGTH>11</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>REPO</KEY>
+     <ENTRY>Repository checks</ENTRY>
+     <LENGTH>25</LENGTH>
     </item>
     <item>
      <ID>S</ID>

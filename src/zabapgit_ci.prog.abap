@@ -36,6 +36,12 @@ PARAMETERS:
   token TYPE string LOWER CASE.
 SELECTION-SCREEN END OF BLOCK b3.
 
+SELECTION-SCREEN BEGIN OF BLOCK b4  WITH FRAME TITLE TEXT-b04.
+PARAMETERS:
+  generic TYPE abap_bool AS CHECKBOX DEFAULT 'X',
+  repo    TYPE abap_bool AS CHECKBOX DEFAULT 'X'.
+SELECTION-SCREEN END OF BLOCK b4.
+
 INITIALIZATION.
   descr01 = TEXT-d01.
   descr02 = TEXT-d02.
@@ -74,9 +80,11 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
           ii_repo_provider = NEW zcl_abapgit_ci_test_repos( )
           ii_view          = NEW zcl_abapgit_ci_alv_view( )
           is_options       = VALUE #(
-            result_git_repo_url  = p_url
-            post_errors_to_slack = slack
-            slack_oauth_token    = token
+            result_git_repo_url    = p_url
+            post_errors_to_slack   = slack
+            slack_oauth_token      = token
+            exec_generic_checks    = generic
+            exec_repository_checks = repo
           )
         )->run( ).
 
