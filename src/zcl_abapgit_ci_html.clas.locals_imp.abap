@@ -56,7 +56,12 @@ CLASS lcl_table_renderer IMPLEMENTATION.
                TO FIELD-SYMBOL(<field>).
         ASSERT sy-subrc = 0.
 
-        rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_status( <field> ) }">{ <field> }</td>|.
+        IF <ls_component>-name CS |URL|.
+          rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_status( <field> ) }">|
+                            && |<a href="{ <field> }">{ <field> }</a></td>|.
+        ELSE.
+          rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_status( <field> ) }">{ <field> }</td>|.
+        ENDIF.
 
       ENDLOOP.
 
