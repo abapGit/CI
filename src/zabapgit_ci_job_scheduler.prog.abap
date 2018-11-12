@@ -47,7 +47,14 @@ CLASS controller DEFINITION.
         CHANGING
           cv_variant TYPE raldb-variant,
 
-      at_selection_screen.
+      at_selection_screen,
+
+      check_variant
+        IMPORTING
+          iv_variant TYPE raldb-variant
+          iv_report  TYPE rsvar-report
+        RAISING
+          zcx_abapgit_exception.
 
     METHODS:
       start
@@ -103,35 +110,37 @@ CLASS controller IMPLEMENTATION.
 
   METHOD at_selection_screen.
 
+    DATA: lv_report  TYPE rsvar-report,
+          lv_variant TYPE rsvar-variant.
+
     CASE sscrfields-ucomm.
       WHEN 'CLI1'.
 
-        CALL FUNCTION 'RS_VARIANT_SCREEN'
-          EXPORTING
-            report  = zcl_abapgit_ci_job_scheduler=>co_report-update_abapgit
-            variant = p_var1
-          IMPORTING
-            variant = p_var1.
+        lv_report  = zcl_abapgit_ci_job_scheduler=>co_report-update_abapgit.
+        lv_variant = p_var1.
 
       WHEN 'CLI2'.
 
-        CALL FUNCTION 'RS_VARIANT_SCREEN'
-          EXPORTING
-            report  = zcl_abapgit_ci_job_scheduler=>co_report-update_abapgit_ci
-            variant = p_var2
-          IMPORTING
-            variant = p_var2.
+        lv_report  = zcl_abapgit_ci_job_scheduler=>co_report-update_abapgit_ci.
+        lv_variant = p_var2.
 
       WHEN 'CLI3'.
 
-        CALL FUNCTION 'RS_VARIANT_SCREEN'
-          EXPORTING
-            report  = zcl_abapgit_ci_job_scheduler=>co_report-run_abapgit_ci
-            variant = p_var3
-          IMPORTING
-            variant = p_var3.
+        lv_report  = zcl_abapgit_ci_job_scheduler=>co_report-run_abapgit_ci.
+        lv_variant = p_var3.
+
+      WHEN OTHERS.
+
+        RETURN.
 
     ENDCASE.
+
+    CALL FUNCTION 'RS_VARIANT_SCREEN'
+      EXPORTING
+        report  = lv_report
+        variant = p_var1
+      IMPORTING
+        variant = p_var1.
 
   ENDMETHOD.
 
@@ -171,6 +180,32 @@ CLASS controller IMPLEMENTATION.
 
   ENDMETHOD.
 
+
+  METHOD check_variant.
+
+    DATA: lv_rc TYPE sy-subrc.
+
+    CHECK: iv_variant IS NOT INITIAL.
+
+    CALL FUNCTION 'RS_VARIANT_EXISTS'
+      EXPORTING
+        report              = iv_report
+        variant             = iv_variant
+      IMPORTING
+        r_c                 = lv_rc
+      EXCEPTIONS
+        not_authorized      = 1
+        no_report           = 2
+        report_not_existent = 3
+        report_not_supplied = 4
+        OTHERS              = 5.
+
+    IF sy-subrc <> 0 OR lv_rc > 0.
+      MESSAGE |Variant { iv_variant } doesn't exist for report { iv_report }| TYPE 'E'.
+    ENDIF.
+
+  ENDMETHOD.
+
 ENDCLASS.
 
 AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_var1.
@@ -193,6 +228,18 @@ AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_var3.
       iv_program = zcl_abapgit_ci_job_scheduler=>co_report-run_abapgit_ci
     CHANGING
       cv_variant = p_var3 ).
+
+AT SELECTION-SCREEN ON p_var1.
+  controller=>check_variant( iv_report  = zcl_abapgit_ci_job_scheduler=>co_report-update_abapgit
+                             iv_variant = p_var1 ).
+
+AT SELECTION-SCREEN ON p_var2.
+  controller=>check_variant( iv_report  = zcl_abapgit_ci_job_scheduler=>co_report-update_abapgit_ci
+                             iv_variant = p_var2 ).
+
+AT SELECTION-SCREEN ON p_var3.
+  controller=>check_variant( iv_report  = zcl_abapgit_ci_job_scheduler=>co_report-run_abapgit_ci
+                             iv_variant = p_var3 ).
 
 AT SELECTION-SCREEN.
   controller=>at_selection_screen( ).
