@@ -5,6 +5,7 @@
    <PROGDIR>
     <NAME>SAPLZABAPGIT_CI_REPO</NAME>
     <STATE>A</STATE>
+    <VARCL>X</VARCL>
     <DBAPL>S</DBAPL>
     <DBNA>D$</DBNA>
     <SUBC>F</SUBC>
