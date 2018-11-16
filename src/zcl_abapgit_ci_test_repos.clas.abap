@@ -130,6 +130,7 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
                        OR name = |SUSC_and_SUSO| " https://github.com/larshp/abapGit/issues/2036
                        OR name = |IEXT| " https://github.com/larshp/abapGit/issues/2044
                        OR name = |IDOC| " https://github.com/larshp/abapGit/issues/2044
+                       or name = |XINX| " https://github.com/larshp/abapGit/issues/2106
                        .
 
     " Skip because old testcase. abapGit indicates diff because migration to new format
@@ -137,6 +138,7 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
 
     " Skip because of diffs due to component info not supported in NW752 dev edition
     DELETE rt_repos WHERE name = |DEVC_component|.
+
 
     SORT rt_repos BY name.
 
