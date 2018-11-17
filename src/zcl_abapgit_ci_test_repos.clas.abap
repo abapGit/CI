@@ -130,7 +130,8 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
                        OR name = |SUSC_and_SUSO| " https://github.com/larshp/abapGit/issues/2036
                        OR name = |IEXT| " https://github.com/larshp/abapGit/issues/2044
                        OR name = |IDOC| " https://github.com/larshp/abapGit/issues/2044
-                       or name = |XINX| " https://github.com/larshp/abapGit/issues/2106
+                       OR name = |XINK| " https://github.com/larshp/abapGit/issues/2106
+                       OR name = |SFSW| "https://github.com/larshp/abapGit/issues/2083
                        .
 
     " Skip because old testcase. abapGit indicates diff because migration to new format
