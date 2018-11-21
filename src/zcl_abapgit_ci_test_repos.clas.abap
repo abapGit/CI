@@ -125,6 +125,7 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
     " skip because they call the UI.. .
     "
     DELETE rt_repos WHERE name = |CUS0|
+                       or name = |ECATT| " https://github.com/larshp/abapGit/issues/2113
                        OR name = |SHI3| " https://github.com/larshp/abapGit/issues/2035
                        OR name = |SPRX| " https://github.com/larshp/abapGit/issues/87
                        OR name = |SUSC_and_SUSO| " https://github.com/larshp/abapGit/issues/2036
