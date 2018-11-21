@@ -37,7 +37,7 @@ POST /sap/zabapgit_ci/run
 
 [response.json](/test/response.json)
 
-**3) Schedule job sequence with report ZABAPGIT_CI_JOB_SCHEDULE**
+**3) Schedule job sequence with report ZABAPGIT_CI_JOB_SCHEDULER**
 
 A job sequence is created with
 
