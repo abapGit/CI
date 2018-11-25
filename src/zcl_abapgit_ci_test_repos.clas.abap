@@ -128,7 +128,6 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
                        or name = |ECATT| " https://github.com/larshp/abapGit/issues/2113
                        OR name = |SHI3| " https://github.com/larshp/abapGit/issues/2035
                        OR name = |SPRX| " https://github.com/larshp/abapGit/issues/87
-                       OR name = |SUSC_and_SUSO| " https://github.com/larshp/abapGit/issues/2036
                        OR name = |IEXT| " https://github.com/larshp/abapGit/issues/2044
                        OR name = |IDOC| " https://github.com/larshp/abapGit/issues/2044
                        OR name = |XINK| " https://github.com/larshp/abapGit/issues/2106
