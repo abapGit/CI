@@ -64,7 +64,7 @@ CLASS zcl_abapgit_ci_job_scheduler IMPLEMENTATION.
 
     mv_variant_update_abapgit    = iv_variant_update_abapgit.
     mv_variant_update_abapgit_ci = iv_variant_update_abapgit_ci.
-    mv_variant_run_abapgit_ci    = iv_variant_run_abapgit_ci   .
+    mv_variant_run_abapgit_ci    = iv_variant_run_abapgit_ci.
 
   ENDMETHOD.
 

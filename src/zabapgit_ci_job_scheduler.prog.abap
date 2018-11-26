@@ -71,7 +71,11 @@ CLASS controller IMPLEMENTATION.
 
   METHOD start.
 
-    NEW zcl_abapgit_ci_job_scheduler( )->schedule_jobs( ).
+    NEW zcl_abapgit_ci_job_scheduler(
+            iv_variant_update_abapgit    = p_var1
+            iv_variant_update_abapgit_ci = p_var2
+            iv_variant_run_abapgit_ci    = p_var3
+    )->schedule_jobs( ).
 
     MESSAGE |Job scheduled successfully| TYPE 'S'.
 
