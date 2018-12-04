@@ -96,7 +96,7 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
           send_to_slack( lx_error ).
         ENDIF.
 
-        MESSAGE lx_error TYPE 'S' DISPLAY LIKE 'E'.
+        MESSAGE lx_error TYPE 'E'.
 
     ENDTRY.
 
@@ -108,7 +108,7 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
         NEW zcl_abapgit_ci_slack( token )->post( |abapGit CI error: abapGit CI run failed with "{ ix_error->get_text( ) }"| ).
 
       CATCH zcx_abapgit_exception INTO DATA(lx_error).
-        MESSAGE lx_error TYPE 'S' DISPLAY LIKE 'E'.
+        MESSAGE lx_error TYPE 'E'.
     ENDTRY.
   ENDMETHOD.
 
