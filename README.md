@@ -1,6 +1,6 @@
 # abapGit CI backend
 
-Latest nightly build: https://ci.abapGit.org
+Latest nightly build: https://ci.abapgit.org
 
 This repo provides basic continous intergration capabilities for abapGit.
 It fetches abapGit test repos from https://github.com/abapGit-tests. Then
