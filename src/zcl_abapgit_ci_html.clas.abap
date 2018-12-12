@@ -14,6 +14,7 @@ CLASS zcl_abapgit_ci_html DEFINITION
         RAISING
           zcx_abapgit_exception.
 
+  PROTECTED SECTION.
   PRIVATE SECTION.
     DATA:
       ms_result TYPE zif_abapgit_ci_definitions=>ty_result.
@@ -41,7 +42,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_html IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_HTML IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -53,40 +54,19 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
 
   METHOD render.
 
-    rv_html = |<html>|
-           && |  <head>|
-           && |    { render_style(  ) }|
-           && |  </head>|
-           && |  <body>|
-           && |    { render_head( ) }|
-           && |    { render_table( ms_result-generic_result_list ) }|
-           && |    <br/><br/>|
-           && |    { render_table( ms_result-repo_result_list ) }|
-           && |  </body>|
+    rv_html = |<!DOCTYPE html>\n|
+           && |<html>\n|
+           && |  <head>\n|
+           && |    { render_style(  ) }\n|
+           && |  <title>ci.abapgit.org</title>\n|
+           && |  </head>\n|
+           && |  <body>\n|
+           && |    { render_head( ) }\n|
+           && |    { render_table( ms_result-generic_result_list ) }\n|
+           && |    <br/><br/>\n|
+           && |    { render_table( ms_result-repo_result_list ) }\n|
+           && |  </body>\n|
            && |</html>|.
-
-  ENDMETHOD.
-
-
-  METHOD render_style.
-
-    rv_html = |<style type="text/css">|
-           && |body \{ font-family:Arial, sans-serif; font-size:14px;\}|
-           && |.tg  \{border-collapse:collapse;border-spacing:0;\}|
-           && |.tg td\{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;\}|
-           && |.tg th\{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;\}|
-           && |.tg .tg-kiyi\{font-weight:bold;border-color:inherit;text-align:left\}|
-           && |.tg .tg-xldj\{border-color:inherit;text-align:left\}|
-           && |.ok \{ background-color: lightgreen \}|
-           && |.not_ok \{ background-color: red \}|
-           && |</style>|.
-
-  ENDMETHOD.
-
-
-  METHOD render_table.
-
-    rv_html = NEW lcl_table_renderer( it_table )->render( ).
 
   ENDMETHOD.
 
@@ -129,4 +109,25 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD render_style.
+
+    rv_html = |<style type="text/css">|
+           && |body \{ font-family:Arial, sans-serif; font-size:14px;\}|
+           && |.tg  \{border-collapse:collapse;border-spacing:0;\}|
+           && |.tg td\{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;\}|
+           && |.tg th\{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;\}|
+           && |.tg .tg-kiyi\{font-weight:bold;border-color:inherit;text-align:left\}|
+           && |.tg .tg-xldj\{border-color:inherit;text-align:left\}|
+           && |.ok \{ background-color: lightgreen \}|
+           && |.not_ok \{ background-color: red \}|
+           && |</style>|.
+
+  ENDMETHOD.
+
+
+  METHOD render_table.
+
+    rv_html = NEW lcl_table_renderer( it_table )->render( ).
+
+  ENDMETHOD.
 ENDCLASS.
