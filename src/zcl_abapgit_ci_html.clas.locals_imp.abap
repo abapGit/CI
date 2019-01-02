@@ -15,25 +15,25 @@ CLASS lcl_table_renderer IMPLEMENTATION.
 
   METHOD render.
 
-    rv_html = |<table class="tg">|
+    rv_html = |<table class="tg">\n|
            && |  { render_table_head( ) }|
            && |  { render_table_lines( ) }|
-           && |</table>|.
+           && |</table>\n|.
 
   ENDMETHOD.
 
 
   METHOD render_table_head.
 
-    rv_html = |<tr>|.
+    rv_html = |<tr>\n|.
 
     LOOP AT mo_struct_descr->get_components( ) ASSIGNING FIELD-SYMBOL(<ls_component>).
 
-      rv_html = rv_html && |<th class="tg-kiyi">{ CAST cl_abap_elemdescr( <ls_component>-type )->get_ddic_field( )-scrtext_m }</th>|.
+      rv_html = rv_html && |<th class="tg-kiyi">{ CAST cl_abap_elemdescr( <ls_component>-type )->get_ddic_field( )-scrtext_m }</th>\n|.
 
     ENDLOOP.
 
-    rv_html = rv_html && |</tr>|.
+    rv_html = rv_html && |</tr>\n|.
 
   ENDMETHOD.
 
@@ -47,7 +47,7 @@ CLASS lcl_table_renderer IMPLEMENTATION.
 
     LOOP AT <table> ASSIGNING FIELD-SYMBOL(<ls_line>).
 
-      rv_html = rv_html && |<tr>|.
+      rv_html = rv_html && |<tr>\n|.
 
       LOOP AT mo_struct_descr->get_components( ) ASSIGNING FIELD-SYMBOL(<ls_component>).
 
@@ -58,14 +58,14 @@ CLASS lcl_table_renderer IMPLEMENTATION.
 
         IF <ls_component>-name CS |URL|.
           rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_status( <field> ) }">|
-                            && |<a href="{ <field> }">{ <field> }</a></td>|.
+                            && |<a href="{ <field> }">{ <field> }</a></td>\n|.
         ELSE.
-          rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_status( <field> ) }">{ <field> }</td>|.
+          rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_status( <field> ) }">{ <field> }</td>\n|.
         ENDIF.
 
       ENDLOOP.
 
-      rv_html = rv_html && |</tr>|.
+      rv_html = rv_html && |</tr>\n|.
 
     ENDLOOP.
 
