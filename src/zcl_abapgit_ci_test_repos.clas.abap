@@ -123,12 +123,11 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
     ENDDO.
 
     " skip because they call the UI.. .
-    "
     DELETE rt_repos WHERE name = |CUS0|
-                       or name = |ECATT| " https://github.com/larshp/abapGit/issues/2113
+                       OR name = |ECATT| " https://github.com/larshp/abapGit/issues/2113
                        OR name = |SPRX| " https://github.com/larshp/abapGit/issues/87
                        OR name = |XINK| " https://github.com/larshp/abapGit/issues/2106
-                       OR name = |SFSW| "https://github.com/larshp/abapGit/issues/2083
+                       OR name = |SFSW| " https://github.com/larshp/abapGit/issues/2083
                        .
 
     " Skip because old testcase. abapGit indicates diff because migration to new format
@@ -137,6 +136,10 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
     " Skip because of diffs due to component info not supported in NW752 dev edition
     DELETE rt_repos WHERE name = |DEVC_component|.
 
+    " Runs only on HANA
+    IF cl_db_sys=>is_in_memory_db = abap_false.
+      DELETE rt_repos WHERE name = |SQCS|.
+    ENDIF.
 
     SORT rt_repos BY name.
 
