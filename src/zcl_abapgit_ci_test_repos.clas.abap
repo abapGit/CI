@@ -138,7 +138,7 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
 
     " Runs only on HANA
     IF cl_db_sys=>is_in_memory_db = abap_false.
-      DELETE rt_repos WHERE name = |SQCS|.
+      DELETE rt_repos WHERE name = |SQSC|.
     ENDIF.
 
     SORT rt_repos BY name.
