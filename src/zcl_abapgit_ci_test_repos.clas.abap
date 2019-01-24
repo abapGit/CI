@@ -141,6 +141,9 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
       DELETE rt_repos WHERE name = |SQSC|.
     ENDIF.
 
+    " Cannot be installed in local $-package
+    DELETE rt_repos WHERE name = |SOTS|.
+
     SORT rt_repos BY name.
 
   ENDMETHOD.
