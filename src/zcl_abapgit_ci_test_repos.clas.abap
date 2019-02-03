@@ -15,7 +15,11 @@ CLASS zcl_abapgit_ci_test_repos DEFINITION
         RETURNING
           VALUE(rt_repos)      TYPE zif_abapgit_ci_definitions=>tty_repo
         RAISING
-          zcx_abapgit_exception.
+          zcx_abapgit_exception,
+
+      do_we_have_an_ads_connection
+        RETURNING
+          VALUE(rv_is_ads_on) TYPE abap_bool.
 
 ENDCLASS.
 
@@ -144,7 +148,41 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
     " Cannot be installed in local $-package
     DELETE rt_repos WHERE name = |SOTS|.
 
+    " Adobe forms only if ADS is connected
+    IF do_we_have_an_ads_connection( ) = abap_false.
+      DELETE rt_repos WHERE name = |SFPF|.
+    ENDIF.
+
     SORT rt_repos BY name.
 
   ENDMETHOD.
+
+  METHOD do_we_have_an_ads_connection.
+
+    SELECT SINGLE FROM fpconnect
+           FIELDS destination
+           INTO @DATA(lv_destination).
+
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+    CALL FUNCTION 'RFC_READ_DESTINATION_TYPE'
+      EXPORTING
+        destination             = lv_destination
+        authority_check         = abap_false
+        bypass_buf              = abap_false
+      EXCEPTIONS
+        authority_not_available = 1
+        destination_not_exist   = 2
+        information_failure     = 3
+        internal_failure        = 4
+        OTHERS                  = 5.
+
+    IF sy-subrc = 0.
+      rv_is_ads_on = abap_true.
+    ENDIF.
+
+  ENDMETHOD.
+
 ENDCLASS.
