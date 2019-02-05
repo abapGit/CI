@@ -127,11 +127,11 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
     ENDDO.
 
     " skip because they call the UI.. .
-    DELETE rt_repos WHERE name = |CUS0|
-                       OR name = |ECATT| " https://github.com/larshp/abapGit/issues/2113
-                       OR name = |SPRX| " https://github.com/larshp/abapGit/issues/87
-                       OR name = |XINK| " https://github.com/larshp/abapGit/issues/2106
-                       OR name = |SFSW| " https://github.com/larshp/abapGit/issues/2083
+    DELETE rt_repos WHERE name =  |CUS0|
+                       OR name =  |ECATT| " https://github.com/larshp/abapGit/issues/2113
+                       OR name CS |SPRX| " https://github.com/larshp/abapGit/issues/87
+                       OR name =  |XINK| " https://github.com/larshp/abapGit/issues/2106
+                       OR name =  |SFSW| " https://github.com/larshp/abapGit/issues/2083
                        .
 
     " Skip because old testcase. abapGit indicates diff because migration to new format
@@ -152,6 +152,10 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
     IF do_we_have_an_ads_connection( ) = abap_false.
       DELETE rt_repos WHERE name = |SFPF|.
     ENDIF.
+
+    " circular dependency https://github.com/larshp/abapGit/issues/2338
+    DELETE rt_repos WHERE name = |TTYP_with_CLAS_reference|.
+    DELETE rt_repos WHERE name = |SHLP_with_exit|.
 
     SORT rt_repos BY name.
 
