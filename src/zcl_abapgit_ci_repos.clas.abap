@@ -77,6 +77,12 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
              INTO TABLE rt_result_list
              ASSIGNING FIELD-SYMBOL(<ls_ci_repo>).
 
+      <ls_ci_repo>-skip = <ls_repo>-skip.
+      IF <ls_ci_repo>-skip = abap_true.
+        <ls_ci_repo>-message = <ls_repo>-skip_reason.
+        CONTINUE.
+      ENDIF.
+
       TRY.
           process_repo(
             CHANGING
