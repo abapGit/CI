@@ -4,8 +4,10 @@ INTERFACE zif_abapgit_ci_definitions
 
   TYPES:
     BEGIN OF ty_repo,
-      name      TYPE string,
-      clone_url TYPE string,
+      name        TYPE string,
+      clone_url   TYPE string,
+      skip        TYPE abap_bool,
+      skip_reason TYPE string,
     END OF ty_repo,
     tty_repo TYPE STANDARD TABLE OF ty_repo
              WITH NON-UNIQUE DEFAULT KEY .

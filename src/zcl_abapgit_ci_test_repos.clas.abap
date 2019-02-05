@@ -126,36 +126,71 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
 
     ENDDO.
 
-    " skip because they call the UI.. .
-    DELETE rt_repos WHERE name =  |CUS0|
-                       OR name =  |ECATT| " https://github.com/larshp/abapGit/issues/2113
-                       OR name CS |SPRX| " https://github.com/larshp/abapGit/issues/87
-                       OR name =  |XINK| " https://github.com/larshp/abapGit/issues/2106
-                       OR name =  |SFSW| " https://github.com/larshp/abapGit/issues/2083
-                       .
+    LOOP AT rt_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
 
-    " Skip because old testcase. abapGit indicates diff because migration to new format
-    DELETE rt_repos WHERE name = |DDLX_old|.
+      IF <ls_repo>-name =  |CUS0|.
+        <ls_repo>-skip        = abap_true.
+        <ls_repo>-skip_reason =  |skip because UI is called|.
+      ENDIF.
 
-    " Skip because of diffs due to component info not supported in NW752 dev edition
-    DELETE rt_repos WHERE name = |DEVC_component|.
+      IF <ls_repo>-name =  |ECATT|.
+        <ls_repo>-skip        = abap_true.
+        <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/2113|.
+      ENDIF.
 
-    " Runs only on HANA
-    IF cl_db_sys=>is_in_memory_db = abap_false.
-      DELETE rt_repos WHERE name = |SQSC|.
-    ENDIF.
+      IF <ls_repo>-name CS |SPRX|.
+        <ls_repo>-skip        = abap_true.
+        <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/87|.
+      ENDIF.
 
-    " Cannot be installed in local $-package
-    DELETE rt_repos WHERE name = |SOTS|.
+      IF <ls_repo>-name =  |XINK|.
+        <ls_repo>-skip        = abap_true.
+        <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/2106|.
+      ENDIF.
 
-    " Adobe forms only if ADS is connected
-    IF do_we_have_an_ads_connection( ) = abap_false.
-      DELETE rt_repos WHERE name = |SFPF|.
-    ENDIF.
+      IF <ls_repo>-name =  |SFSW|.
+        <ls_repo>-skip        = abap_true.
+        <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/2083|.
+      ENDIF.
 
-    " circular dependency https://github.com/larshp/abapGit/issues/2338
-    DELETE rt_repos WHERE name = |TTYP_with_CLAS_reference|.
-    DELETE rt_repos WHERE name = |SHLP_with_exit|.
+      IF <ls_repo>-name = |DDLX_old|.
+        <ls_repo>-skip        = abap_true.
+        <ls_repo>-skip_reason = |Skip because it's an old testcase. abapGit indicates diff because migration to new format|.
+      ENDIF.
+
+      IF <ls_repo>-name = |DEVC_component|.
+        <ls_repo>-skip        = abap_true.
+        <ls_repo>-skip_reason = |Skip because of diffs due to component info not supported in NW752 dev edition|.
+      ENDIF.
+
+      IF  <ls_repo>-name = |SQSC|
+      AND cl_db_sys=>is_in_memory_db = abap_false.
+        <ls_repo>-skip        = abap_true.
+        <ls_repo>-skip_reason = |Runs only on HANA|.
+      ENDIF.
+
+      IF <ls_repo>-name = |SOTS|.
+        <ls_repo>-skip        = abap_true.
+        <ls_repo>-skip_reason = |Cannot be installed in local $-package|.
+      ENDIF.
+
+      IF <ls_repo>-name = |SFPF|
+      AND do_we_have_an_ads_connection( ) = abap_false.
+        <ls_repo>-skip        = abap_true.
+        <ls_repo>-skip_reason = |Adobe Document Service (ADS) connection neccessary|.
+      ENDIF.
+
+      IF <ls_repo>-name = |TTYP_with_CLAS_reference|.
+        <ls_repo>-skip        = abap_true.
+        <ls_repo>-skip_reason = |circular dependency https://github.com/larshp/abapGit/issues/2338|.
+      ENDIF.
+
+      IF <ls_repo>-name = |SHLP_with_exit|.
+        <ls_repo>-skip        = abap_true.
+        <ls_repo>-skip_reason = |circular dependency https://github.com/larshp/abapGit/issues/2338|.
+      ENDIF.
+
+    ENDLOOP.
 
     SORT rt_repos BY name.
 
