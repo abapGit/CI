@@ -160,7 +160,7 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
 
       IF <ls_repo>-name = |DEVC_component|.
         <ls_repo>-skip        = abap_true.
-        <ls_repo>-skip_reason = |Skip because of diffs due to component info not supported in NW752 dev edition|.
+        <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/1880|.
       ENDIF.
 
       IF  <ls_repo>-name = |SQSC|
