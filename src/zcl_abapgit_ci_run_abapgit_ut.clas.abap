@@ -6,16 +6,14 @@ CLASS zcl_abapgit_ci_run_abapgit_ut DEFINITION
     INTERFACES:
       zif_abapgit_ci_test.
 
+  PROTECTED SECTION.
+  PRIVATE SECTION.
 ENDCLASS.
 
 
-CLASS zcl_abapgit_ci_run_abapgit_ut IMPLEMENTATION.
 
-  METHOD zif_abapgit_ci_test~get_description.
+CLASS ZCL_ABAPGIT_CI_RUN_ABAPGIT_UT IMPLEMENTATION.
 
-    rv_description = |Run abapGit unit tests|.
-
-  ENDMETHOD.
 
   METHOD zif_abapgit_ci_test~execute.
 
@@ -35,8 +33,10 @@ CLASS zcl_abapgit_ci_run_abapgit_ut IMPLEMENTATION.
       zcx_abapgit_exception=>raise( |Couldn't find abapGit repo| ).
     ENDIF.
 
-    DATA(lt_list) = zcl_abapgit_factory=>get_abap_unit_tests( lo_repo->get_package( )
-                                      )->run( ).
+    DATA(lt_list) = zcl_abapgit_factory=>get_code_inspector(
+      iv_package            = lo_repo->get_package( )
+      iv_check_variant_name = 'CL_SAUNIT_LEGACY_CI_CHECK'
+      )->run( ).
 
     ASSIGN lt_list[ kind = 'E' ] TO FIELD-SYMBOL(<ls_error>).
     IF sy-subrc = 0.
@@ -47,4 +47,10 @@ CLASS zcl_abapgit_ci_run_abapgit_ut IMPLEMENTATION.
 
   ENDMETHOD.
 
+
+  METHOD zif_abapgit_ci_test~get_description.
+
+    rv_description = |Run abapGit unit tests|.
+
+  ENDMETHOD.
 ENDCLASS.
