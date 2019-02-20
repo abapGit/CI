@@ -11,6 +11,7 @@ CLASS zcl_abapgit_ci_latest_build DEFINITION
         RAISING
           zcx_abapgit_exception.
 
+  PROTECTED SECTION.
   PRIVATE SECTION.
     CONSTANTS:
       co_report_name TYPE char30 VALUE 'Z___ABAPGIT_LATEST_BUILD',
@@ -50,12 +51,12 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_latest_build IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_LATEST_BUILD IMPLEMENTATION.
 
 
   METHOD check.
 
-    DATA(lt_list) = zcl_abapgit_factory=>get_syntax_check( co_package )->run( ).
+    DATA(lt_list) = zcl_abapgit_factory=>get_code_inspector( co_package )->run( 'SYNTAX_CHECK' ).
 
     ASSIGN lt_list[ kind = 'E' ] TO FIELD-SYMBOL(<ls_error>).
     IF sy-subrc = 0.
@@ -218,21 +219,6 @@ CLASS zcl_abapgit_ci_latest_build IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD zif_abapgit_ci_test~execute.
-
-    fetch_latest_build( ).
-    install( ).
-    check( ).
-    delete( ).
-    post_check( ).
-
-  ENDMETHOD.
-
-
-  METHOD zif_abapgit_ci_test~get_description.
-    rv_description = |Check latest abapGit build|.
-  ENDMETHOD.
-
   METHOD post_check.
 
     SELECT SINGLE FROM tadir
@@ -247,4 +233,19 @@ CLASS zcl_abapgit_ci_latest_build IMPLEMENTATION.
 
   ENDMETHOD.
 
+
+  METHOD zif_abapgit_ci_test~execute.
+
+    fetch_latest_build( ).
+    install( ).
+    check( ).
+    delete( ).
+    post_check( ).
+
+  ENDMETHOD.
+
+
+  METHOD zif_abapgit_ci_test~get_description.
+    rv_description = |Check latest abapGit build|.
+  ENDMETHOD.
 ENDCLASS.

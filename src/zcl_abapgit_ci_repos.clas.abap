@@ -19,6 +19,7 @@ CLASS zcl_abapgit_ci_repos DEFINITION
         RETURNING
           VALUE(rt_result_list) TYPE zif_abapgit_ci_definitions=>ty_result-repo_result_list.
 
+  PROTECTED SECTION.
   PRIVATE SECTION.
     CLASS-METHODS:
       update_repo
@@ -42,7 +43,10 @@ CLASS zcl_abapgit_ci_repos DEFINITION
 
 ENDCLASS.
 
-CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
+
+
+CLASS ZCL_ABAPGIT_CI_REPOS IMPLEMENTATION.
+
 
   METHOD process_repo.
 
@@ -113,17 +117,33 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD update_abapgit_repo.
+  METHOD syntax_check.
 
-    update_repo( 'abapGit' ).
+    DATA(lt_list) = zcl_abapgit_factory=>get_code_inspector( iv_package )->run( 'SYNTAX_CHECK' ).
+
+    ASSIGN lt_list[ kind = 'E' ] TO FIELD-SYMBOL(<ls_error>).
+    IF sy-subrc = 0.
+      zcx_abapgit_exception=>raise( |Syntax error in repo { iv_package } |
+                                 && |object { <ls_error>-objtype } { <ls_error>-text } |
+                                 && |{ <ls_error>-text }| ).
+    ENDIF.
 
   ENDMETHOD.
+
 
   METHOD update_abapgit_ci_repo.
 
     update_repo( 'CI' ).
 
   ENDMETHOD.
+
+
+  METHOD update_abapgit_repo.
+
+    update_repo( 'abapGit' ).
+
+  ENDMETHOD.
+
 
   METHOD update_repo.
 
@@ -156,19 +176,4 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
     syntax_check( lo_repo->get_package( ) ).
 
   ENDMETHOD.
-
-
-  METHOD syntax_check.
-
-    DATA(lt_list) = zcl_abapgit_factory=>get_syntax_check( iv_package )->run( ).
-
-    ASSIGN lt_list[ kind = 'E' ] TO FIELD-SYMBOL(<ls_error>).
-    IF sy-subrc = 0.
-      zcx_abapgit_exception=>raise( |Syntax error in repo { iv_package } |
-                                 && |object { <ls_error>-objtype } { <ls_error>-text } |
-                                 && |{ <ls_error>-text }| ).
-    ENDIF.
-
-  ENDMETHOD.
-
 ENDCLASS.

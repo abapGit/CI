@@ -12,6 +12,7 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         RAISING
           zcx_abapgit_exception.
 
+  PROTECTED SECTION.
   PRIVATE SECTION.
     METHODS:
       create_package
@@ -66,151 +67,28 @@ CLASS zcl_abapgit_ci_repo DEFINITION
 ENDCLASS.
 
 
-CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
-  METHOD syntax_check.
+CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
 
-    cs_ri_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-not_ok.
 
-    DATA(li_syntax_check) = zcl_abapgit_factory=>get_syntax_check( cs_ri_repo-package ).
+  METHOD check_leftovers.
 
-    DATA(lt_list) = li_syntax_check->run( ).
+    cs_ri_repo-check_leftovers = zif_abapgit_ci_definitions=>co_status-not_ok.
 
-    LOOP AT lt_list ASSIGNING FIELD-SYMBOL(<ls_list>)
-                    WHERE kind = 'E'.
-    ENDLOOP.
-    IF sy-subrc = 0.
-      cs_ri_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-not_ok.
-    ELSE.
-      cs_ri_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-ok.
-    ENDIF.
+    DATA(lt_tadir) = zcl_abapgit_factory=>get_tadir(
+                                       )->read( cs_ri_repo-package ).
 
-  ENDMETHOD.
-
-  METHOD purge.
-
-    CHECK io_repo IS BOUND.
-
-    cs_ri_repo-purge = zif_abapgit_ci_definitions=>co_status-not_ok.
-
-    TRY.
-        DATA(ls_checks) = io_repo->delete_checks( ).
-
-        zcl_abapgit_repo_srv=>get_instance( )->purge( io_repo   = io_repo
-                                                      is_checks = ls_checks ).
-
-        COMMIT WORK AND WAIT.
-      CATCH zcx_abapgit_cancel INTO DATA(error).
-        zcx_abapgit_exception=>raise( error->get_text( ) ).
-    ENDTRY.
-
-    cs_ri_repo-purge = zif_abapgit_ci_definitions=>co_status-ok.
-
-    CALL FUNCTION 'DEQUEUE_ALL'
-      EXPORTING
-        _synchron = abap_true.
-
-    check_leftovers( CHANGING cs_ri_repo = cs_ri_repo ).
-
-  ENDMETHOD.
-
-  METHOD pull.
-
-    cs_ri_repo-pull = zif_abapgit_ci_definitions=>co_status-not_ok.
-
-    DATA(ls_checks) = io_repo->deserialize_checks( ).
-
-    LOOP AT ls_checks-overwrite ASSIGNING FIELD-SYMBOL(<ls_checks>).
-      <ls_checks>-decision = abap_true.
+    LOOP AT lt_tadir ASSIGNING FIELD-SYMBOL(<ls_tadir>)
+                     WHERE object <> 'DEVC'.
+      zcx_abapgit_exception=>raise( |Left over object { <ls_tadir>-object } { <ls_tadir>-obj_name }| ).
     ENDLOOP.
 
-    LOOP AT ls_checks-warning_package ASSIGNING FIELD-SYMBOL(<ls_warning_package>).
-      <ls_warning_package>-decision = abap_true.
+    LOOP AT lt_tadir ASSIGNING <ls_tadir>
+                     WHERE object = 'DEVC'.
+      zcx_abapgit_exception=>raise( |Left over package { <ls_tadir>-obj_name }| ).
     ENDLOOP.
 
-    io_repo->deserialize( ls_checks ).
-
-    io_repo->refresh( iv_drop_cache = abap_true ).
-
-    cs_ri_repo-pull = zif_abapgit_ci_definitions=>co_status-ok.
-
-  ENDMETHOD.
-
-  METHOD constructor.
-
-    zcl_abapgit_ui_injector=>set_gui_functions( NEW lcl_mock_ui_functions( ) ).
-
-  ENDMETHOD.
-
-  METHOD clone.
-
-    cs_ri_repo-clone = zif_abapgit_ci_definitions=>co_status-not_ok.
-
-    TRY.
-        ro_repo = zcl_abapgit_repo_srv=>get_instance( )->new_online(
-          iv_url         = |{ cs_ri_repo-clone_url }|
-          iv_branch_name = 'refs/heads/master'
-          iv_package     = cs_ri_repo-package ).
-
-        COMMIT WORK AND WAIT.
-
-      CATCH zcx_abapgit_cancel INTO DATA(error).
-        zcx_abapgit_exception=>raise( error->get_text( ) ).
-    ENDTRY.
-
-    cs_ri_repo-clone = zif_abapgit_ci_definitions=>co_status-ok.
-
-  ENDMETHOD.
-
-  METHOD create_package.
-
-    DATA(li_package) = zcl_abapgit_factory=>get_sap_package( cs_ri_repo-package ).
-
-    IF li_package->exists( ) = abap_false.
-
-      cs_ri_repo-create_package = zif_abapgit_ci_definitions=>co_status-not_ok.
-
-      li_package->create( VALUE #(
-                            as4user  = sy-uname
-                            devclass = cs_ri_repo-package
-                            ctext    = |abapGit CI run|
-                          ) ).
-
-      cs_ri_repo-create_package = zif_abapgit_ci_definitions=>co_status-ok.
-
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD run.
-
-    create_package( CHANGING cs_ri_repo = cs_ri_repo ).
-
-    TRY.
-        DATA(lo_repo) = clone( CHANGING cs_ri_repo = cs_ri_repo ).
-
-        pull( EXPORTING io_repo  = lo_repo
-              CHANGING cs_ri_repo = cs_ri_repo ).
-
-        syntax_check( CHANGING cs_ri_repo = cs_ri_repo ).
-
-        check_objects( EXPORTING io_repo  = lo_repo
-                       CHANGING cs_ri_repo = cs_ri_repo ).
-
-      CATCH zcx_abapgit_exception INTO DATA(lx_error).
-
-        " ensure uninstall
-        purge( EXPORTING io_repo   = lo_repo
-               CHANGING  cs_ri_repo = cs_ri_repo ).
-
-        zcx_abapgit_exception=>raise( iv_text     = lx_error->get_text( )
-                                      ix_previous = lx_error ).
-
-    ENDTRY.
-
-    purge( EXPORTING io_repo   = lo_repo
-           CHANGING  cs_ri_repo = cs_ri_repo ).
+    cs_ri_repo-check_leftovers = zif_abapgit_ci_definitions=>co_status-ok.
 
   ENDMETHOD.
 
@@ -253,25 +131,154 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD check_leftovers.
+  METHOD clone.
 
-    cs_ri_repo-check_leftovers = zif_abapgit_ci_definitions=>co_status-not_ok.
+    cs_ri_repo-clone = zif_abapgit_ci_definitions=>co_status-not_ok.
 
-    DATA(lt_tadir) = zcl_abapgit_factory=>get_tadir(
-                                       )->read( cs_ri_repo-package ).
+    TRY.
+        ro_repo = zcl_abapgit_repo_srv=>get_instance( )->new_online(
+          iv_url         = |{ cs_ri_repo-clone_url }|
+          iv_branch_name = 'refs/heads/master'
+          iv_package     = cs_ri_repo-package ).
 
-    LOOP AT lt_tadir ASSIGNING FIELD-SYMBOL(<ls_tadir>)
-                     WHERE object <> 'DEVC'.
-      zcx_abapgit_exception=>raise( |Left over object { <ls_tadir>-object } { <ls_tadir>-obj_name }| ).
-    ENDLOOP.
+        COMMIT WORK AND WAIT.
 
-    LOOP AT lt_tadir ASSIGNING <ls_tadir>
-                     WHERE object = 'DEVC'.
-      zcx_abapgit_exception=>raise( |Left over package { <ls_tadir>-obj_name }| ).
-    ENDLOOP.
+      CATCH zcx_abapgit_cancel INTO DATA(error).
+        zcx_abapgit_exception=>raise( error->get_text( ) ).
+    ENDTRY.
 
-    cs_ri_repo-check_leftovers = zif_abapgit_ci_definitions=>co_status-ok.
+    cs_ri_repo-clone = zif_abapgit_ci_definitions=>co_status-ok.
 
   ENDMETHOD.
 
+
+  METHOD constructor.
+
+    zcl_abapgit_ui_injector=>set_gui_functions( NEW lcl_mock_ui_functions( ) ).
+
+  ENDMETHOD.
+
+
+  METHOD create_package.
+
+    DATA(li_package) = zcl_abapgit_factory=>get_sap_package( cs_ri_repo-package ).
+
+    IF li_package->exists( ) = abap_false.
+
+      cs_ri_repo-create_package = zif_abapgit_ci_definitions=>co_status-not_ok.
+
+      li_package->create( VALUE #(
+                            as4user  = sy-uname
+                            devclass = cs_ri_repo-package
+                            ctext    = |abapGit CI run|
+                          ) ).
+
+      cs_ri_repo-create_package = zif_abapgit_ci_definitions=>co_status-ok.
+
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD pull.
+
+    cs_ri_repo-pull = zif_abapgit_ci_definitions=>co_status-not_ok.
+
+    DATA(ls_checks) = io_repo->deserialize_checks( ).
+
+    LOOP AT ls_checks-overwrite ASSIGNING FIELD-SYMBOL(<ls_checks>).
+      <ls_checks>-decision = abap_true.
+    ENDLOOP.
+
+    LOOP AT ls_checks-warning_package ASSIGNING FIELD-SYMBOL(<ls_warning_package>).
+      <ls_warning_package>-decision = abap_true.
+    ENDLOOP.
+
+    io_repo->deserialize( ls_checks ).
+
+    io_repo->refresh( iv_drop_cache = abap_true ).
+
+    cs_ri_repo-pull = zif_abapgit_ci_definitions=>co_status-ok.
+
+  ENDMETHOD.
+
+
+  METHOD purge.
+
+    CHECK io_repo IS BOUND.
+
+    cs_ri_repo-purge = zif_abapgit_ci_definitions=>co_status-not_ok.
+
+    TRY.
+        DATA(ls_checks) = io_repo->delete_checks( ).
+
+        zcl_abapgit_repo_srv=>get_instance( )->purge( io_repo   = io_repo
+                                                      is_checks = ls_checks ).
+
+        COMMIT WORK AND WAIT.
+      CATCH zcx_abapgit_cancel INTO DATA(error).
+        zcx_abapgit_exception=>raise( error->get_text( ) ).
+    ENDTRY.
+
+    cs_ri_repo-purge = zif_abapgit_ci_definitions=>co_status-ok.
+
+    CALL FUNCTION 'DEQUEUE_ALL'
+      EXPORTING
+        _synchron = abap_true.
+
+    check_leftovers( CHANGING cs_ri_repo = cs_ri_repo ).
+
+  ENDMETHOD.
+
+
+  METHOD run.
+
+    create_package( CHANGING cs_ri_repo = cs_ri_repo ).
+
+    TRY.
+        DATA(lo_repo) = clone( CHANGING cs_ri_repo = cs_ri_repo ).
+
+        pull( EXPORTING io_repo  = lo_repo
+              CHANGING cs_ri_repo = cs_ri_repo ).
+
+        syntax_check( CHANGING cs_ri_repo = cs_ri_repo ).
+
+        check_objects( EXPORTING io_repo  = lo_repo
+                       CHANGING cs_ri_repo = cs_ri_repo ).
+
+      CATCH zcx_abapgit_exception INTO DATA(lx_error).
+
+        " ensure uninstall
+        purge( EXPORTING io_repo   = lo_repo
+               CHANGING  cs_ri_repo = cs_ri_repo ).
+
+        zcx_abapgit_exception=>raise( iv_text     = lx_error->get_text( )
+                                      ix_previous = lx_error ).
+
+    ENDTRY.
+
+    purge( EXPORTING io_repo   = lo_repo
+           CHANGING  cs_ri_repo = cs_ri_repo ).
+
+  ENDMETHOD.
+
+
+  METHOD syntax_check.
+
+    cs_ri_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-not_ok.
+
+    DATA(li_syntax_check) = zcl_abapgit_factory=>get_code_inspector( cs_ri_repo-package ).
+
+    DATA(lt_list) = li_syntax_check->run( 'SYNTAX_CHECK' ).
+
+    LOOP AT lt_list ASSIGNING FIELD-SYMBOL(<ls_list>)
+                    WHERE kind = 'E'.
+    ENDLOOP.
+    IF sy-subrc = 0.
+      cs_ri_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-not_ok.
+    ELSE.
+      cs_ri_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-ok.
+    ENDIF.
+
+  ENDMETHOD.
 ENDCLASS.
