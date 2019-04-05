@@ -4,7 +4,6 @@
   <asx:values>
    <VSEOCLASS>
     <CLSNAME>ZCL_ABAPGIT_CI_GENERIC_TESTS</CLSNAME>
-    <VERSION>1</VERSION>
     <LANGU>E</LANGU>
     <DESCRIPT>abapGit CI: Execute generic CI tests</DESCRIPT>
     <STATE>1</STATE>

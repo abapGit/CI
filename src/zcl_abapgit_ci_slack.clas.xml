@@ -4,7 +4,6 @@
   <asx:values>
    <VSEOCLASS>
     <CLSNAME>ZCL_ABAPGIT_CI_SLACK</CLSNAME>
-    <VERSION>1</VERSION>
     <LANGU>E</LANGU>
     <DESCRIPT>abapGit CI slack integration</DESCRIPT>
     <STATE>1</STATE>
