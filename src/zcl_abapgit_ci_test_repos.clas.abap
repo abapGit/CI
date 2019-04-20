@@ -190,6 +190,11 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
         <ls_repo>-skip_reason = |circular dependency https://github.com/larshp/abapGit/issues/2338|.
       ENDIF.
 
+      IF <ls_repo>-name = |PROG_ci_variant|.
+        <ls_repo>-skip        = abap_true.
+        <ls_repo>-skip_reason = |activation error https://github.com/larshp/abapGit/issues/2338|.
+      ENDIF.
+
     ENDLOOP.
 
     SORT rt_repos BY name.
