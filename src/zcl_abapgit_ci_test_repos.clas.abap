@@ -143,11 +143,6 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
         <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/87|.
       ENDIF.
 
-      IF <ls_repo>-name =  |XINK|.
-        <ls_repo>-skip        = abap_true.
-        <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/2106|.
-      ENDIF.
-
       IF <ls_repo>-name =  |SFSW|.
         <ls_repo>-skip        = abap_true.
         <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/2083|.
