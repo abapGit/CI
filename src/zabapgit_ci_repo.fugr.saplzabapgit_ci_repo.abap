@@ -1,8 +1,8 @@
 *******************************************************************
 *   System-defined Include-files.                                 *
 *******************************************************************
-  INCLUDE LZABAPGIT_CI_REPOTOP.              " Global Declarations
-  INCLUDE LZABAPGIT_CI_REPOUXX.              " Function Modules
+INCLUDE lzabapgit_ci_repotop.              " Global Declarations
+INCLUDE lzabapgit_ci_repouxx.              " Function Modules
 
 *******************************************************************
 *   User-defined Include-files (if necessary).                    *

@@ -1,4 +1,4 @@
-FUNCTION ZABAPGIT_CI_PROCESS_REPO.
+FUNCTION zabapgit_ci_process_repo.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  CHANGING
@@ -13,6 +13,5 @@ FUNCTION ZABAPGIT_CI_PROCESS_REPO.
       cs_ci_repo-message = lx_error->get_text( ).
       cs_ci_repo-status = zif_abapgit_ci_definitions=>co_status-not_ok.
   ENDTRY.
-
 
 ENDFUNCTION.
