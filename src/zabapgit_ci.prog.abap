@@ -1,10 +1,4 @@
-*&---------------------------------------------------------------------*
-*& Report zabapgit_ci
-*&---------------------------------------------------------------------*
-*&
-*&       https://github.com/abapGit/CI
-*&
-*&---------------------------------------------------------------------*
+* https://github.com/abapGit/CI
 REPORT zabapgit_ci.
 
 SELECTION-SCREEN BEGIN OF BLOCK b1  WITH FRAME TITLE TEXT-b01.
