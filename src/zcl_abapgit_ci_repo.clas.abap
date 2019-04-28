@@ -23,9 +23,8 @@ CLASS zcl_abapgit_ci_repo DEFINITION
 
       clone
         CHANGING
-          cs_ri_repo     TYPE zabapgit_ci_result
-        RETURNING
-          VALUE(ro_repo) TYPE REF TO zcl_abapgit_repo_online
+          cs_ri_repo TYPE zabapgit_ci_result
+          co_repo    TYPE REF TO zcl_abapgit_repo_online
         RAISING
           zcx_abapgit_exception,
 
@@ -58,6 +57,7 @@ CLASS zcl_abapgit_ci_repo DEFINITION
           cs_ri_repo TYPE zabapgit_ci_result
         RAISING
           zcx_abapgit_exception,
+
       check_leftovers
         CHANGING
           cs_ri_repo TYPE zabapgit_ci_result
@@ -68,7 +68,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
+CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
 
   METHOD check_leftovers.
@@ -136,7 +136,7 @@ CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
     cs_ri_repo-clone = zif_abapgit_ci_definitions=>co_status-not_ok.
 
     TRY.
-        ro_repo = zcl_abapgit_repo_srv=>get_instance( )->new_online(
+        co_repo = zcl_abapgit_repo_srv=>get_instance( )->new_online(
           iv_url         = |{ cs_ri_repo-clone_url }|
           iv_branch_name = 'refs/heads/master'
           iv_package     = cs_ri_repo-package ).
@@ -205,7 +205,9 @@ CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
 
   METHOD purge.
 
-    CHECK io_repo IS BOUND.
+    IF io_repo IS NOT BOUND.
+      RETURN.
+    ENDIF.
 
     cs_ri_repo-purge = zif_abapgit_ci_definitions=>co_status-not_ok.
 
@@ -233,23 +235,26 @@ CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
 
   METHOD run.
 
+    DATA: lo_repo TYPE REF TO zcl_abapgit_repo_online.
+
     create_package( CHANGING cs_ri_repo = cs_ri_repo ).
 
     TRY.
-        DATA(lo_repo) = clone( CHANGING cs_ri_repo = cs_ri_repo ).
+        clone( CHANGING cs_ri_repo = cs_ri_repo
+                        co_repo    = lo_repo ).
 
-        pull( EXPORTING io_repo  = lo_repo
-              CHANGING cs_ri_repo = cs_ri_repo ).
+        pull( EXPORTING io_repo    = lo_repo
+              CHANGING  cs_ri_repo = cs_ri_repo ).
 
         syntax_check( CHANGING cs_ri_repo = cs_ri_repo ).
 
-        check_objects( EXPORTING io_repo  = lo_repo
-                       CHANGING cs_ri_repo = cs_ri_repo ).
+        check_objects( EXPORTING io_repo    = lo_repo
+                       CHANGING  cs_ri_repo = cs_ri_repo ).
 
       CATCH zcx_abapgit_exception INTO DATA(lx_error).
 
         " ensure uninstall
-        purge( EXPORTING io_repo   = lo_repo
+        purge( EXPORTING io_repo    = lo_repo
                CHANGING  cs_ri_repo = cs_ri_repo ).
 
         zcx_abapgit_exception=>raise( iv_text     = lx_error->get_text( )
@@ -257,7 +262,7 @@ CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
 
     ENDTRY.
 
-    purge( EXPORTING io_repo   = lo_repo
+    purge( EXPORTING io_repo    = lo_repo
            CHANGING  cs_ri_repo = cs_ri_repo ).
 
   ENDMETHOD.
@@ -271,9 +276,8 @@ CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
 
     DATA(lt_list) = li_syntax_check->run( 'SYNTAX_CHECK' ).
 
-    LOOP AT lt_list ASSIGNING FIELD-SYMBOL(<ls_list>)
-                    WHERE kind = 'E'.
-    ENDLOOP.
+    READ TABLE lt_list TRANSPORTING NO FIELDS
+                       WITH KEY kind = 'E'.
     IF sy-subrc = 0.
       cs_ri_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-not_ok.
     ELSE.

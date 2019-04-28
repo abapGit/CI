@@ -59,7 +59,9 @@ CLASS zcl_abapgit_ci_generic_tests IMPLEMENTATION.
   METHOD get_test_cases.
 
     TRY.
-        rt_test_cases = CAST cl_oo_interface( cl_oo_interface=>get_instance( |ZIF_ABAPGIT_CI_TEST| ) )->get_implementing_classes( ).
+        rt_test_cases = CAST cl_oo_interface(
+                               cl_oo_interface=>get_instance( |ZIF_ABAPGIT_CI_TEST| )
+                                 )->get_implementing_classes( ).
 
       CATCH cx_class_not_existent INTO DATA(lx_error).
         zcx_abapgit_exception=>raise( iv_text     = lx_error->get_text( )

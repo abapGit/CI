@@ -1,6 +1,6 @@
 CLASS zcl_abapgit_ci_controller DEFINITION
   PUBLIC
-  CREATE PUBLIC.
+  CREATE PUBLIC .
 
   PUBLIC SECTION.
 
@@ -9,12 +9,13 @@ CLASS zcl_abapgit_ci_controller DEFINITION
         IMPORTING
           !ii_view          TYPE REF TO zif_abapgit_ci_view
           !ii_repo_provider TYPE REF TO zif_abapgit_ci_repo_provider
-          is_options        TYPE zif_abapgit_ci_definitions=>ty_options OPTIONAL,
+          !is_options       TYPE zif_abapgit_ci_definitions=>ty_options OPTIONAL,
 
       run
         RAISING
           zcx_abapgit_exception.
 
+  PROTECTED SECTION.
   PRIVATE SECTION.
     DATA:
       mi_view          TYPE REF TO zif_abapgit_ci_view,
@@ -23,21 +24,20 @@ CLASS zcl_abapgit_ci_controller DEFINITION
       ms_options       TYPE zif_abapgit_ci_definitions=>ty_options,
       mo_ci_generic    TYPE REF TO zcl_abapgit_ci_generic_tests.
 
-    METHODS:
-      post_errors_to_slack
-        IMPORTING
-          is_result TYPE zif_abapgit_ci_definitions=>ty_result
-        RAISING
-          zcx_abapgit_exception,
+    METHODS: post_errors_to_slack
+      IMPORTING
+        !is_result TYPE zif_abapgit_ci_definitions=>ty_result
+      RAISING
+        zcx_abapgit_exception,
 
       calculate_statistics
         CHANGING
-          cs_result TYPE zif_abapgit_ci_definitions=>ty_result,
+          !cs_result TYPE zif_abapgit_ci_definitions=>ty_result,
 
       count_by_status
         IMPORTING
-          is_result       TYPE zif_abapgit_ci_definitions=>ty_result
-          iv_status       TYPE zabapgit_ci_status
+          !is_result      TYPE zif_abapgit_ci_definitions=>ty_result
+          !iv_status      TYPE zabapgit_ci_status
         RETURNING
           VALUE(rv_count) TYPE i.
 
@@ -48,6 +48,22 @@ ENDCLASS.
 CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
 
 
+  METHOD calculate_statistics.
+
+    cs_result-statistics-test_cases-successful
+        = count_by_status( is_result = cs_result
+                           iv_status = zif_abapgit_ci_definitions=>co_status-ok ).
+
+    cs_result-statistics-test_cases-failed
+        = count_by_status( is_result = cs_result
+                           iv_status = zif_abapgit_ci_definitions=>co_status-not_ok ).
+
+    cs_result-statistics-test_cases-total = cs_result-statistics-test_cases-successful
+                                          + cs_result-statistics-test_cases-failed.
+
+  ENDMETHOD.
+
+
   METHOD constructor.
 
     mi_view          = ii_view.
@@ -56,6 +72,37 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
 
     mo_ci_repos = NEW zcl_abapgit_ci_repos( ).
     mo_ci_generic = NEW zcl_abapgit_ci_generic_tests( ).
+
+  ENDMETHOD.
+
+
+  METHOD count_by_status.
+
+    rv_count = REDUCE #( INIT result = 0
+                         FOR gen_result IN is_result-generic_result_list
+                         WHERE ( status = iv_status )
+                         NEXT result = result + 1 )
+             + REDUCE #( INIT result = 0
+                         FOR repo_result IN is_result-repo_result_list
+                         WHERE ( status = iv_status )
+                         NEXT result = result + 1 ).
+
+  ENDMETHOD.
+
+
+  METHOD post_errors_to_slack.
+
+    CONSTANTS: lc_url TYPE string VALUE `https://ci.abapgit.org`.
+
+    DATA(lv_error_text) = REDUCE string(
+                            INIT result = ||
+                            FOR line IN is_result-repo_result_list
+                            WHERE ( status = zif_abapgit_ci_definitions=>co_status-not_ok )
+                            NEXT result = result && |\nRepo: { line-name } Message: { line-message }\n| ).
+
+    NEW zcl_abapgit_ci_slack( ms_options-slack_oauth_token )->post(
+              |*abapGit CI errors:*\n { lv_error_text } \n|
+           && |Details: { lc_url } | ).
 
   ENDMETHOD.
 
@@ -76,10 +123,11 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
       ls_result-generic_result_list = mo_ci_generic->execute( ).
     ENDIF.
 
-    ls_result-ci_has_errors = boolc( line_exists(
-                                       ls_result-repo_result_list[ status = zif_abapgit_ci_definitions=>co_status-not_ok ] )
-                                  OR line_exists(
-                                       ls_result-generic_result_list[ status = zif_abapgit_ci_definitions=>co_status-not_ok ] ) ).
+    ls_result-ci_has_errors
+        = boolc( line_exists(
+                   ls_result-repo_result_list[ status = zif_abapgit_ci_definitions=>co_status-not_ok ] )
+              OR line_exists(
+                   ls_result-generic_result_list[ status = zif_abapgit_ci_definitions=>co_status-not_ok ] ) ).
 
     GET TIME STAMP FIELD ls_result-statistics-finish_timestamp.
 
@@ -103,46 +151,4 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
     mi_view->display( CHANGING cs_result = ls_result ).
 
   ENDMETHOD.
-
-  METHOD post_errors_to_slack.
-
-    CONSTANTS: co_url TYPE string VALUE `https://ci.abapgit.org`.
-
-    DATA(lv_error_text) = REDUCE string( INIT result = ||
-                                         FOR line IN is_result-repo_result_list
-                                         WHERE ( status = zif_abapgit_ci_definitions=>co_status-not_ok )
-                                         NEXT result = result && |\nRepo: { line-name } Message: { line-message }\n| ).
-
-    NEW zcl_abapgit_ci_slack( ms_options-slack_oauth_token )->post( |*abapGit CI errors:*\n { lv_error_text } \n|
-                                                                 && |Details: { co_url } | ).
-
-  ENDMETHOD.
-
-
-  METHOD calculate_statistics.
-
-    cs_result-statistics-test_cases-successful = count_by_status( is_result = cs_result
-                                                                  iv_status = zif_abapgit_ci_definitions=>co_status-ok ).
-
-    cs_result-statistics-test_cases-failed = count_by_status( is_result = cs_result
-                                                              iv_status = zif_abapgit_ci_definitions=>co_status-not_ok ).
-
-    cs_result-statistics-test_cases-total = cs_result-statistics-test_cases-successful + cs_result-statistics-test_cases-failed.
-
-  ENDMETHOD.
-
-
-  METHOD count_by_status.
-
-    rv_count = REDUCE #( INIT result = 0
-                         FOR gen_result IN is_result-generic_result_list
-                         WHERE ( status = iv_status )
-                         NEXT result = result + 1 )
-             + REDUCE #( INIT result = 0
-                         FOR repo_result IN is_result-repo_result_list
-                         WHERE ( status = iv_status )
-                         NEXT result = result + 1 ).
-
-  ENDMETHOD.
-
 ENDCLASS.

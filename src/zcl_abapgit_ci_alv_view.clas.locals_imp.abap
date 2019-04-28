@@ -59,49 +59,51 @@ CLASS lcl_view IMPLEMENTATION.
     DATA: lr_line TYPE REF TO data.
 
     FIELD-SYMBOLS:
-      <table> TYPE table,
-      <right> TYPE data,
-      <left>  TYPE data,
-      <line>  TYPE data.
+      <lt_table> TYPE table,
+      <lv_right> TYPE data,
+      <lv_left>  TYPE data,
+      <lv_line>  TYPE data.
 
-    ASSIGN ir_table->* TO <table>.
+    ASSIGN ir_table->* TO <lt_table>.
     ASSERT sy-subrc = 0.
 
     DATA(components) = CAST cl_abap_structdescr(
-                         CAST cl_abap_tabledescr( cl_abap_tabledescr=>describe_by_data( it_table ) )->get_table_line_type( )
+                         CAST cl_abap_tabledescr(
+                           cl_abap_tabledescr=>describe_by_data( it_table )
+                                            )->get_table_line_type( )
                        )->get_components( ).
 
     LOOP AT it_table ASSIGNING FIELD-SYMBOL(<ls_line>).
 
-      CREATE DATA lr_line LIKE LINE OF <table>.
-      ASSIGN lr_line->* TO <line>.
+      CREATE DATA lr_line LIKE LINE OF <lt_table>.
+      ASSIGN lr_line->* TO <lv_line>.
 
       LOOP AT components ASSIGNING FIELD-SYMBOL(<component>).
 
         ASSIGN COMPONENT <component>-name
                OF STRUCTURE <ls_line>
-               TO <right>.
+               TO <lv_right>.
         ASSERT sy-subrc = 0.
 
         ASSIGN COMPONENT <component>-name
-               OF STRUCTURE <line>
-               TO <left>.
+               OF STRUCTURE <lv_line>
+               TO <lv_left>.
         ASSERT sy-subrc = 0.
 
 
         IF <component>-type->get_ddic_header( )-refname CS |STATUS|.
-          <left> = SWITCH icon_d(
-                     <right>
+          <lv_left> = SWITCH icon_d(
+                     <lv_right>
                        WHEN zif_abapgit_ci_definitions=>co_status-ok        THEN icon_checked
                        WHEN zif_abapgit_ci_definitions=>co_status-not_ok    THEN icon_incomplete
                        WHEN zif_abapgit_ci_definitions=>co_status-undefined THEN icon_led_inactive ).
         ELSE.
-          <left> = <right>.
+          <lv_left> = <lv_right>.
         ENDIF.
 
       ENDLOOP.
 
-      INSERT <line> INTO TABLE <table>.
+      INSERT <lv_line> INTO TABLE <lt_table>.
 
     ENDLOOP.
 
@@ -132,9 +134,9 @@ CLASS lcl_alv IMPLEMENTATION.
 
   METHOD display.
 
-    FIELD-SYMBOLS: <table> TYPE INDEX TABLE.
+    FIELD-SYMBOLS: <lt_table> TYPE INDEX TABLE.
 
-    ASSIGN mr_table->* TO <table>.
+    ASSIGN mr_table->* TO <lt_table>.
     ASSERT sy-subrc = 0.
 
     TRY.
@@ -144,14 +146,16 @@ CLASS lcl_alv IMPLEMENTATION.
           IMPORTING
             r_salv_table = mo_alv
           CHANGING
-            t_table      = <table> ).
+            t_table      = <lt_table> ).
 
         mo_alv->get_functions( )->set_all( ).
 
         LOOP AT mt_column_width ASSIGNING FIELD-SYMBOL(<ls_column_width>).
 
           TRY.
-              DATA(lo_column) = CAST cl_salv_column_table( mo_alv->get_columns( )->get_column( <ls_column_width>-column ) ).
+              DATA(lo_column) = CAST cl_salv_column_table(
+                                       mo_alv->get_columns(
+                                            )->get_column( <ls_column_width>-column ) ).
               lo_column->set_output_length( <ls_column_width>-width ).
             CATCH cx_salv_error.
               CONTINUE.
@@ -175,7 +179,6 @@ CLASS lcl_list IMPLEMENTATION.
   METHOD constructor.
 
     super->constructor( it_table = it_table ).
-
     mv_tabname = iv_tabname.
 
   ENDMETHOD.
@@ -187,9 +190,9 @@ CLASS lcl_list IMPLEMENTATION.
       ls_layout   TYPE slis_layout_alv,
       lt_events   TYPE slis_t_event.
 
-    FIELD-SYMBOLS: <table> TYPE STANDARD TABLE.
+    FIELD-SYMBOLS: <lt_table> TYPE STANDARD TABLE.
 
-    ASSIGN mr_table->* TO <table>.
+    ASSIGN mr_table->* TO <lt_table>.
     ASSERT sy-subrc = 0.
 
     CALL FUNCTION 'REUSE_ALV_FIELDCATALOG_MERGE'
@@ -224,7 +227,7 @@ CLASS lcl_list IMPLEMENTATION.
         i_tabname                  = mv_tabname
         it_events                  = lt_events
       TABLES
-        t_outtab                   = <table>
+        t_outtab                   = <lt_table>
       EXCEPTIONS
         program_error              = 1
         maximum_of_appends_reached = 2

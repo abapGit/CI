@@ -51,7 +51,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_LATEST_BUILD IMPLEMENTATION.
+CLASS zcl_abapgit_ci_latest_build IMPLEMENTATION.
 
 
   METHOD check.
@@ -168,7 +168,9 @@ CLASS ZCL_ABAPGIT_CI_LATEST_BUILD IMPLEMENTATION.
     DATA(lv_status) = lo_rest_client->if_rest_client~get_status( ).
 
     IF lv_status <> cl_rest_status_code=>gc_success_ok.
-      zcx_abapgit_exception=>raise( |HTTP status code { lv_status } from https://raw.githubusercontent.com/abapGit/build/master/zabapgit.abap | ).
+      zcx_abapgit_exception=>raise(
+          |HTTP status code { lv_status } |
+       && |from https://raw.githubusercontent.com/abapGit/build/master/zabapgit.abap | ).
     ENDIF.
 
     SPLIT lo_response->get_string_data( )
@@ -228,7 +230,8 @@ CLASS ZCL_ABAPGIT_CI_LATEST_BUILD IMPLEMENTATION.
            INTO @DATA(ls_object).
 
     IF sy-subrc = 0.
-      zcx_abapgit_exception=>raise( |Latest build: Post check failed. Left over object { ls_object-object } { ls_object-obj_name }| ).
+      zcx_abapgit_exception=>raise( |Latest build: Post check failed. |
+                                 && |Left over object { ls_object-object } { ls_object-obj_name }| ).
     ENDIF.
 
   ENDMETHOD.

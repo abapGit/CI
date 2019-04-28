@@ -1,3 +1,3 @@
-FUNCTION-POOL ZABAPGIT_CI_REPO.             "MESSAGE-ID ..
+FUNCTION-POOL zabapgit_ci_repo.             "MESSAGE-ID ..
 
 * INCLUDE LZABAPGIT_CI_REPOD...              " Local class definition
