@@ -25,7 +25,36 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_TEST_REPOS IMPLEMENTATION.
+
+
+  METHOD do_we_have_an_ads_connection.
+
+    SELECT SINGLE FROM fpconnect
+           FIELDS destination
+           INTO @DATA(lv_destination).
+
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+    CALL FUNCTION 'RFC_READ_DESTINATION_TYPE'
+      EXPORTING
+        destination             = lv_destination
+        authority_check         = abap_false
+        bypass_buf              = abap_false
+      EXCEPTIONS
+        authority_not_available = 1
+        destination_not_exist   = 2
+        information_failure     = 3
+        internal_failure        = 4
+        OTHERS                  = 5.
+
+    IF sy-subrc = 0.
+      rv_is_ads_on = abap_true.
+    ENDIF.
+
+  ENDMETHOD.
 
 
   METHOD fetch_repo_page.
@@ -128,12 +157,12 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
 
     LOOP AT rt_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
 
-      IF <ls_repo>-name =  |CUS0|.
+      IF <ls_repo>-name = |CUS0|.
         <ls_repo>-skip        = abap_true.
         <ls_repo>-skip_reason =  |skip because UI is called|.
       ENDIF.
 
-      IF <ls_repo>-name =  |ECATT|.
+      IF <ls_repo>-name = |ECATT|.
         <ls_repo>-skip        = abap_true.
         <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/2113|.
       ENDIF.
@@ -143,7 +172,7 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
         <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/87|.
       ENDIF.
 
-      IF <ls_repo>-name =  |SFSW|.
+      IF <ls_repo>-name = |SFSW|.
         <ls_repo>-skip        = abap_true.
         <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/2083|.
       ENDIF.
@@ -190,38 +219,14 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
         <ls_repo>-skip_reason = |activation error https://github.com/larshp/abapGit/issues/2338|.
       ENDIF.
 
+      IF <ls_repo>-name = |DOMA_fixed_values_single_translated|.
+        <ls_repo>-skip        = abap_true.
+        <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/2385|.
+      ENDIF.
+
     ENDLOOP.
 
     SORT rt_repos BY name.
 
   ENDMETHOD.
-
-  METHOD do_we_have_an_ads_connection.
-
-    SELECT SINGLE FROM fpconnect
-           FIELDS destination
-           INTO @DATA(lv_destination).
-
-    IF sy-subrc <> 0.
-      RETURN.
-    ENDIF.
-
-    CALL FUNCTION 'RFC_READ_DESTINATION_TYPE'
-      EXPORTING
-        destination             = lv_destination
-        authority_check         = abap_false
-        bypass_buf              = abap_false
-      EXCEPTIONS
-        authority_not_available = 1
-        destination_not_exist   = 2
-        information_failure     = 3
-        internal_failure        = 4
-        OTHERS                  = 5.
-
-    IF sy-subrc = 0.
-      rv_is_ads_on = abap_true.
-    ENDIF.
-
-  ENDMETHOD.
-
 ENDCLASS.
