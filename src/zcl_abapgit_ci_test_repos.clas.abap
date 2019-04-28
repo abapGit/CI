@@ -224,6 +224,12 @@ CLASS ZCL_ABAPGIT_CI_TEST_REPOS IMPLEMENTATION.
         <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/2385|.
       ENDIF.
 
+      IF <ls_repo>-name = |SFBF|
+      OR <ls_repo>-name = |SFBS|.
+        <ls_repo>-skip        = abap_true.
+        <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/2469|.
+      ENDIF.
+
     ENDLOOP.
 
     SORT rt_repos BY name.
