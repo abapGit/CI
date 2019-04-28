@@ -46,7 +46,9 @@ CLASS lcl_abapgit_ci_update IMPLEMENTATION.
   METHOD send_to_slack.
 
     TRY.
-        NEW zcl_abapgit_ci_slack( token )->post( |abapGit CI error: abapGit CI update failed with "{ ix_error->get_text( ) }"| ).
+        NEW zcl_abapgit_ci_slack( token )->post(
+                |abapGit CI error: abapGit CI update failed with |
+             && |"{ ix_error->get_text( ) }"| ).
 
       CATCH zcx_abapgit_exception INTO DATA(lx_error).
         MESSAGE lx_error TYPE 'S' DISPLAY LIKE 'E'.

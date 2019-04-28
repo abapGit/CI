@@ -42,7 +42,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_HTML IMPLEMENTATION.
+CLASS zcl_abapgit_ci_html IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -98,12 +98,16 @@ CLASS ZCL_ABAPGIT_CI_HTML IMPLEMENTATION.
                      COND #( WHEN ms_result-ci_has_errors = abap_true
                              THEN |CI failed|
                              ELSE |CI successful| ) }</h2>\n|
-           && |<h3>Date: { date DATE = USER } - Time: { time TIME = USER } { lv_timezone } - Duration { ms_result-statistics-duration_in_seconds } seconds</h3>\n|
+           && |<h3>Date: { date DATE = USER } |
+           && |- Time: { time TIME = USER } { lv_timezone } |
+           && |- Duration { ms_result-statistics-duration_in_seconds } seconds</h3>\n|
            && |<h3>Repo links: \n|
            && |<a href='https://github.com/larshp/abapGit'>abapGit</a> \| \n|
            && |<a href='https://github.com/abapGit/CI'>abapGit CI</a> \| \n|
            && |<a href='https://github.com/abapGit/ci.abapgit.org'>abapGit CI results</a></h3>\n|
-           && |<h3>Test cases: Total { ms_result-statistics-test_cases-total } \| Successful { ms_result-statistics-test_cases-successful } \| Failed { ms_result-statistics-test_cases-failed } \n|
+           && |<h3>Test cases: Total { ms_result-statistics-test_cases-total } \| |
+           && |Successful { ms_result-statistics-test_cases-successful } \| |
+           && |Failed { ms_result-statistics-test_cases-failed } \n|
            && |<br/><br/>\n|.
 
   ENDMETHOD.
@@ -114,8 +118,10 @@ CLASS ZCL_ABAPGIT_CI_HTML IMPLEMENTATION.
     rv_html = |<style type="text/css">\n|
            && |body \{ font-family:Arial, sans-serif; font-size:14px;\}\n|
            && |.tg  \{border-collapse:collapse;border-spacing:0;\}\n|
-           && |.tg td\{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;\}\n|
-           && |.tg th\{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;\}\n|
+           && |.tg td\{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;|
+           && |border-width:1px;overflow:hidden;word-break:normal;border-color:black;\}\n|
+           && |.tg th\{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;|
+           && |border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;\}\n|
            && |.tg .tg-kiyi\{font-weight:bold;border-color:inherit;text-align:left\}\n|
            && |.tg .tg-xldj\{border-color:inherit;text-align:left\}\n|
            && |.ok \{ background-color: lightgreen \}\n|

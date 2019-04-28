@@ -29,7 +29,12 @@ CLASS lcl_table_renderer IMPLEMENTATION.
 
     LOOP AT mo_struct_descr->get_components( ) ASSIGNING FIELD-SYMBOL(<ls_component>).
 
-      rv_html = rv_html && |<th class="tg-kiyi">{ CAST cl_abap_elemdescr( <ls_component>-type )->get_ddic_field( )-scrtext_m }</th>\n|.
+      rv_html = rv_html
+            && |<th class="tg-kiyi">|
+            && |{ CAST cl_abap_elemdescr( <ls_component>-type
+                           )->get_ddic_field(
+                           )-scrtext_m }|
+            && |</th>\n|.
 
     ENDLOOP.
 
@@ -40,12 +45,12 @@ CLASS lcl_table_renderer IMPLEMENTATION.
 
   METHOD render_table_lines.
 
-    FIELD-SYMBOLS: <table> TYPE INDEX TABLE.
+    FIELD-SYMBOLS: <lt_table> TYPE INDEX TABLE.
 
-    ASSIGN mr_table->* TO <table>.
+    ASSIGN mr_table->* TO <lt_table>.
     ASSERT sy-subrc = 0.
 
-    LOOP AT <table> ASSIGNING FIELD-SYMBOL(<ls_line>).
+    LOOP AT <lt_table> ASSIGNING FIELD-SYMBOL(<ls_line>).
 
       rv_html = rv_html && |<tr>\n|.
 

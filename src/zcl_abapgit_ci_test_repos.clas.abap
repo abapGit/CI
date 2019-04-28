@@ -8,6 +8,7 @@ CLASS zcl_abapgit_ci_test_repos DEFINITION
 
   PROTECTED SECTION.
   PRIVATE SECTION.
+
     METHODS:
       fetch_repo_page
         IMPORTING
@@ -179,7 +180,8 @@ CLASS ZCL_ABAPGIT_CI_TEST_REPOS IMPLEMENTATION.
 
       IF <ls_repo>-name = |DDLX_old|.
         <ls_repo>-skip        = abap_true.
-        <ls_repo>-skip_reason = |Skip because it's an old testcase. abapGit indicates diff because migration to new format|.
+        <ls_repo>-skip_reason = |Skip because it's an old testcase. |
+                             && |abapGit indicates diff because migration to new format|.
       ENDIF.
 
       IF <ls_repo>-name = |DEVC_component|.
@@ -187,7 +189,7 @@ CLASS ZCL_ABAPGIT_CI_TEST_REPOS IMPLEMENTATION.
         <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/1880|.
       ENDIF.
 
-      IF  <ls_repo>-name = |SQSC|
+      IF <ls_repo>-name = |SQSC|
       AND cl_db_sys=>is_in_memory_db = abap_false.
         <ls_repo>-skip        = abap_true.
         <ls_repo>-skip_reason = |Runs only on HANA|.

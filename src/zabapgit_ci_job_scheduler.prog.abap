@@ -37,7 +37,7 @@ SELECTION-SCREEN PUSHBUTTON 50(25) but3 USER-COMMAND cli3.
 SELECTION-SCREEN END OF LINE.
 SELECTION-SCREEN END OF BLOCK b1.
 
-CLASS controller DEFINITION.
+CLASS lcl_controller DEFINITION.
 
   PUBLIC SECTION.
     CLASS-METHODS:
@@ -67,7 +67,7 @@ CLASS controller DEFINITION.
 
 ENDCLASS.
 
-CLASS controller IMPLEMENTATION.
+CLASS lcl_controller IMPLEMENTATION.
 
   METHOD start.
 
@@ -189,7 +189,9 @@ CLASS controller IMPLEMENTATION.
 
     DATA: lv_rc TYPE sy-subrc.
 
-    CHECK: iv_variant IS NOT INITIAL.
+    IF iv_variant IS INITIAL.
+      RETURN.
+    ENDIF.
 
     CALL FUNCTION 'RS_VARIANT_EXISTS'
       EXPORTING
@@ -213,40 +215,40 @@ CLASS controller IMPLEMENTATION.
 ENDCLASS.
 
 AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_var1.
-  controller=>program_variant_f4(
+  lcl_controller=>program_variant_f4(
     EXPORTING
       iv_program = zcl_abapgit_ci_job_scheduler=>co_report-update_abapgit
     CHANGING
       cv_variant = p_var1 ).
 
 AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_var2.
-  controller=>program_variant_f4(
+  lcl_controller=>program_variant_f4(
     EXPORTING
       iv_program = zcl_abapgit_ci_job_scheduler=>co_report-update_abapgit_ci
     CHANGING
       cv_variant = p_var2 ).
 
 AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_var3.
-  controller=>program_variant_f4(
+  lcl_controller=>program_variant_f4(
     EXPORTING
       iv_program = zcl_abapgit_ci_job_scheduler=>co_report-run_abapgit_ci
     CHANGING
       cv_variant = p_var3 ).
 
 AT SELECTION-SCREEN ON p_var1.
-  controller=>check_variant( iv_report  = zcl_abapgit_ci_job_scheduler=>co_report-update_abapgit
+  lcl_controller=>check_variant( iv_report  = zcl_abapgit_ci_job_scheduler=>co_report-update_abapgit
                              iv_variant = p_var1 ).
 
 AT SELECTION-SCREEN ON p_var2.
-  controller=>check_variant( iv_report  = zcl_abapgit_ci_job_scheduler=>co_report-update_abapgit_ci
+  lcl_controller=>check_variant( iv_report  = zcl_abapgit_ci_job_scheduler=>co_report-update_abapgit_ci
                              iv_variant = p_var2 ).
 
 AT SELECTION-SCREEN ON p_var3.
-  controller=>check_variant( iv_report  = zcl_abapgit_ci_job_scheduler=>co_report-run_abapgit_ci
+  lcl_controller=>check_variant( iv_report  = zcl_abapgit_ci_job_scheduler=>co_report-run_abapgit_ci
                              iv_variant = p_var3 ).
 
 AT SELECTION-SCREEN.
-  controller=>at_selection_screen( ).
+  lcl_controller=>at_selection_screen( ).
 
 INITIALIZATION.
   comm1 = TEXT-c01.
@@ -265,7 +267,7 @@ INITIALIZATION.
 
 START-OF-SELECTION.
   TRY.
-      NEW controller( )->start( ).
+      NEW lcl_controller( )->start( ).
 
     CATCH zcx_abapgit_exception INTO DATA(lx_error).
       MESSAGE lx_error TYPE 'S' DISPLAY LIKE 'E'.
