@@ -163,11 +163,6 @@ CLASS ZCL_ABAPGIT_CI_TEST_REPOS IMPLEMENTATION.
         <ls_repo>-skip_reason =  |skip because UI is called|.
       ENDIF.
 
-      IF <ls_repo>-name = |ECATT|.
-        <ls_repo>-skip        = abap_true.
-        <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/2113|.
-      ENDIF.
-
       IF <ls_repo>-name CS |SPRX|.
         <ls_repo>-skip        = abap_true.
         <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/87|.
