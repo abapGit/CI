@@ -172,8 +172,8 @@ CLASS ZCL_ABAPGIT_CI_REPOS IMPLEMENTATION.
     ENDLOOP.
 
     lo_repo->deserialize(
-      is_checks = ls_checks
-      ii_log    = NEW zcl_abapgit_log( ) ).
+        is_checks = ls_checks
+        ii_log    = NEW zcl_abapgit_log( ) ).
 
     syntax_check( lo_repo->get_package( ) ).
 
