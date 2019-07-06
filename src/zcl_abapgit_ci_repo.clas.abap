@@ -194,7 +194,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       <ls_warning_package>-decision = abap_true.
     ENDLOOP.
 
-    io_repo->deserialize( ls_checks ).
+    io_repo->deserialize(
+        is_checks = ls_checks
+        ii_log    = NEW zcl_abapgit_log( ) ).
 
     io_repo->refresh( iv_drop_cache = abap_true ).
 
