@@ -49,6 +49,14 @@ A job sequence is created with
 
 ![abapGit CI job scheduler](/img/ZABAPGIT_CI_JOB_SCHEDULER.png)
 
+**Check transportable packages**
+
+Optionally you can also let abapGit CI create the repositories in transportable packages. You need to activate the checkbox in the selection screen and specify the transport layer. Then the pull and purge actions will each get recorded into a transport request per repository. These get released and their content is checked to ensure it matches the objects in the repository.
+
+To set up a suitable transport landscape on the AS ABAP Developer Edition you need to create a new virtual system in STMS (for example `EXP`, `Virtual export system`). This serves as a dummy export target for transport requests. Next you need create a new transport layer (for example `ZEXP`) and connect the current system and the virtual system with it. Then save and activate the configuration.
+
+![STMS transports landscape](/img/STMS.png)
+
 **Prerequisites:**
 - abapGit repo
 - NW >= 7.50
