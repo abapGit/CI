@@ -16,6 +16,7 @@ CLASS zcl_abapgit_ci_repos DEFINITION
       process_repos
         IMPORTING
           it_repos              TYPE zif_abapgit_ci_definitions=>tty_repo
+          is_options            TYPE zif_abapgit_ci_definitions=>ty_repo_check_options
         RETURNING
           VALUE(rt_result_list) TYPE zif_abapgit_ci_definitions=>ty_result-repo_result_list.
 
@@ -39,13 +40,20 @@ CLASS zcl_abapgit_ci_repos DEFINITION
         CHANGING
           cs_ci_repo TYPE zabapgit_ci_result
         RAISING
-          zcx_abapgit_exception.
+          zcx_abapgit_exception,
+      get_repo_list_with_packages
+        IMPORTING
+          it_repos         TYPE zif_abapgit_ci_definitions=>tty_repo
+          iv_local         TYPE abap_bool
+          iv_transportable TYPE abap_bool
+        RETURNING
+          VALUE(rt_repos)  TYPE zif_abapgit_ci_definitions=>tty_repo_result_list.
 
 ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_REPOS IMPLEMENTATION.
+CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
 
   METHOD process_repo.
@@ -53,7 +61,7 @@ CLASS ZCL_ABAPGIT_CI_REPOS IMPLEMENTATION.
     " You should remember that we process the repo in synchron RFC because of
     " shortdumps there doesn't crash the main process.
 
-    cs_ci_repo-package = CONV devclass( |$___{ to_upper( cs_ci_repo-name ) }| ).
+    ASSERT cs_ci_repo-package IS NOT INITIAL.
 
     CALL FUNCTION 'ZABAPGIT_CI_PROCESS_REPO'
       DESTINATION 'NONE'
@@ -74,16 +82,12 @@ CLASS ZCL_ABAPGIT_CI_REPOS IMPLEMENTATION.
 
 
   METHOD process_repos.
+    rt_result_list = get_repo_list_with_packages( it_repos         = it_repos
+                                                  iv_local         = is_options-check_local
+                                                  iv_transportable = is_options-check_transportable ).
 
-    LOOP AT it_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
-
-      INSERT CORRESPONDING #( <ls_repo> )
-             INTO TABLE rt_result_list
-             ASSIGNING FIELD-SYMBOL(<ls_ci_repo>).
-
-      <ls_ci_repo>-skip = <ls_repo>-skip.
+    LOOP AT rt_result_list ASSIGNING FIELD-SYMBOL(<ls_ci_repo>).
       IF <ls_ci_repo>-skip = abap_true.
-        <ls_ci_repo>-message = <ls_repo>-skip_reason.
         CONTINUE.
       ENDIF.
 
@@ -178,4 +182,38 @@ CLASS ZCL_ABAPGIT_CI_REPOS IMPLEMENTATION.
     syntax_check( lo_repo->get_package( ) ).
 
   ENDMETHOD.
+
+  METHOD get_repo_list_with_packages.
+    FIELD-SYMBOLS: <ls_ci_repo> TYPE zabapgit_ci_result.
+
+    LOOP AT it_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
+      IF iv_local = abap_true.
+        INSERT CORRESPONDING #( <ls_repo> )
+               INTO TABLE rt_repos
+               ASSIGNING <ls_ci_repo>.
+        <ls_ci_repo>-package = CONV devclass( |$___{ to_upper( <ls_ci_repo>-name ) }| ).
+
+        IF <ls_ci_repo>-name = |SOTS|.
+          <ls_ci_repo>-skip        = abap_true.
+          <ls_ci_repo>-message = |Cannot be installed in local $-package|.
+        ENDIF.
+
+        IF <ls_ci_repo>-skip = abap_true.
+          <ls_ci_repo>-message = <ls_repo>-skip_reason.
+        ENDIF.
+      ENDIF.
+
+      IF iv_transportable = abap_true.
+        INSERT CORRESPONDING #( <ls_repo> )
+               INTO TABLE rt_repos
+               ASSIGNING <ls_ci_repo>.
+        <ls_ci_repo>-package = CONV devclass( |Z___{ to_upper( <ls_ci_repo>-name ) }| ).
+      ENDIF.
+
+      IF <ls_ci_repo>-skip = abap_true AND <ls_ci_repo>-message IS INITIAL.
+        <ls_ci_repo>-message = <ls_repo>-skip_reason.
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
 ENDCLASS.

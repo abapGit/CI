@@ -144,6 +144,13 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>LAYER</KEY>
+     <ENTRY>.</ENTRY>
+     <LENGTH>9</LENGTH>
+     <SPLIT>D</SPLIT>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_URL</KEY>
      <ENTRY>URL</ENTRY>
      <LENGTH>11</LENGTH>
@@ -153,6 +160,18 @@
      <KEY>REPO</KEY>
      <ENTRY>Repository checks</ENTRY>
      <LENGTH>25</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>REPOL</KEY>
+     <ENTRY>Check local packages ($___)</ENTRY>
+     <LENGTH>35</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>REPOT</KEY>
+     <ENTRY>Check transp. packages (Z___)</ENTRY>
+     <LENGTH>37</LENGTH>
     </item>
     <item>
      <ID>S</ID>
