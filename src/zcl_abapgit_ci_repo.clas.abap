@@ -278,7 +278,6 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       lv_transport = create_transport( iv_repo_name = cs_ri_repo-name
                                        iv_package   = cs_ri_repo-package
                                        iv_deletion  = abap_false ).
-*      zcl_abapgit_default_transport=>get_instance( )->set( lv_transport ).
     ENDIF.
 
     create_package( CHANGING cs_ri_repo = cs_ri_repo ).
@@ -331,7 +330,6 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       lv_transport = create_transport( iv_repo_name = cs_ri_repo-name
                                        iv_package   = cs_ri_repo-package
                                        iv_deletion  = abap_true ).
-*      zcl_abapgit_default_transport=>get_instance( )->set( lv_transport ).
     ENDIF.
 
     purge( EXPORTING io_repo      = lo_repo
@@ -344,7 +342,6 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
                                          iv_transport      = lv_transport
                                          iv_check_deletion = abap_true
                                CHANGING  cs_ri_repo        = cs_ri_repo ).
-*      zcl_abapgit_default_transport=>get_instance( )->reset( ).
     ENDIF.
 
     check_leftovers( CHANGING cs_ri_repo = cs_ri_repo ).
