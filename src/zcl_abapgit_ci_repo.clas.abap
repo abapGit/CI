@@ -198,10 +198,10 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       cs_ri_repo-create_package = zif_abapgit_ci_definitions=>co_status-not_ok.
 
       li_package->create( VALUE #(
-                            as4user  = sy-uname
-                            devclass = cs_ri_repo-package
-                            ctext    = |abapGit CI run|
-                            pdevclass = 'ZEXP'
+                            as4user   = sy-uname
+                            devclass  = cs_ri_repo-package
+                            ctext     = |abapGit CI run|
+                            pdevclass = cs_ri_repo-layer
                           ) ).
 
       cs_ri_repo-create_package = zif_abapgit_ci_definitions=>co_status-ok.

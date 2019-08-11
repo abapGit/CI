@@ -38,6 +38,7 @@ INTERFACE zif_abapgit_ci_definitions
     BEGIN OF ty_repo_check_options,
       check_local         TYPE abap_bool,
       check_transportable TYPE abap_bool,
+      layer               TYPE devlayer,
     END OF ty_repo_check_options,
     BEGIN OF ty_options,
       result_git_repo_url    TYPE string,
