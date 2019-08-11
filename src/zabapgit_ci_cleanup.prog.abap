@@ -69,11 +69,13 @@ CLASS lcl_main IMPLEMENTATION.
 
   METHOD release_transports.
     DATA: ls_ranges   TYPE trsel_ts_ranges,
-          lt_requests TYPE trwbo_request_headers.
+          lt_requests TYPE trwbo_request_headers,
+          lv_msg_text TYPE string.
     FIELD-SYMBOLS: <ls_request> TYPE trwbo_request_header.
 
     ls_ranges-as4text = p_txt.
     ls_ranges-request_status = VALUE #( ( sign = 'I' option = 'EQ' low = 'D' ) ).
+    ls_ranges-task_status = VALUE #( ( sign = 'I' option = 'EQ' low = 'D' ) ).
 
     CALL FUNCTION 'TRINT_SELECT_REQUESTS'
       IMPORTING
@@ -95,7 +97,7 @@ CLASS lcl_main IMPLEMENTATION.
       ENDIF.
     ENDIF.
 
-    LOOP AT lt_requests ASSIGNING <ls_request> WHERE trfunction = 'S'.
+    LOOP AT lt_requests ASSIGNING <ls_request> WHERE trfunction = 'S' AND trstatus <> 'R'.
       WRITE: / |Releasing task { <ls_request>-trkorr }|.
       CALL FUNCTION 'TR_RELEASE_REQUEST'
         EXPORTING
@@ -117,7 +119,10 @@ CLASS lcl_main IMPLEMENTATION.
           export_failed              = 12
           OTHERS                     = 13.
       IF sy-subrc <> 0.
-        zcx_abapgit_exception=>raise_t100( ).
+        MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+                WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
+                INTO lv_msg_text.
+        WRITE: / |Error: { lv_msg_text }|.
       ENDIF.
     ENDLOOP.
 
@@ -143,7 +148,10 @@ CLASS lcl_main IMPLEMENTATION.
           export_failed              = 12
           OTHERS                     = 13.
       IF sy-subrc <> 0.
-        zcx_abapgit_exception=>raise_t100( ).
+        MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+                WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
+                INTO lv_msg_text.
+        WRITE: / |Error: { lv_msg_text }|.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.
