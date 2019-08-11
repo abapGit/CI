@@ -204,8 +204,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
         devclass  = cs_ri_repo-package
         ctext     = |abapGit CI run|
         pdevclass = cs_ri_repo-layer
-        dlvunit   = 'HOME'
-      ).
+        dlvunit   = 'HOME' ).
 
       IF cs_ri_repo-layer IS INITIAL.
         li_package->create( ls_package_data ).
@@ -245,8 +244,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
             wrong_mainpack_value         = 19
             superpackage_invalid         = 20
             error_in_cts_checks          = 21
-            OTHERS                       = 22
-        ).
+            OTHERS                       = 22 ).
         IF sy-subrc <> 0.
           zcx_abapgit_exception=>raise_t100( ).
         ENDIF.
@@ -262,8 +260,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
             permission_failure     = 4
             unexpected_error       = 5
             intern_err             = 6
-            OTHERS                 = 7
-        ).
+            OTHERS                 = 7 ).
         IF sy-subrc <> 0.
           zcx_abapgit_exception=>raise_t100( ).
         ENDIF.
@@ -283,8 +280,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
             object_not_existing          = 8
             object_invalid               = 9
             unexpected_error             = 10
-            OTHERS                       = 11
-        ).
+            OTHERS                       = 11 ).
         IF sy-subrc <> 0.
           zcx_abapgit_exception=>raise_t100( ).
         ENDIF.
@@ -533,10 +529,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
                                   object   = <ls_file>-item-obj_type
                                   obj_name = <ls_file>-item-obj_name ] ).
         lv_transport_object_count = lv_transport_object_count + 1.
-      ELSE.
-        IF lv_first_not_found IS INITIAL.
-          lv_first_not_found = |{ <ls_file>-item-obj_type }-{ <ls_file>-item-obj_name }|.
-        ENDIF.
+      ELSEIF lv_first_not_found IS INITIAL.
+        lv_first_not_found = |{ <ls_file>-item-obj_type }-{ <ls_file>-item-obj_name }|.
       ENDIF.
     ENDLOOP.
 
