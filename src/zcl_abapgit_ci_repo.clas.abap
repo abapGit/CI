@@ -541,7 +541,6 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ENDLOOP.
 
     IF lv_repo_object_count <> lv_transport_object_count.
-      BREAK-POINT.
       zcx_abapgit_exception=>raise( |Found { lv_transport_object_count NUMBER = USER } of | &&
                                     |{ lv_repo_object_count NUMBER = USER } in | &&
                                     |{ COND #( WHEN iv_check_deletion = abap_true THEN 'CREATE' ELSE 'DELETE' ) } | &&
@@ -553,7 +552,6 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ENDLOOP.
 
     IF lv_objects_in_tr > lv_repo_object_count.
-      BREAK-POINT.
       zcx_abapgit_exception=>raise( |{ COND #( WHEN iv_check_deletion = abap_true THEN 'CREATE' ELSE 'DELETE' ) } | &&
                                     |transport { iv_transport } contains too many objects (| &&
                                     |{ lv_objects_in_tr NUMBER = USER }/{ lv_repo_object_count NUMBER = USER })| ).

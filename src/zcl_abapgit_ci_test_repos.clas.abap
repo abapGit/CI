@@ -157,11 +157,6 @@ CLASS ZCL_ABAPGIT_CI_TEST_REPOS IMPLEMENTATION.
     ENDDO.
 
     LOOP AT rt_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
-      IF <ls_repo>-name <> 'CLAS'.
-        DELETE rt_repos USING KEY loop_key ##TODO.
-        CONTINUE.
-      ENDIF.
-
       IF <ls_repo>-name = |CUS0|.
         <ls_repo>-skip        = abap_true.
         <ls_repo>-skip_reason =  |skip because UI is called|.
@@ -198,12 +193,6 @@ CLASS ZCL_ABAPGIT_CI_TEST_REPOS IMPLEMENTATION.
         <ls_repo>-skip        = abap_true.
         <ls_repo>-skip_reason = |Runs only on HANA|.
       ENDIF.
-
-      ##TODO.
-*      IF <ls_repo>-name = |SOTS|.
-*        <ls_repo>-skip        = abap_true.
-*        <ls_repo>-skip_reason = |Cannot be installed in local $-package|.
-*      ENDIF.
 
       IF <ls_repo>-name = |SFPF|
       AND do_we_have_an_ads_connection( ) = abap_false.
