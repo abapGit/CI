@@ -33,7 +33,20 @@ SELECTION-SCREEN END OF BLOCK b3.
 SELECTION-SCREEN BEGIN OF BLOCK b4  WITH FRAME TITLE TEXT-b04.
 PARAMETERS:
   generic TYPE abap_bool AS CHECKBOX DEFAULT 'X',
-  repo    TYPE abap_bool AS CHECKBOX DEFAULT 'X'.
+  repo    TYPE abap_bool AS CHECKBOX DEFAULT 'X' USER-COMMAND u1.
+SELECTION-SCREEN BEGIN OF LINE.
+SELECTION-SCREEN POSITION 4.
+PARAMETERS repol TYPE abap_bool AS CHECKBOX DEFAULT abap_true MODIF ID m1.
+SELECTION-SCREEN COMMENT 8(30) FOR FIELD repol MODIF ID m1.
+SELECTION-SCREEN END OF LINE.
+SELECTION-SCREEN BEGIN OF LINE.
+SELECTION-SCREEN POSITION 4.
+PARAMETERS repot TYPE abap_bool AS CHECKBOX DEFAULT abap_false MODIF ID m1 USER-COMMAND u2.
+SELECTION-SCREEN COMMENT 8(30) FOR FIELD repot MODIF ID m1.
+SELECTION-SCREEN POSITION 40.
+SELECTION-SCREEN COMMENT 40(20) FOR FIELD layer MODIF ID m1.
+PARAMETERS layer TYPE devlayer MODIF ID m1.
+SELECTION-SCREEN END OF LINE.
 SELECTION-SCREEN END OF BLOCK b4.
 
 INITIALIZATION.
@@ -50,6 +63,27 @@ INITIALIZATION.
   opt01 = TEXT-o01.
   opt02 = TEXT-o02.
   opt03 = TEXT-o03.
+
+AT SELECTION-SCREEN OUTPUT.
+  LOOP AT SCREEN.
+    IF screen-group1 = 'M1'.
+      screen-input = COND #( WHEN repo = abap_true THEN '1' ELSE '0' ).
+      MODIFY SCREEN.
+    ENDIF.
+
+    IF screen-name = 'LAYER'.
+      screen-input = COND #( WHEN repo = abap_true AND repot = abap_true THEN '1' ELSE '0' ).
+      MODIFY SCREEN.
+    ENDIF.
+
+    IF repot = abap_false.
+      CLEAR layer.
+    ENDIF.
+
+    IF repo = abap_false.
+      repol = repot = abap_false.
+    ENDIF.
+  ENDLOOP.
 
 CLASS lcl_abapgit_ci DEFINITION.
 
@@ -79,6 +113,10 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
             slack_oauth_token      = token
             exec_generic_checks    = generic
             exec_repository_checks = repo
+            repo_check_options = VALUE #(
+              check_local         = repol
+              check_transportable = repot
+            )
           )
         )->run( ).
 

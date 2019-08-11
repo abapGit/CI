@@ -116,7 +116,8 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
 
     IF ms_options-exec_repository_checks = abap_true.
       DATA(lt_repos)  = mi_repo_provider->get_repos( ).
-      ls_result-repo_result_list = mo_ci_repos->process_repos( lt_repos ).
+      ls_result-repo_result_list = mo_ci_repos->process_repos( it_repos   = lt_repos
+                                                               is_options = ms_options-repo_check_options ).
     ENDIF.
 
     IF ms_options-exec_generic_checks = abap_true.

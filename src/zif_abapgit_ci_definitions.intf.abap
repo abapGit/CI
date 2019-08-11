@@ -35,12 +35,17 @@ INTERFACE zif_abapgit_ci_definitions
       generic_result_list TYPE tty_generic_result_list,
     END OF ty_result .
   TYPES:
+    BEGIN OF ty_repo_check_options,
+      check_local         TYPE abap_bool,
+      check_transportable TYPE abap_bool,
+    END OF ty_repo_check_options,
     BEGIN OF ty_options,
       result_git_repo_url    TYPE string,
       post_errors_to_slack   TYPE abap_bool,
       slack_oauth_token      TYPE string,
       exec_generic_checks    TYPE abap_bool,
       exec_repository_checks TYPE abap_bool,
+      repo_check_options     TYPE ty_repo_check_options,
     END OF ty_options .
 
   CONSTANTS:
