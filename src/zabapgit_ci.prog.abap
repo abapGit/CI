@@ -116,6 +116,7 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
             repo_check_options = VALUE #(
               check_local         = repol
               check_transportable = repot
+              layer               = layer
             )
           )
         )->run( ).

@@ -43,11 +43,10 @@ CLASS zcl_abapgit_ci_repos DEFINITION
           zcx_abapgit_exception,
       get_repo_list_with_packages
         IMPORTING
-          it_repos         TYPE zif_abapgit_ci_definitions=>tty_repo
-          iv_local         TYPE abap_bool
-          iv_transportable TYPE abap_bool
+          it_repos        TYPE zif_abapgit_ci_definitions=>tty_repo
+          is_options      TYPE zif_abapgit_ci_definitions=>ty_repo_check_options
         RETURNING
-          VALUE(rt_repos)  TYPE zif_abapgit_ci_definitions=>tty_repo_result_list.
+          VALUE(rt_repos) TYPE zif_abapgit_ci_definitions=>tty_repo_result_list.
 
 ENDCLASS.
 
@@ -82,9 +81,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
 
   METHOD process_repos.
-    rt_result_list = get_repo_list_with_packages( it_repos         = it_repos
-                                                  iv_local         = is_options-check_local
-                                                  iv_transportable = is_options-check_transportable ).
+    rt_result_list = get_repo_list_with_packages( it_repos = it_repos is_options = is_options ).
 
     LOOP AT rt_result_list ASSIGNING FIELD-SYMBOL(<ls_ci_repo>).
       IF <ls_ci_repo>-skip = abap_true.
@@ -187,27 +184,24 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
     FIELD-SYMBOLS: <ls_ci_repo> TYPE zabapgit_ci_result.
 
     LOOP AT it_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
-      IF iv_local = abap_true.
+      IF is_options-check_local = abap_true.
         INSERT CORRESPONDING #( <ls_repo> )
                INTO TABLE rt_repos
                ASSIGNING <ls_ci_repo>.
         <ls_ci_repo>-package = CONV devclass( |$___{ to_upper( <ls_ci_repo>-name ) }| ).
 
         IF <ls_ci_repo>-name = |SOTS|.
-          <ls_ci_repo>-skip        = abap_true.
+          <ls_ci_repo>-skip = abap_true.
           <ls_ci_repo>-message = |Cannot be installed in local $-package|.
-        ENDIF.
-
-        IF <ls_ci_repo>-skip = abap_true.
-          <ls_ci_repo>-message = <ls_repo>-skip_reason.
         ENDIF.
       ENDIF.
 
-      IF iv_transportable = abap_true.
+      IF is_options-check_transportable = abap_true.
         INSERT CORRESPONDING #( <ls_repo> )
                INTO TABLE rt_repos
                ASSIGNING <ls_ci_repo>.
         <ls_ci_repo>-package = CONV devclass( |Z___{ to_upper( <ls_ci_repo>-name ) }| ).
+        <ls_ci_repo>-layer = is_options-layer.
       ENDIF.
 
       IF <ls_ci_repo>-skip = abap_true AND <ls_ci_repo>-message IS INITIAL.
