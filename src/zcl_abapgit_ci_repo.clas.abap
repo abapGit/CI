@@ -511,14 +511,14 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
         iv_condense_objectlist = abap_true
       IMPORTING
         et_objects             = lt_objects
-*       et_keys                =
-*       et_keys_str            =
       EXCEPTIONS
         invalid_input          = 1
         OTHERS                 = 2.
     IF sy-subrc <> 0.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
+
+    DELETE lt_objects WHERE pgmid <> 'R3TR'.
 
     LOOP AT io_repo->get_files_local( ) ASSIGNING FIELD-SYMBOL(<ls_file>) WHERE item-obj_type IS NOT INITIAL.
       IF <ls_file>-item-obj_type = 'DEVC'.
