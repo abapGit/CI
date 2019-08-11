@@ -113,7 +113,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       zcx_abapgit_exception=>raise( |Left over object { <ls_tadir>-object } { <ls_tadir>-obj_name }| ).
     ENDLOOP.
 
-    IF cs_ri_repo-package(1) = '$' ##TODO.
+    IF cs_ri_repo-layer IS INITIAL. " Only check leftover local packages
       LOOP AT lt_tadir ASSIGNING <ls_tadir>
                        WHERE object = 'DEVC'.
         zcx_abapgit_exception=>raise( |Left over package { <ls_tadir>-obj_name }| ).
@@ -515,11 +515,14 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ENDIF.
 
     DELETE lt_objects WHERE pgmid <> 'R3TR'.
+    DELETE lt_objects WHERE pgmid  = 'R3TR'
+                        AND object = 'DEVC'.
 
     LOOP AT io_repo->get_files_local( ) ASSIGNING FIELD-SYMBOL(<ls_file>) WHERE item-obj_type IS NOT INITIAL.
       IF <ls_file>-item-obj_type = 'DEVC'.
-        " Ignore DEVC for now as abapGit does not delete packages on uninstall and in abapGit CI packages are
-        " created beforehand and might still exist for the next run
+        " Packages cannot be deleted in the same transport as its contents. abapGit does not delete transportable
+        " packages on uninstall. Therefore these might still exist from the last run and might not be contained
+        " in this transport. -> ignore for now
         CONTINUE.
       ENDIF.
 
