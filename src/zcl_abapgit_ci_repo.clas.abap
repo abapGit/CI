@@ -16,8 +16,10 @@ CLASS zcl_abapgit_ci_repo DEFINITION
   PRIVATE SECTION.
     METHODS:
       create_package
+        IMPORTING
+          iv_transport TYPE trkorr OPTIONAL
         CHANGING
-          cs_ri_repo TYPE zabapgit_ci_result
+          cs_ri_repo   TYPE zabapgit_ci_result
         RAISING
           zcx_abapgit_exception,
 
@@ -197,12 +199,96 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
       cs_ri_repo-create_package = zif_abapgit_ci_definitions=>co_status-not_ok.
 
-      li_package->create( VALUE #(
-                            as4user   = sy-uname
-                            devclass  = cs_ri_repo-package
-                            ctext     = |abapGit CI run|
-                            pdevclass = cs_ri_repo-layer
-                          ) ).
+      DATA(ls_package_data) = VALUE scompkdtln(
+        as4user   = sy-uname
+        devclass  = cs_ri_repo-package
+        ctext     = |abapGit CI run|
+        pdevclass = cs_ri_repo-layer
+        dlvunit   = 'HOME'
+      ).
+
+      IF cs_ri_repo-layer IS INITIAL.
+        li_package->create( ls_package_data ).
+      ELSE.
+        " Assume not initial layer means transports are required;
+        " zcl_abapgit_sap_package does not allow specifying a transport to create a package and will instead show
+        " a popup (refactor?). Use SAP API directly instead
+
+        ASSERT iv_transport IS NOT INITIAL.
+
+        cl_package_factory=>create_new_package(
+          EXPORTING
+            i_suppress_dialog            = abap_true
+          IMPORTING
+            e_package                    = DATA(li_sap_package)
+          CHANGING
+            c_package_data               = ls_package_data
+          EXCEPTIONS
+            object_already_existing      = 1
+            object_just_created          = 2
+            not_authorized               = 3
+            wrong_name_prefix            = 4
+            undefined_name               = 5
+            reserved_local_name          = 6
+            invalid_package_name         = 7
+            short_text_missing           = 8
+            software_component_invalid   = 9
+            layer_invalid                = 10
+            author_not_existing          = 11
+            component_not_existing       = 12
+            component_missing            = 13
+            prefix_in_use                = 14
+            unexpected_error             = 15
+            intern_err                   = 16
+            no_access                    = 17
+            invalid_translation_depth    = 18
+            wrong_mainpack_value         = 19
+            superpackage_invalid         = 20
+            error_in_cts_checks          = 21
+            OTHERS                       = 22
+        ).
+        IF sy-subrc <> 0.
+          zcx_abapgit_exception=>raise_t100( ).
+        ENDIF.
+
+        li_sap_package->save(
+          EXPORTING
+            i_transport_request    = iv_transport
+            i_suppress_dialog      = abap_true
+          EXCEPTIONS
+            object_invalid         = 1
+            object_not_changeable  = 2
+            cancelled_in_corr      = 3
+            permission_failure     = 4
+            unexpected_error       = 5
+            intern_err             = 6
+            OTHERS                 = 7
+        ).
+        IF sy-subrc <> 0.
+          zcx_abapgit_exception=>raise_t100( ).
+        ENDIF.
+
+        li_sap_package->set_changeable(
+          EXPORTING
+            i_changeable                 = abap_false
+            i_suppress_dialog            = abap_true
+          EXCEPTIONS
+            object_locked_by_other_user  = 1
+            permission_failure           = 2
+            object_already_changeable    = 3
+            object_already_unlocked      = 4
+            object_just_created          = 5
+            object_deleted               = 6
+            object_modified              = 7
+            object_not_existing          = 8
+            object_invalid               = 9
+            unexpected_error             = 10
+            OTHERS                       = 11
+        ).
+        IF sy-subrc <> 0.
+          zcx_abapgit_exception=>raise_t100( ).
+        ENDIF.
+      ENDIF.
 
       cs_ri_repo-create_package = zif_abapgit_ci_definitions=>co_status-ok.
 
@@ -280,7 +366,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
                                        iv_deletion  = abap_false ).
     ENDIF.
 
-    create_package( CHANGING cs_ri_repo = cs_ri_repo ).
+    create_package( EXPORTING iv_transport = COND #( WHEN lv_transportable = abap_true THEN lv_transport )
+                    CHANGING  cs_ri_repo   = cs_ri_repo ).
 
     TRY.
         clone( CHANGING cs_ri_repo = cs_ri_repo
