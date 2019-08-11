@@ -56,6 +56,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
 
   METHOD process_repo.
+    DATA: lv_message TYPE c LENGTH 255.
 
     " You should remember that we process the repo in synchron RFC because of
     " shortdumps there doesn't crash the main process.
@@ -67,12 +68,12 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
       CHANGING
         cs_ci_repo            = cs_ci_repo
       EXCEPTIONS
-        communication_failure = 1
-        system_failure        = 2
+        communication_failure = 1 MESSAGE lv_message
+        system_failure        = 2 MESSAGE lv_message
         OTHERS                = 3.
 
     IF sy-subrc <> 0.
-      cs_ci_repo-message = |Failure in ZABAPGIT_CI_PROCESS_REPO. Subrc = { sy-subrc } |.
+      cs_ci_repo-message = |Failure in ZABAPGIT_CI_PROCESS_REPO. Subrc = { sy-subrc } { lv_message }|.
       cs_ci_repo-status  = zif_abapgit_ci_definitions=>co_status-not_ok.
       RETURN.
     ENDIF.
