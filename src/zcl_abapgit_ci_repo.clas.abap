@@ -486,6 +486,12 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
           lv_objects_in_tr          TYPE i,
           lv_first_not_found        TYPE string.
 
+    IF iv_check_deletion = abap_false.
+      cs_ri_repo-check_create_transport = zif_abapgit_ci_definitions=>co_status-not_ok.
+    ELSE.
+      cs_ri_repo-check_delete_transport = zif_abapgit_ci_definitions=>co_status-not_ok.
+    ENDIF.
+
     CALL FUNCTION 'TR_READ_REQUEST'
       EXPORTING
         iv_trkorr        = iv_transport
@@ -551,6 +557,12 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       zcx_abapgit_exception=>raise( |{ COND #( WHEN iv_check_deletion = abap_true THEN 'CREATE' ELSE 'DELETE' ) } | &&
                                     |transport { iv_transport } contains too many objects (| &&
                                     |{ lv_objects_in_tr NUMBER = USER }/{ lv_repo_object_count NUMBER = USER })| ).
+    ENDIF.
+
+    IF iv_check_deletion = abap_false.
+      cs_ri_repo-check_create_transport = zif_abapgit_ci_definitions=>co_status-ok.
+    ELSE.
+      cs_ri_repo-check_delete_transport = zif_abapgit_ci_definitions=>co_status-ok.
     ENDIF.
   ENDMETHOD.
 

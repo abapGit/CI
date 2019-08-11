@@ -103,7 +103,10 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
       OR <ls_ci_repo>-pull           = zif_abapgit_ci_definitions=>co_status-not_ok
       OR <ls_ci_repo>-syntax_check   = zif_abapgit_ci_definitions=>co_status-not_ok
       OR <ls_ci_repo>-purge          = zif_abapgit_ci_definitions=>co_status-not_ok
-      OR <ls_ci_repo>-status         = zif_abapgit_ci_definitions=>co_status-not_ok.
+      OR <ls_ci_repo>-status         = zif_abapgit_ci_definitions=>co_status-not_ok
+      OR ( <ls_ci_repo>-layer IS NOT INITIAL AND
+           ( <ls_ci_repo>-check_create_transport = zif_abapgit_ci_definitions=>co_status-not_ok OR
+             <ls_ci_repo>-check_delete_transport = zif_abapgit_ci_definitions=>co_status-not_ok ) ).
 
         <ls_ci_repo>-status = zif_abapgit_ci_definitions=>co_status-not_ok.
 
