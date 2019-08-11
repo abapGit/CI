@@ -187,6 +187,8 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
   METHOD get_repo_list_with_packages.
     FIELD-SYMBOLS: <ls_ci_repo> TYPE zabapgit_ci_result.
 
+    " TODO: Unify the Skip-handling for both complete skips and only local / transportable skips
+
     LOOP AT it_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
       IF is_options-check_local = abap_true.
         INSERT CORRESPONDING #( <ls_repo> )
@@ -198,6 +200,10 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
           <ls_ci_repo>-skip = abap_true.
           <ls_ci_repo>-message = |Cannot be installed in local $-package|.
         ENDIF.
+
+        IF <ls_ci_repo>-skip = abap_true AND <ls_ci_repo>-message IS INITIAL.
+          <ls_ci_repo>-message = <ls_repo>-skip_reason.
+        ENDIF.
       ENDIF.
 
       IF is_options-check_transportable = abap_true.
@@ -206,10 +212,10 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
                ASSIGNING <ls_ci_repo>.
         <ls_ci_repo>-package = CONV devclass( |Z___{ to_upper( <ls_ci_repo>-name ) }| ).
         <ls_ci_repo>-layer = is_options-layer.
-      ENDIF.
 
-      IF <ls_ci_repo>-skip = abap_true AND <ls_ci_repo>-message IS INITIAL.
-        <ls_ci_repo>-message = <ls_repo>-skip_reason.
+        IF <ls_ci_repo>-skip = abap_true AND <ls_ci_repo>-message IS INITIAL.
+          <ls_ci_repo>-message = <ls_repo>-skip_reason.
+        ENDIF.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.
