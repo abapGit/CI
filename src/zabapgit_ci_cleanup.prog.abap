@@ -51,8 +51,7 @@ CLASS lcl_main IMPLEMENTATION.
       IF ls_checks-transport-required = abap_true.
         IF lv_transport IS INITIAL.
           lv_transport = zcl_abapgit_ui_factory=>get_popups( )->popup_transport_request(
-            VALUE #( request = 'K' task = 'S' )
-          ).
+            VALUE #( request = 'K' task = 'S' ) ).
         ENDIF.
         ls_checks-transport-transport = lv_transport.
       ENDIF.
