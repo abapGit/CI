@@ -533,7 +533,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
                                   obj_name = <ls_file>-item-obj_name ] ).
         lv_transport_object_count = lv_transport_object_count + 1.
       ELSEIF lv_first_not_found IS INITIAL.
-        lv_first_not_found = |{ <ls_file>-item-obj_type }-{ <ls_file>-item-obj_name }|.
+        lv_first_not_found = | (first missing: { <ls_file>-item-obj_type }-{ <ls_file>-item-obj_name })|.
       ENDIF.
     ENDLOOP.
 
@@ -541,7 +541,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       zcx_abapgit_exception=>raise( |Found { lv_transport_object_count NUMBER = USER } of | &&
                                     |{ lv_repo_object_count NUMBER = USER } in | &&
                                     |{ COND #( WHEN iv_check_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
-                                    |transport { iv_transport } (first { lv_first_not_found })| ).
+                                    |transport { iv_transport }{ lv_first_not_found }| ).
     ENDIF.
 
     LOOP AT lt_objects TRANSPORTING NO FIELDS WHERE object <> 'DEVC'.
