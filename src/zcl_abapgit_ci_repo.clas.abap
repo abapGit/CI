@@ -535,6 +535,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ENDIF.
 
     APPEND LINES OF lt_converted_r3tr_objects TO lt_objects.
+    SORT lt_objects BY pgmid object obj_name.
+    DELETE ADJACENT DUPLICATES FROM lt_objects COMPARING pgmid object obj_name.
 
     DELETE lt_objects WHERE pgmid <> 'R3TR'.
     DELETE lt_objects WHERE pgmid  = 'R3TR'
