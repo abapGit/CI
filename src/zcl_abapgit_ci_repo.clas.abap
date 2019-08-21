@@ -552,7 +552,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
       IF line_exists( lt_objects[ pgmid    = 'R3TR'
                                   object   = <ls_file>-item-obj_type
-                                  obj_name = <ls_file>-item-obj_name ] ).
+                                  obj_name = <ls_file>-item-obj_name
+                                  objfunc  = COND #( WHEN iv_check_deletion = abap_true THEN 'D' ELSE space ) ] ).
         lv_transport_object_count = lv_transport_object_count + 1.
       ELSEIF lv_first_not_found IS INITIAL.
         lv_first_not_found = | (first missing: { <ls_file>-item-obj_type }-{ <ls_file>-item-obj_name })|.
