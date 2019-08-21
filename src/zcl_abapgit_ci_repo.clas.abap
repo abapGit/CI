@@ -480,7 +480,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
           lv_repo_object_count      TYPE i,
           lv_transport_object_count TYPE i,
           lv_objects_in_tr          TYPE i,
-          lv_first_not_found        TYPE string.
+          lv_first_not_found        TYPE string,
+          lt_converted_r3tr_objects TYPE tr_objects.
 
     IF iv_check_deletion = abap_false.
       cs_ri_repo-check_create_transport = zif_abapgit_ci_definitions=>co_status-not_ok.
@@ -513,6 +514,27 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     IF sy-subrc <> 0.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
+
+    " Convert LIMU to R3TR
+    CALL FUNCTION 'TRINT_COMPLETE_REQUEST'
+      EXPORTING
+        it_e071              = lt_objects
+        iv_without_update    = abap_true
+      IMPORTING
+        et_e071_complement   = lt_converted_r3tr_objects
+      EXCEPTIONS
+        invalid_request_type = 1
+        invalid_request      = 2
+        no_authority         = 3
+        object_append_error  = 4
+        no_systemname        = 5
+        no_systemtype        = 6
+        OTHERS               = 7.
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+    APPEND LINES OF lt_converted_r3tr_objects TO lt_objects.
 
     DELETE lt_objects WHERE pgmid <> 'R3TR'.
     DELETE lt_objects WHERE pgmid  = 'R3TR'
