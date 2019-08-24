@@ -90,8 +90,7 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
       ( repo_name          = |SOTS|
         skip_local         = abap_true
         skip_transportable = abap_false
-        reason             = |Cannot be installed in local $-package| )
-    ).
+        reason             = |Cannot be installed in local $-package| ) ).
   ENDMETHOD.
 
   METHOD do_we_have_an_ads_connection.
