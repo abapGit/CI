@@ -1,6 +1,8 @@
 * https://github.com/abapGit/CI
 REPORT zabapgit_ci.
 
+DATA: gv_repo_name TYPE c LENGTH 60.
+
 SELECTION-SCREEN BEGIN OF BLOCK b1  WITH FRAME TITLE TEXT-b01.
 SELECTION-SCREEN COMMENT  1(79) descr01.
 SELECTION-SCREEN COMMENT /1(79) descr02.
@@ -23,6 +25,10 @@ SELECTION-SCREEN SKIP.
 PARAMETERS:
   p_url  TYPE string LOWER CASE.
 SELECTION-SCREEN END OF BLOCK b2.
+
+SELECTION-SCREEN BEGIN OF BLOCK b5 WITH FRAME TITLE TEXT-b05.
+SELECT-OPTIONS: s_repos FOR gv_repo_name LOWER CASE.
+SELECTION-SCREEN END OF BLOCK b5.
 
 SELECTION-SCREEN BEGIN OF BLOCK b3  WITH FRAME TITLE TEXT-b03.
 PARAMETERS:
@@ -105,7 +111,7 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
 
     TRY.
         NEW zcl_abapgit_ci_controller(
-          ii_repo_provider = NEW zcl_abapgit_ci_test_repos( )
+          ii_repo_provider = NEW zcl_abapgit_ci_test_repos( CORRESPONDING #( s_repos[] ) )
           ii_view          = NEW zcl_abapgit_ci_alv_view( )
           is_options       = VALUE #(
             result_git_repo_url    = p_url

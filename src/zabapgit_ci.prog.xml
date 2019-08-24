@@ -61,6 +61,12 @@
     </item>
     <item>
      <ID>I</ID>
+     <KEY>B05</KEY>
+     <ENTRY>Restrict repository selection</ENTRY>
+     <LENGTH>40</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>D01</KEY>
      <ENTRY>This report starts the abapGit CI process.</ENTRY>
      <LENGTH>112</LENGTH>
@@ -146,7 +152,7 @@
      <ID>S</ID>
      <KEY>LAYER</KEY>
      <ENTRY>.</ENTRY>
-     <LENGTH>9</LENGTH>
+     <LENGTH>23</LENGTH>
      <SPLIT>D</SPLIT>
     </item>
     <item>
@@ -178,6 +184,12 @@
      <KEY>SLACK</KEY>
      <ENTRY>Post errors to Slack channel</ENTRY>
      <LENGTH>36</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>S_REPOS</KEY>
+     <ENTRY>Repo names</ENTRY>
+     <LENGTH>18</LENGTH>
     </item>
     <item>
      <ID>S</ID>
