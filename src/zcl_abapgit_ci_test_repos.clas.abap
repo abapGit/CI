@@ -19,11 +19,7 @@ CLASS zcl_abapgit_ci_test_repos DEFINITION
         RETURNING
           VALUE(rt_repos)      TYPE zif_abapgit_ci_definitions=>tty_repo
         RAISING
-          zcx_abapgit_exception,
-
-      do_we_have_an_ads_connection
-        RETURNING
-          VALUE(rv_is_ads_on) TYPE abap_bool.
+          zcx_abapgit_exception.
 
     DATA:
       mt_repo_name_range TYPE zcl_abapgit_ci_test_repos=>gty_repo_name_range.
@@ -32,37 +28,6 @@ ENDCLASS.
 
 
 CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
-
-
-  METHOD do_we_have_an_ads_connection.
-
-    SELECT SINGLE FROM fpconnect
-           FIELDS destination
-           INTO @DATA(lv_destination).
-
-    IF sy-subrc <> 0.
-      RETURN.
-    ENDIF.
-
-    CALL FUNCTION 'RFC_READ_DESTINATION_TYPE'
-      EXPORTING
-        destination             = lv_destination
-        authority_check         = abap_false
-        bypass_buf              = abap_false
-      EXCEPTIONS
-        authority_not_available = 1
-        destination_not_exist   = 2
-        information_failure     = 3
-        internal_failure        = 4
-        OTHERS                  = 5.
-
-    IF sy-subrc = 0.
-      rv_is_ads_on = abap_true.
-    ENDIF.
-
-  ENDMETHOD.
-
-
   METHOD fetch_repo_page.
 
     DATA: li_http_client TYPE REF TO if_http_client,
@@ -161,83 +126,8 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
 
     ENDDO.
 
-    LOOP AT rt_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
-      IF <ls_repo>-name NOT IN mt_repo_name_range.
-        " Excluded for test purposes, no need for skip reason
-        DELETE rt_repos USING KEY loop_key.
-        CONTINUE.
-      ENDIF.
-
-      IF <ls_repo>-name = |CUS0|.
-        <ls_repo>-skip        = abap_true.
-        <ls_repo>-skip_reason =  |skip because UI is called|.
-      ENDIF.
-
-      IF <ls_repo>-name = |FDT0|.
-        <ls_repo>-skip        = abap_true.
-        <ls_repo>-skip_reason =  |https://github.com/larshp/abapGit/pull/2688|.
-      ENDIF.
-
-      IF <ls_repo>-name CS |SPRX|.
-        <ls_repo>-skip        = abap_true.
-        <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/87|.
-      ENDIF.
-
-      IF <ls_repo>-name = |SFSW|.
-        <ls_repo>-skip        = abap_true.
-        <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/2083|.
-      ENDIF.
-
-      IF <ls_repo>-name = |DDLX_old|.
-        <ls_repo>-skip        = abap_true.
-        <ls_repo>-skip_reason = |Skip because it's an old testcase. |
-                             && |abapGit indicates diff because migration to new format|.
-      ENDIF.
-
-      IF <ls_repo>-name = |DEVC_component|.
-        <ls_repo>-skip        = abap_true.
-        <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/1880|.
-      ENDIF.
-
-      IF <ls_repo>-name = |SQSC|
-      AND cl_db_sys=>is_in_memory_db = abap_false.
-        <ls_repo>-skip        = abap_true.
-        <ls_repo>-skip_reason = |Runs only on HANA|.
-      ENDIF.
-
-      IF <ls_repo>-name = |SFPF|
-      AND do_we_have_an_ads_connection( ) = abap_false.
-        <ls_repo>-skip        = abap_true.
-        <ls_repo>-skip_reason = |Adobe Document Service (ADS) connection neccessary|.
-      ENDIF.
-
-      IF <ls_repo>-name = |TTYP_with_CLAS_reference|.
-        <ls_repo>-skip        = abap_true.
-        <ls_repo>-skip_reason = |circular dependency https://github.com/larshp/abapGit/issues/2338|.
-      ENDIF.
-
-      IF <ls_repo>-name = |SHLP_with_exit|.
-        <ls_repo>-skip        = abap_true.
-        <ls_repo>-skip_reason = |circular dependency https://github.com/larshp/abapGit/issues/2338|.
-      ENDIF.
-
-      IF <ls_repo>-name = |PROG_ci_variant|.
-        <ls_repo>-skip        = abap_true.
-        <ls_repo>-skip_reason = |activation error https://github.com/larshp/abapGit/issues/2338|.
-      ENDIF.
-
-      IF <ls_repo>-name = |DOMA_fixed_values_single_translated|.
-        <ls_repo>-skip        = abap_true.
-        <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/2385|.
-      ENDIF.
-
-      IF <ls_repo>-name = |SFBF|
-      OR <ls_repo>-name = |SFBS|.
-        <ls_repo>-skip        = abap_true.
-        <ls_repo>-skip_reason = |https://github.com/larshp/abapGit/issues/2469|.
-      ENDIF.
-
-    ENDLOOP.
+    " Excluded for test purposes, no need for skip reason
+    DELETE rt_repos WHERE name NOT IN mt_repo_name_range.
 
     SORT rt_repos BY name.
   ENDMETHOD.
