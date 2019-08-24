@@ -3,12 +3,15 @@ CLASS zcl_abapgit_ci_test_repos DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
+    TYPES:
+      gty_repo_name_range TYPE RANGE OF zif_abapgit_ci_definitions=>ty_repo-name.
     INTERFACES:
       zif_abapgit_ci_repo_provider.
+    METHODS:
+      constructor IMPORTING it_repo_name_range TYPE gty_repo_name_range OPTIONAL.
 
   PROTECTED SECTION.
   PRIVATE SECTION.
-
     METHODS:
       fetch_repo_page
         IMPORTING
@@ -22,11 +25,13 @@ CLASS zcl_abapgit_ci_test_repos DEFINITION
         RETURNING
           VALUE(rv_is_ads_on) TYPE abap_bool.
 
+    DATA:
+      mt_repo_name_range TYPE zcl_abapgit_ci_test_repos=>gty_repo_name_range.
 ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_TEST_REPOS IMPLEMENTATION.
+CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
 
 
   METHOD do_we_have_an_ads_connection.
@@ -157,6 +162,12 @@ CLASS ZCL_ABAPGIT_CI_TEST_REPOS IMPLEMENTATION.
     ENDDO.
 
     LOOP AT rt_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
+      IF <ls_repo>-name NOT IN mt_repo_name_range.
+        " Excluded for test purposes, no need for skip reason
+        DELETE rt_repos USING KEY loop_key.
+        CONTINUE.
+      ENDIF.
+
       IF <ls_repo>-name = |CUS0|.
         <ls_repo>-skip        = abap_true.
         <ls_repo>-skip_reason =  |skip because UI is called|.
@@ -229,6 +240,9 @@ CLASS ZCL_ABAPGIT_CI_TEST_REPOS IMPLEMENTATION.
     ENDLOOP.
 
     SORT rt_repos BY name.
+  ENDMETHOD.
 
+  METHOD constructor.
+    mt_repo_name_range = it_repo_name_range.
   ENDMETHOD.
 ENDCLASS.
