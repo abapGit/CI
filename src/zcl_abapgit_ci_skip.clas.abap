@@ -38,7 +38,7 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |https://github.com/larshp/abapGit/pull/2688| )
-      ( repo_name          = |*SPRX*|
+      ( repo_name          = |*SPRX_server_proxy*|
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |https://github.com/larshp/abapGit/issues/87| )
