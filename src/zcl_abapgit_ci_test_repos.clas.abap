@@ -1,17 +1,17 @@
-class ZCL_ABAPGIT_CI_TEST_REPOS definition
-  public
-  create public .
+CLASS zcl_abapgit_ci_test_repos DEFINITION
+  PUBLIC
+  CREATE PUBLIC .
 
-public section.
+  PUBLIC SECTION.
 
-  interfaces ZIF_ABAPGIT_CI_REPO_PROVIDER .
+    INTERFACES zif_abapgit_ci_repo_provider .
 
-  types:
-    gty_repo_name_range TYPE RANGE OF zif_abapgit_ci_definitions=>ty_repo-name .
+    TYPES:
+      gty_repo_name_range TYPE RANGE OF zif_abapgit_ci_definitions=>ty_repo-name .
 
-  methods CONSTRUCTOR
-    importing
-      !IT_REPO_NAME_RANGE type GTY_REPO_NAME_RANGE optional .
+    METHODS constructor
+      IMPORTING
+        !it_repo_name_range TYPE gty_repo_name_range OPTIONAL .
   PROTECTED SECTION.
   PRIVATE SECTION.
     METHODS:
@@ -29,7 +29,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_TEST_REPOS IMPLEMENTATION.
+CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
 
 
   METHOD constructor.
