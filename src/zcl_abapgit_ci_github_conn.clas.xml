@@ -3,9 +3,9 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <VSEOCLASS>
-    <CLSNAME>ZCL_ABAPGIT_CI_TEST_REPOS</CLSNAME>
+    <CLSNAME>ZCL_ABAPGIT_CI_GITHUB_CONN</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>abapGit CI test repos</DESCRIPT>
+    <DESCRIPT>abapGit CI GitHub Connection</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

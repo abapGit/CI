@@ -1,15 +1,17 @@
-CLASS zcl_abapgit_ci_test_repos DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_ABAPGIT_CI_TEST_REPOS definition
+  public
+  create public .
 
-  PUBLIC SECTION.
-    TYPES:
-      gty_repo_name_range TYPE RANGE OF zif_abapgit_ci_definitions=>ty_repo-name.
-    INTERFACES:
-      zif_abapgit_ci_repo_provider.
-    METHODS:
-      constructor IMPORTING it_repo_name_range TYPE gty_repo_name_range OPTIONAL.
+public section.
 
+  interfaces ZIF_ABAPGIT_CI_REPO_PROVIDER .
+
+  types:
+    gty_repo_name_range TYPE RANGE OF zif_abapgit_ci_definitions=>ty_repo-name .
+
+  methods CONSTRUCTOR
+    importing
+      !IT_REPO_NAME_RANGE type GTY_REPO_NAME_RANGE optional .
   PROTECTED SECTION.
   PRIVATE SECTION.
     METHODS:
@@ -27,57 +29,19 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_TEST_REPOS IMPLEMENTATION.
+
+
+  METHOD constructor.
+    mt_repo_name_range = it_repo_name_range.
+  ENDMETHOD.
+
+
   METHOD fetch_repo_page.
 
-    DATA: li_http_client TYPE REF TO if_http_client,
-          lv_rfcdes      TYPE rfcdes-rfcdest.
+    DATA li_http_client TYPE REF TO if_http_client.
 
-    lv_rfcdes = |API_GITHUB_{ sy-uname }|.
-
-    SELECT SINGLE FROM rfcdes
-           FIELDS rfcdest
-           WHERE rfcdest = @lv_rfcdes
-           INTO @lv_rfcdes.
-
-    IF sy-subrc = 0.
-
-      cl_http_client=>create_by_destination(
-        EXPORTING
-          destination              = lv_rfcdes
-        IMPORTING
-          client                   = li_http_client
-        EXCEPTIONS
-          argument_not_found       = 1
-          destination_not_found    = 2
-          destination_no_authority = 3
-          plugin_not_active        = 4
-          internal_error           = 5
-          OTHERS                   = 6 ).
-
-      IF sy-subrc <> 0.
-        zcx_abapgit_exception=>raise_t100( ).
-      ENDIF.
-
-    ELSE.
-
-      cl_http_client=>create_by_url(
-        EXPORTING
-          url                = 'https://api.github.com'
-          ssl_id             = 'ANONYM'
-        IMPORTING
-          client             = li_http_client
-        EXCEPTIONS
-          argument_not_found = 1
-          plugin_not_active  = 2
-          internal_error     = 3
-          OTHERS             = 4 ).
-
-      IF sy-subrc <> 0.
-        zcx_abapgit_exception=>raise_t100( ).
-      ENDIF.
-
-    ENDIF.
+    li_http_client = NEW zcl_abapgit_ci_github_conn( )->create_http_client( ).
 
     DATA(lo_rest_client) = NEW cl_rest_http_client( li_http_client ).
 
@@ -130,9 +94,5 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
     DELETE rt_repos WHERE name NOT IN mt_repo_name_range.
 
     SORT rt_repos BY name.
-  ENDMETHOD.
-
-  METHOD constructor.
-    mt_repo_name_range = it_repo_name_range.
   ENDMETHOD.
 ENDCLASS.
