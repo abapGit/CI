@@ -196,8 +196,9 @@
       "depth": 5
     },
     "no_public_attributes": {
-      "enabled": true,
-      "exclude": []
+      "exclude": [],
+      "reason": "",
+      "allowReadOnly": true
     },
     "object_naming": {
       "enabled": true,
