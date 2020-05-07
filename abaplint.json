@@ -54,10 +54,7 @@
       "enabled": true,
       "exclude": []
     },
-    "commented_code": {
-      "enabled": true,
-      "exclude": []
-    },
+    "commented_code": true,
     "contains_tab": {
       "enabled": true,
       "exclude": []
