@@ -5,6 +5,13 @@
     "skipGeneratedPersistentClasses": true,
     "skipGeneratedFunctionGroups": true
   },
+  "dependencies": [
+    {
+      "url": "https://github.com/abaplint/deps",
+      "folder": "/deps",
+      "files": "/src/**/*.*"
+    }
+  ],  
   "syntax": {
     "version": "v750",
     "errorNamespace": "^(Z|Y)",
@@ -47,10 +54,7 @@
       "enabled": true,
       "exclude": []
     },
-    "commented_code": {
-      "enabled": true,
-      "exclude": []
-    },
+    "commented_code": true,
     "contains_tab": {
       "enabled": true,
       "exclude": []
@@ -189,8 +193,9 @@
       "depth": 5
     },
     "no_public_attributes": {
-      "enabled": true,
-      "exclude": []
+      "exclude": [],
+      "reason": "",
+      "allowReadOnly": true
     },
     "object_naming": {
       "enabled": true,
