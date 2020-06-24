@@ -57,7 +57,7 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
     rv_html = |<!DOCTYPE html>\n|
            && |<html>\n|
            && |  <head>\n|
-           && |    { render_style(  ) }\n|
+           && |    { render_style( ) }\n|
            && |  <title>ci.abapgit.org</title>\n|
            && |  </head>\n|
            && |  <body>\n|

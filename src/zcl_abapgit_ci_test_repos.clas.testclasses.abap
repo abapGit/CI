@@ -20,7 +20,7 @@ CLASS ltcl_repos IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD check_repos_filled.
-    DATA(lt_repos)  = mo_cut->zif_abapgit_ci_repo_provider~get_repos( ).
+    DATA(lt_repos) = mo_cut->zif_abapgit_ci_repo_provider~get_repos( ).
     cl_aunit_assert=>assert_not_initial( lt_repos ).
   ENDMETHOD.
 
