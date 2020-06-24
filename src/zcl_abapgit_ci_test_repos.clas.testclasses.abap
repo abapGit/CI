@@ -3,7 +3,7 @@ CLASS ltcl_repos DEFINITION FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
 
   PUBLIC SECTION.
     METHODS:
-      check_repos_filled FOR TESTING raising cx_static_check.
+      check_repos_filled FOR TESTING RAISING cx_static_check.
 
   PRIVATE SECTION.
     DATA mo_cut TYPE REF TO zcl_abapgit_ci_test_repos.

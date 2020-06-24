@@ -24,7 +24,7 @@ CLASS zcl_abapgit_ci_test_repos DEFINITION
           zcx_abapgit_exception.
 
     DATA:
-      mt_repo_name_range TYPE zcl_abapgit_ci_test_repos=>gty_repo_name_range.
+      mt_repo_name_range TYPE gty_repo_name_range.
 ENDCLASS.
 
 
