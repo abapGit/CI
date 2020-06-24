@@ -51,7 +51,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_latest_build IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_LATEST_BUILD IMPLEMENTATION.
 
 
   METHOD check.
@@ -87,7 +87,7 @@ CLASS zcl_abapgit_ci_latest_build IMPLEMENTATION.
                                                                        devclass = co_package )
                                                     iv_language = sy-langu ).
 
-    lo_package->zif_abapgit_object~delete( ).
+    lo_package->zif_abapgit_object~delete( co_package ).
 
   ENDMETHOD.
 

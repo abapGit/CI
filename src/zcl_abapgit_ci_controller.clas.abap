@@ -115,7 +115,7 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
     GET TIME STAMP FIELD lv_start_timestamp.
 
     IF ms_options-exec_repository_checks = abap_true.
-      DATA(lt_repos)  = mi_repo_provider->get_repos( ).
+      DATA(lt_repos) = mi_repo_provider->get_repos( ).
       ls_result-repo_result_list = mo_ci_repos->process_repos( it_repos   = lt_repos
                                                                is_options = ms_options-repo_check_options ).
     ENDIF.
@@ -139,7 +139,7 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
     calculate_statistics( CHANGING cs_result = ls_result ).
 
     IF ms_options-result_git_repo_url IS NOT INITIAL.
-      NEW zcl_abapgit_ci_distributor( ms_options-result_git_repo_url  )->push_to_git_repo( is_result = ls_result ).
+      NEW zcl_abapgit_ci_distributor( ms_options-result_git_repo_url )->push_to_git_repo( is_result = ls_result ).
     ENDIF.
 
     IF ls_result-ci_has_errors = abap_true

@@ -10,4 +10,10 @@ CLASS lcl_mock_ui_functions IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD zif_abapgit_gui_functions~is_sapgui_for_java.
+
+    rv_result = abap_false.
+
+  ENDMETHOD.
+
 ENDCLASS.
