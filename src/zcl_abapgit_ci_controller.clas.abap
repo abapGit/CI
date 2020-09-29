@@ -4,17 +4,16 @@ CLASS zcl_abapgit_ci_controller DEFINITION
 
   PUBLIC SECTION.
 
-    METHODS:
-      constructor
-        IMPORTING
-          !ii_view          TYPE REF TO zif_abapgit_ci_view
-          !ii_repo_provider TYPE REF TO zif_abapgit_ci_repo_provider
-          !is_options       TYPE zif_abapgit_ci_definitions=>ty_options OPTIONAL,
-
-      run
-        RAISING
-          zcx_abapgit_exception.
-
+    METHODS constructor
+      IMPORTING
+        !ii_view          TYPE REF TO zif_abapgit_ci_view OPTIONAL
+        !ii_repo_provider TYPE REF TO zif_abapgit_ci_repo_provider
+        !is_options       TYPE zif_abapgit_ci_definitions=>ty_options OPTIONAL .
+    METHODS run
+      RETURNING
+        VALUE(rs_result) TYPE zif_abapgit_ci_definitions=>ty_result
+      RAISING
+        zcx_abapgit_exception .
   PROTECTED SECTION.
   PRIVATE SECTION.
     DATA:
@@ -45,7 +44,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_CONTROLLER IMPLEMENTATION.
 
 
   METHOD calculate_statistics.
@@ -66,7 +65,9 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
 
   METHOD constructor.
 
-    mi_view          = ii_view.
+    IF ii_view IS SUPPLIED.
+      mi_view = ii_view.
+    ENDIF.
     mi_repo_provider = ii_repo_provider.
     ms_options       = is_options.
 
@@ -149,7 +150,11 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
 
     ENDIF.
 
-    mi_view->display( CHANGING cs_result = ls_result ).
+    IF mi_view IS BOUND.
+      mi_view->display( CHANGING cs_result = ls_result ).
+    ENDIF.
+
+    rs_result = ls_result.
 
   ENDMETHOD.
 ENDCLASS.
