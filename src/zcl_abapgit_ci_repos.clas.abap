@@ -168,7 +168,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
       zcx_abapgit_exception=>raise( |Couldn't find { iv_repo_name } repo| ).
     ENDIF.
 
-    lo_repo->set_branch_name( 'refs/heads/master' ).
+    lo_repo->select_branch( 'refs/heads/master' ).
 
     DATA(ls_checks) = lo_repo->deserialize_checks( ).
 
