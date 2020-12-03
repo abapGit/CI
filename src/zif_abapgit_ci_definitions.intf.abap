@@ -10,7 +10,6 @@ INTERFACE zif_abapgit_ci_definitions
   TYPES:
     tty_repo TYPE STANDARD TABLE OF ty_repo
              WITH NON-UNIQUE DEFAULT KEY .
-  TYPES ty_status TYPE char6 .
   TYPES:
     tty_repo_result_list    TYPE STANDARD TABLE OF zabapgit_ci_result
                                  WITH NON-UNIQUE DEFAULT KEY .
