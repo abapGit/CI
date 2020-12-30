@@ -17,7 +17,7 @@ CLASS zcl_abapgit_ci_distributor DEFINITION
           zcx_abapgit_exception.
 
 
-protected section.
+  PROTECTED SECTION.
   PRIVATE SECTION.
     CONSTANTS:
       co_package TYPE devclass VALUE '$_ABAPGIT_CI_RESULTS' ##NO_TEXT.
