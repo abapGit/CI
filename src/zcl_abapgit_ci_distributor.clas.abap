@@ -17,6 +17,7 @@ CLASS zcl_abapgit_ci_distributor DEFINITION
           zcx_abapgit_exception.
 
 
+protected section.
   PRIVATE SECTION.
     CONSTANTS:
       co_package TYPE devclass VALUE '$_ABAPGIT_CI_RESULTS' ##NO_TEXT.
@@ -53,7 +54,8 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_DISTRIBUTOR IMPLEMENTATION.
+
 
   METHOD constructor.
 
@@ -65,53 +67,20 @@ CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
 
   ENDMETHOD.
 
-  METHOD push_to_git_repo.
 
-    DATA:
-      ls_comment  TYPE zif_abapgit_definitions=>ty_comment,
-      lv_timezone TYPE timezone.
+  METHOD create_package.
 
-    DATA(lo_repo) = get_repo( ).
+    DATA(lo_package) = zcl_abapgit_factory=>get_sap_package( co_package ).
 
-    DATA(ls_checks) = lo_repo->deserialize_checks( ).
+    IF lo_package->exists( ) = abap_false.
 
-    LOOP AT ls_checks-overwrite ASSIGNING FIELD-SYMBOL(<ls_overwrite>).
-      <ls_overwrite>-decision = abap_true.
-    ENDLOOP.
+      lo_package->create( VALUE #(
+                            as4user  = sy-uname
+                            devclass = co_package
+                            ctext    = |abapGit CI run results|
+                          ) ).
 
-    lo_repo->deserialize(
-        is_checks = ls_checks
-        ii_log    = NEW zcl_abapgit_log( ) ).
-
-    save_results_in_mime_repo( is_result ).
-
-    DATA(lo_stage) = stage( lo_repo ).
-
-    DATA(lo_user) = zcl_abapgit_user_master_record=>get_instance( sy-uname ).
-
-    ls_comment-committer-name  = lo_user->get_name( ).
-    ls_comment-committer-email = lo_user->get_email( ).
-
-    CALL FUNCTION 'GET_SYSTEM_TIMEZONE'
-      IMPORTING
-        timezone            = lv_timezone
-      EXCEPTIONS
-        customizing_missing = 1
-        OTHERS              = 2.
-
-    IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
-
-    CONVERT TIME STAMP is_result-statistics-finish_timestamp
-      TIME ZONE lv_timezone
-      INTO DATE DATA(start_date)
-           TIME DATA(start_time).
-
-    ls_comment-comment = |abapGit CI results from { start_date DATE = USER } { start_time TIME = USER }|.
-
-    lo_repo->push( is_comment = ls_comment
-                   io_stage   = lo_stage ).
 
   ENDMETHOD.
 
@@ -149,19 +118,53 @@ CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD create_package.
+  METHOD push_to_git_repo.
 
-    DATA(lo_package) = zcl_abapgit_factory=>get_sap_package( co_package ).
+    DATA:
+      ls_comment  TYPE zif_abapgit_definitions=>ty_comment,
+      lv_timezone TYPE timezone.
 
-    IF lo_package->exists( ) = abap_false.
+    DATA(lo_repo) = get_repo( ).
 
-      lo_package->create( VALUE #(
-                            as4user  = sy-uname
-                            devclass = co_package
-                            ctext    = |abapGit CI run results|
-                          ) ).
+    DATA(ls_checks) = lo_repo->deserialize_checks( ).
 
+    LOOP AT ls_checks-overwrite ASSIGNING FIELD-SYMBOL(<ls_overwrite>).
+      <ls_overwrite>-decision = abap_true.
+    ENDLOOP.
+
+    lo_repo->deserialize(
+        is_checks = ls_checks
+        ii_log    = NEW zcl_abapgit_log( ) ).
+
+    save_results_in_mime_repo( is_result ).
+
+    DATA(lo_stage) = stage( lo_repo ).
+
+    DATA(lo_user) = zcl_abapgit_user_record=>get_instance( sy-uname ).
+
+    ls_comment-committer-name  = lo_user->get_name( ).
+    ls_comment-committer-email = lo_user->get_email( ).
+
+    CALL FUNCTION 'GET_SYSTEM_TIMEZONE'
+      IMPORTING
+        timezone            = lv_timezone
+      EXCEPTIONS
+        customizing_missing = 1
+        OTHERS              = 2.
+
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
+
+    CONVERT TIME STAMP is_result-statistics-finish_timestamp
+      TIME ZONE lv_timezone
+      INTO DATE DATA(start_date)
+           TIME DATA(start_time).
+
+    ls_comment-comment = |abapGit CI results from { start_date DATE = USER } { start_time TIME = USER }|.
+
+    lo_repo->push( is_comment = ls_comment
+                   io_stage   = lo_stage ).
 
   ENDMETHOD.
 
@@ -247,5 +250,4 @@ CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
     ENDLOOP.
 
   ENDMETHOD.
-
 ENDCLASS.
