@@ -24,6 +24,10 @@
     "globalMacros": []
   },
   "rules": {
+    "intf_referencing_clas": true,
+    "method_implemented_twice": true,
+    "parser_702_chaining": true,
+    "uncaught_exception": true,
     "begin_single_include": true,
     "call_transaction_authority_check": true,
     "check_subrc": false,
@@ -83,7 +87,7 @@
     "release_idoc": true,
     "rfc_error_handling": false,
     "selection_screen_naming": false,
-    "sicf_consistency": false,
+    "sicf_consistency": true,
     "space_before_dot": true,
     "sql_escape_host_variables": false,
     "try_without_catch": true,
@@ -105,7 +109,7 @@
       "statics": true,
       "systemCall": true,
       "kernelCall": true,
-      "describeLines": false,
+      "describeLines": false
     },
     "class_attribute_names": false,
     "cloud_types": true,
@@ -136,7 +140,7 @@
     "local_class_naming": true,
     "local_variable_names": false,
     "max_one_statement": true,
-    "message_exists": false,
+    "message_exists": true,
     "method_length": true,
     "method_parameter_names": {
       "ignoreExceptions": true,
@@ -154,8 +158,6 @@
       "depth": 5
     },
     "no_public_attributes": {
-      "exclude": [],
-      "reason": "",
       "allowReadOnly": true
     },
     "object_naming": {
@@ -168,6 +170,7 @@
       "dtel": "^Z",
       "doma": "^Z",
       "msag": "^Z",
+      "shlp": "^Z",
       "tran": "^Z",
       "enqu": "^Z",
       "idoc": "^Z",
@@ -183,6 +186,10 @@
       "add": true,
       "subtract": true,
       "occurs": true,
+      "fieldSymbolStructure": true,
+      "load": true,
+      "typePools": true,
+      "withHeaderLine": true,
       "setExtended": true,
       "multiply": true,
       "move": true,
@@ -191,7 +198,8 @@
     },
     "parser_error": true,
     "remove_descriptions": {
-      "ignoreExceptions": true
+      "ignoreExceptions": true,
+      "ignoreWorkflow": true
     },
     "sequential_blank": {
       "lines": 4
