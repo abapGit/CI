@@ -55,6 +55,36 @@ ENDCLASS.
 CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
 
+  METHOD get_repo_list_with_packages.
+    FIELD-SYMBOLS: <ls_ci_repo> TYPE zabapgit_ci_result.
+
+    " Copy it_repos into rt_repos, creating an entry for local and transportable packages each
+
+    DATA(lo_skip) = NEW zcl_abapgit_ci_skip( ).
+
+    LOOP AT it_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
+      IF is_options-check_local = abap_true.
+        INSERT CORRESPONDING #( <ls_repo> )
+               INTO TABLE rt_repos
+               ASSIGNING <ls_ci_repo>.
+        <ls_ci_repo>-package = CONV devclass( |$___{ to_upper( <ls_ci_repo>-name ) }| ).
+
+        lo_skip->complete_skip_components( CHANGING cs_repo = <ls_ci_repo> ).
+      ENDIF.
+
+      IF is_options-check_transportable = abap_true.
+        INSERT CORRESPONDING #( <ls_repo> )
+               INTO TABLE rt_repos
+               ASSIGNING <ls_ci_repo>.
+        <ls_ci_repo>-package = CONV devclass( |Z___{ to_upper( <ls_ci_repo>-name ) }| ).
+        <ls_ci_repo>-layer = is_options-layer.
+
+        lo_skip->complete_skip_components( CHANGING cs_repo = <ls_ci_repo> ).
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+
   METHOD process_repo.
     DATA: lv_message TYPE c LENGTH 255.
 
@@ -168,7 +198,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
       zcx_abapgit_exception=>raise( |Couldn't find { iv_repo_name } repo| ).
     ENDIF.
 
-    lo_repo->select_branch( 'refs/heads/master' ).
+    lo_repo->select_branch( 'refs/heads/main' ).
 
     DATA(ls_checks) = lo_repo->deserialize_checks( ).
 
@@ -183,34 +213,4 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
     syntax_check( lo_repo->get_package( ) ).
 
   ENDMETHOD.
-
-  METHOD get_repo_list_with_packages.
-    FIELD-SYMBOLS: <ls_ci_repo> TYPE zabapgit_ci_result.
-
-    " Copy it_repos into rt_repos, creating an entry for local and transportable packages each
-
-    DATA(lo_skip) = NEW zcl_abapgit_ci_skip( ).
-
-    LOOP AT it_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
-      IF is_options-check_local = abap_true.
-        INSERT CORRESPONDING #( <ls_repo> )
-               INTO TABLE rt_repos
-               ASSIGNING <ls_ci_repo>.
-        <ls_ci_repo>-package = CONV devclass( |$___{ to_upper( <ls_ci_repo>-name ) }| ).
-
-        lo_skip->complete_skip_components( CHANGING cs_repo = <ls_ci_repo> ).
-      ENDIF.
-
-      IF is_options-check_transportable = abap_true.
-        INSERT CORRESPONDING #( <ls_repo> )
-               INTO TABLE rt_repos
-               ASSIGNING <ls_ci_repo>.
-        <ls_ci_repo>-package = CONV devclass( |Z___{ to_upper( <ls_ci_repo>-name ) }| ).
-        <ls_ci_repo>-layer = is_options-layer.
-
-        lo_skip->complete_skip_components( CHANGING cs_repo = <ls_ci_repo> ).
-      ENDIF.
-    ENDLOOP.
-  ENDMETHOD.
-
 ENDCLASS.
