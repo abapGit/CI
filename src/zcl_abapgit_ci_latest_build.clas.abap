@@ -51,7 +51,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_LATEST_BUILD IMPLEMENTATION.
+CLASS zcl_abapgit_ci_latest_build IMPLEMENTATION.
 
 
   METHOD check.
@@ -159,7 +159,7 @@ CLASS ZCL_ABAPGIT_CI_LATEST_BUILD IMPLEMENTATION.
 
     lo_rest_client->if_rest_client~create_request_entity( )->set_header_field(
         iv_name  = '~request_uri'
-        iv_value = |/abapGit/build/master/zabapgit.abap| ).
+        iv_value = |/abapGit/build/main/zabapgit.abap| ).
 
     lo_rest_client->if_rest_client~get( ).
 
@@ -170,7 +170,7 @@ CLASS ZCL_ABAPGIT_CI_LATEST_BUILD IMPLEMENTATION.
     IF lv_status <> cl_rest_status_code=>gc_success_ok.
       zcx_abapgit_exception=>raise(
           |HTTP status code { lv_status } |
-       && |from https://raw.githubusercontent.com/abapGit/build/master/zabapgit.abap | ).
+       && |from https://raw.githubusercontent.com/abapGit/build/main/zabapgit.abap | ).
     ENDIF.
 
     SPLIT lo_response->get_string_data( )
