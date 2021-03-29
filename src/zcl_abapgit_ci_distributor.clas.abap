@@ -54,7 +54,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_DISTRIBUTOR IMPLEMENTATION.
+CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -112,7 +112,7 @@ CLASS ZCL_ABAPGIT_CI_DISTRIBUTOR IMPLEMENTATION.
 
     ro_repo ?= zcl_abapgit_repo_srv=>get_instance( )->new_online(
         iv_url         = mv_url
-        iv_branch_name = 'refs/heads/master'
+        iv_branch_name = 'refs/heads/main'
         iv_package     = co_package ).
 
   ENDMETHOD.

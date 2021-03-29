@@ -163,6 +163,119 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD check_transport_request.
+    DATA: ls_request                TYPE trwbo_request,
+          lt_objects                TYPE tr_objects,
+          lv_repo_object_count      TYPE i,
+          lv_transport_object_count TYPE i,
+          lv_objects_in_tr          TYPE i,
+          lv_first_not_found        TYPE string,
+          lt_converted_r3tr_objects TYPE tr_objects.
+
+    IF iv_check_deletion = abap_false.
+      cs_ri_repo-check_create_transport = zif_abapgit_ci_definitions=>co_status-not_ok.
+    ELSE.
+      cs_ri_repo-check_delete_transport = zif_abapgit_ci_definitions=>co_status-not_ok.
+    ENDIF.
+
+    CALL FUNCTION 'TR_READ_REQUEST'
+      EXPORTING
+        iv_trkorr        = iv_transport
+      CHANGING
+        cs_request       = ls_request
+      EXCEPTIONS
+        error_occured    = 1
+        no_authorization = 2
+        OTHERS           = 3.
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+    CALL FUNCTION 'TR_GET_OBJECTS_OF_REQ_AN_TASKS'
+      EXPORTING
+        is_request_header      = ls_request-h
+        iv_condense_objectlist = abap_true
+      IMPORTING
+        et_objects             = lt_objects
+      EXCEPTIONS
+        invalid_input          = 1
+        OTHERS                 = 2.
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+    " Convert LIMU to R3TR
+    CALL FUNCTION 'TRINT_COMPLETE_REQUEST'
+      EXPORTING
+        it_e071              = lt_objects
+        iv_without_update    = abap_true
+      IMPORTING
+        et_e071_complement   = lt_converted_r3tr_objects
+      EXCEPTIONS
+        invalid_request_type = 1
+        invalid_request      = 2
+        no_authority         = 3
+        object_append_error  = 4
+        no_systemname        = 5
+        no_systemtype        = 6
+        OTHERS               = 7.
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+    APPEND LINES OF lt_converted_r3tr_objects TO lt_objects.
+    SORT lt_objects BY pgmid object obj_name.
+    DELETE ADJACENT DUPLICATES FROM lt_objects COMPARING pgmid object obj_name.
+
+    DELETE lt_objects WHERE pgmid <> 'R3TR'.
+    DELETE lt_objects WHERE pgmid  = 'R3TR'
+                        AND object = 'DEVC'.
+
+    LOOP AT io_repo->get_files_local( ) ASSIGNING FIELD-SYMBOL(<ls_file>) WHERE item-obj_type IS NOT INITIAL.
+      IF <ls_file>-item-obj_type = 'DEVC'.
+        " Packages cannot be deleted in the same transport as its contents. abapGit does not delete transportable
+        " packages on uninstall. Therefore these might still exist from the last run and might not be contained
+        " in this transport. -> ignore for now
+        CONTINUE.
+      ENDIF.
+
+      lv_repo_object_count = lv_repo_object_count + 1.
+
+      IF line_exists( lt_objects[ pgmid    = 'R3TR'
+                                  object   = <ls_file>-item-obj_type
+                                  obj_name = <ls_file>-item-obj_name
+                                  objfunc  = COND #( WHEN iv_check_deletion = abap_true THEN 'D' ELSE space ) ] ).
+        lv_transport_object_count = lv_transport_object_count + 1.
+      ELSEIF lv_first_not_found IS INITIAL.
+        lv_first_not_found = | (first missing: { <ls_file>-item-obj_type }-{ <ls_file>-item-obj_name })|.
+      ENDIF.
+    ENDLOOP.
+
+    IF lv_repo_object_count <> lv_transport_object_count.
+      zcx_abapgit_exception=>raise( |Found { lv_transport_object_count NUMBER = USER } of | &&
+                                    |{ lv_repo_object_count NUMBER = USER } in | &&
+                                    |{ COND #( WHEN iv_check_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
+                                    |transport { iv_transport }{ lv_first_not_found }| ).
+    ENDIF.
+
+    LOOP AT lt_objects TRANSPORTING NO FIELDS WHERE object <> 'DEVC'.
+      lv_objects_in_tr = lv_objects_in_tr + 1.
+    ENDLOOP.
+
+    IF lv_objects_in_tr > lv_repo_object_count.
+      zcx_abapgit_exception=>raise( |{ COND #( WHEN iv_check_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
+                                    |transport { iv_transport } contains too many objects (| &&
+                                    |{ lv_objects_in_tr NUMBER = USER }/{ lv_repo_object_count NUMBER = USER })| ).
+    ENDIF.
+
+    IF iv_check_deletion = abap_false.
+      cs_ri_repo-check_create_transport = zif_abapgit_ci_definitions=>co_status-ok.
+    ELSE.
+      cs_ri_repo-check_delete_transport = zif_abapgit_ci_definitions=>co_status-ok.
+    ENDIF.
+  ENDMETHOD.
+
+
   METHOD clone.
 
     cs_ri_repo-clone = zif_abapgit_ci_definitions=>co_status-not_ok.
@@ -170,7 +283,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     TRY.
         co_repo = zcl_abapgit_repo_srv=>get_instance( )->new_online(
           iv_url         = |{ cs_ri_repo-clone_url }|
-          iv_branch_name = 'refs/heads/master'
+          iv_branch_name = 'refs/heads/main'
           iv_package     = cs_ri_repo-package ).
 
         COMMIT WORK AND WAIT.
@@ -293,6 +406,31 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD create_transport.
+    DATA: ls_request_header TYPE trwbo_request_header.
+
+    DATA(lv_text) = |abapGit CI { COND #( WHEN iv_deletion = abap_false THEN 'CREATE' ELSE 'DELETE' ) } | &&
+                    |{ iv_repo_name } in { iv_package }|. " Might be too long but does not really matter
+
+    CALL FUNCTION 'TR_INSERT_REQUEST_WITH_TASKS'
+      EXPORTING
+        iv_type           = 'K'
+        iv_text           = CONV as4text( lv_text )
+        it_users          = VALUE scts_users( ( user = cl_abap_syst=>get_user_name( ) type = 'S' ) )
+      IMPORTING
+        es_request_header = ls_request_header
+      EXCEPTIONS
+        insert_failed     = 1
+        enqueue_failed    = 2
+        OTHERS            = 3.
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+    rv_transport = ls_request_header-trkorr.
+  ENDMETHOD.
+
+
   METHOD pull.
 
     cs_ri_repo-pull = zif_abapgit_ci_definitions=>co_status-not_ok.
@@ -347,6 +485,90 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       EXPORTING
         _synchron = abap_true.
 
+  ENDMETHOD.
+
+
+  METHOD release_transport.
+    DATA: lt_requests TYPE trwbo_request_headers.
+
+    CALL FUNCTION 'TR_READ_REQUEST_WITH_TASKS'
+      EXPORTING
+        iv_trkorr          = iv_transport
+      IMPORTING
+        et_request_headers = lt_requests
+      EXCEPTIONS
+        invalid_input      = 1
+        OTHERS             = 2.
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+    " First release all open tasks
+    LOOP AT lt_requests ASSIGNING FIELD-SYMBOL(<ls_task>) WHERE trkorr <> iv_transport AND trstatus <> 'R'.
+      CALL FUNCTION 'TR_RELEASE_REQUEST'
+        EXPORTING
+          iv_trkorr                  = <ls_task>-trkorr
+          iv_dialog                  = abap_false
+          iv_success_message         = abap_false
+        EXCEPTIONS
+          cts_initialization_failure = 1
+          enqueue_failed             = 2
+          no_authorization           = 3
+          invalid_request            = 4
+          request_already_released   = 5
+          repeat_too_early           = 6
+          error_in_export_methods    = 7
+          object_check_error         = 8
+          docu_missing               = 9
+          db_access_error            = 10
+          action_aborted_by_user     = 11
+          export_failed              = 12
+          OTHERS                     = 13.
+      IF sy-subrc <> 0.
+        zcx_abapgit_exception=>raise_t100( ).
+      ENDIF.
+    ENDLOOP.
+
+    " Then release transport request
+    CALL FUNCTION 'TR_RELEASE_REQUEST'
+      EXPORTING
+        iv_trkorr                  = iv_transport
+        iv_dialog                  = abap_false
+        iv_success_message         = abap_false
+      EXCEPTIONS
+        cts_initialization_failure = 1
+        enqueue_failed             = 2
+        no_authorization           = 3
+        invalid_request            = 4
+        request_already_released   = 5
+        repeat_too_early           = 6
+        error_in_export_methods    = 7
+        object_check_error         = 8
+        docu_missing               = 9
+        db_access_error            = 10
+        action_aborted_by_user     = 11
+        export_failed              = 12
+        OTHERS                     = 13.
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+    " Wait for the release to finish
+    DATA(lv_wait_time) = 0.
+    DO.
+      SELECT COUNT(*) FROM e070
+        WHERE trkorr = iv_transport
+          AND trstatus = 'R'.
+      IF sy-dbcnt = 1.
+        EXIT.
+      ELSE.
+        IF lv_wait_time > 5.
+          zcx_abapgit_exception=>raise( |Transport { iv_transport } could not be released| ).
+        ENDIF.
+        CALL FUNCTION 'RZL_SLEEP'.
+        lv_wait_time = lv_wait_time + 1.
+      ENDIF.
+    ENDDO.
   ENDMETHOD.
 
 
@@ -448,224 +670,5 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       cs_ri_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-ok.
     ENDIF.
 
-  ENDMETHOD.
-
-  METHOD create_transport.
-    DATA: ls_request_header TYPE trwbo_request_header.
-
-    DATA(lv_text) = |abapGit CI { COND #( WHEN iv_deletion = abap_false THEN 'CREATE' ELSE 'DELETE' ) } | &&
-                    |{ iv_repo_name } in { iv_package }|. " Might be too long but does not really matter
-
-    CALL FUNCTION 'TR_INSERT_REQUEST_WITH_TASKS'
-      EXPORTING
-        iv_type           = 'K'
-        iv_text           = CONV as4text( lv_text )
-        it_users          = VALUE scts_users( ( user = cl_abap_syst=>get_user_name( ) type = 'S' ) )
-      IMPORTING
-        es_request_header = ls_request_header
-      EXCEPTIONS
-        insert_failed     = 1
-        enqueue_failed    = 2
-        OTHERS            = 3.
-    IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise_t100( ).
-    ENDIF.
-
-    rv_transport = ls_request_header-trkorr.
-  ENDMETHOD.
-
-  METHOD check_transport_request.
-    DATA: ls_request                TYPE trwbo_request,
-          lt_objects                TYPE tr_objects,
-          lv_repo_object_count      TYPE i,
-          lv_transport_object_count TYPE i,
-          lv_objects_in_tr          TYPE i,
-          lv_first_not_found        TYPE string,
-          lt_converted_r3tr_objects TYPE tr_objects.
-
-    IF iv_check_deletion = abap_false.
-      cs_ri_repo-check_create_transport = zif_abapgit_ci_definitions=>co_status-not_ok.
-    ELSE.
-      cs_ri_repo-check_delete_transport = zif_abapgit_ci_definitions=>co_status-not_ok.
-    ENDIF.
-
-    CALL FUNCTION 'TR_READ_REQUEST'
-      EXPORTING
-        iv_trkorr        = iv_transport
-      CHANGING
-        cs_request       = ls_request
-      EXCEPTIONS
-        error_occured    = 1
-        no_authorization = 2
-        OTHERS           = 3.
-    IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise_t100( ).
-    ENDIF.
-
-    CALL FUNCTION 'TR_GET_OBJECTS_OF_REQ_AN_TASKS'
-      EXPORTING
-        is_request_header      = ls_request-h
-        iv_condense_objectlist = abap_true
-      IMPORTING
-        et_objects             = lt_objects
-      EXCEPTIONS
-        invalid_input          = 1
-        OTHERS                 = 2.
-    IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise_t100( ).
-    ENDIF.
-
-    " Convert LIMU to R3TR
-    CALL FUNCTION 'TRINT_COMPLETE_REQUEST'
-      EXPORTING
-        it_e071              = lt_objects
-        iv_without_update    = abap_true
-      IMPORTING
-        et_e071_complement   = lt_converted_r3tr_objects
-      EXCEPTIONS
-        invalid_request_type = 1
-        invalid_request      = 2
-        no_authority         = 3
-        object_append_error  = 4
-        no_systemname        = 5
-        no_systemtype        = 6
-        OTHERS               = 7.
-    IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise_t100( ).
-    ENDIF.
-
-    APPEND LINES OF lt_converted_r3tr_objects TO lt_objects.
-    SORT lt_objects BY pgmid object obj_name.
-    DELETE ADJACENT DUPLICATES FROM lt_objects COMPARING pgmid object obj_name.
-
-    DELETE lt_objects WHERE pgmid <> 'R3TR'.
-    DELETE lt_objects WHERE pgmid  = 'R3TR'
-                        AND object = 'DEVC'.
-
-    LOOP AT io_repo->get_files_local( ) ASSIGNING FIELD-SYMBOL(<ls_file>) WHERE item-obj_type IS NOT INITIAL.
-      IF <ls_file>-item-obj_type = 'DEVC'.
-        " Packages cannot be deleted in the same transport as its contents. abapGit does not delete transportable
-        " packages on uninstall. Therefore these might still exist from the last run and might not be contained
-        " in this transport. -> ignore for now
-        CONTINUE.
-      ENDIF.
-
-      lv_repo_object_count = lv_repo_object_count + 1.
-
-      IF line_exists( lt_objects[ pgmid    = 'R3TR'
-                                  object   = <ls_file>-item-obj_type
-                                  obj_name = <ls_file>-item-obj_name
-                                  objfunc  = COND #( WHEN iv_check_deletion = abap_true THEN 'D' ELSE space ) ] ).
-        lv_transport_object_count = lv_transport_object_count + 1.
-      ELSEIF lv_first_not_found IS INITIAL.
-        lv_first_not_found = | (first missing: { <ls_file>-item-obj_type }-{ <ls_file>-item-obj_name })|.
-      ENDIF.
-    ENDLOOP.
-
-    IF lv_repo_object_count <> lv_transport_object_count.
-      zcx_abapgit_exception=>raise( |Found { lv_transport_object_count NUMBER = USER } of | &&
-                                    |{ lv_repo_object_count NUMBER = USER } in | &&
-                                    |{ COND #( WHEN iv_check_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
-                                    |transport { iv_transport }{ lv_first_not_found }| ).
-    ENDIF.
-
-    LOOP AT lt_objects TRANSPORTING NO FIELDS WHERE object <> 'DEVC'.
-      lv_objects_in_tr = lv_objects_in_tr + 1.
-    ENDLOOP.
-
-    IF lv_objects_in_tr > lv_repo_object_count.
-      zcx_abapgit_exception=>raise( |{ COND #( WHEN iv_check_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
-                                    |transport { iv_transport } contains too many objects (| &&
-                                    |{ lv_objects_in_tr NUMBER = USER }/{ lv_repo_object_count NUMBER = USER })| ).
-    ENDIF.
-
-    IF iv_check_deletion = abap_false.
-      cs_ri_repo-check_create_transport = zif_abapgit_ci_definitions=>co_status-ok.
-    ELSE.
-      cs_ri_repo-check_delete_transport = zif_abapgit_ci_definitions=>co_status-ok.
-    ENDIF.
-  ENDMETHOD.
-
-  METHOD release_transport.
-    DATA: lt_requests TYPE trwbo_request_headers.
-
-    CALL FUNCTION 'TR_READ_REQUEST_WITH_TASKS'
-      EXPORTING
-        iv_trkorr          = iv_transport
-      IMPORTING
-        et_request_headers = lt_requests
-      EXCEPTIONS
-        invalid_input      = 1
-        OTHERS             = 2.
-    IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise_t100( ).
-    ENDIF.
-
-    " First release all open tasks
-    LOOP AT lt_requests ASSIGNING FIELD-SYMBOL(<ls_task>) WHERE trkorr <> iv_transport AND trstatus <> 'R'.
-      CALL FUNCTION 'TR_RELEASE_REQUEST'
-        EXPORTING
-          iv_trkorr                  = <ls_task>-trkorr
-          iv_dialog                  = abap_false
-          iv_success_message         = abap_false
-        EXCEPTIONS
-          cts_initialization_failure = 1
-          enqueue_failed             = 2
-          no_authorization           = 3
-          invalid_request            = 4
-          request_already_released   = 5
-          repeat_too_early           = 6
-          error_in_export_methods    = 7
-          object_check_error         = 8
-          docu_missing               = 9
-          db_access_error            = 10
-          action_aborted_by_user     = 11
-          export_failed              = 12
-          OTHERS                     = 13.
-      IF sy-subrc <> 0.
-        zcx_abapgit_exception=>raise_t100( ).
-      ENDIF.
-    ENDLOOP.
-
-    " Then release transport request
-    CALL FUNCTION 'TR_RELEASE_REQUEST'
-      EXPORTING
-        iv_trkorr                  = iv_transport
-        iv_dialog                  = abap_false
-        iv_success_message         = abap_false
-      EXCEPTIONS
-        cts_initialization_failure = 1
-        enqueue_failed             = 2
-        no_authorization           = 3
-        invalid_request            = 4
-        request_already_released   = 5
-        repeat_too_early           = 6
-        error_in_export_methods    = 7
-        object_check_error         = 8
-        docu_missing               = 9
-        db_access_error            = 10
-        action_aborted_by_user     = 11
-        export_failed              = 12
-        OTHERS                     = 13.
-    IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise_t100( ).
-    ENDIF.
-
-    " Wait for the release to finish
-    DATA(lv_wait_time) = 0.
-    DO.
-      SELECT COUNT(*) FROM e070
-        WHERE trkorr = iv_transport
-          AND trstatus = 'R'.
-      IF sy-dbcnt = 1.
-        EXIT.
-      ELSE.
-        IF lv_wait_time > 5.
-          zcx_abapgit_exception=>raise( |Transport { iv_transport } could not be released| ).
-        ENDIF.
-        CALL FUNCTION 'RZL_SLEEP'.
-        lv_wait_time = lv_wait_time + 1.
-      ENDIF.
-    ENDDO.
   ENDMETHOD.
 ENDCLASS.
