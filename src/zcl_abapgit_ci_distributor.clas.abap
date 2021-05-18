@@ -3,20 +3,17 @@ CLASS zcl_abapgit_ci_distributor DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
-    METHODS:
-      constructor
-        IMPORTING
-          iv_url TYPE string
-        RAISING
-          zcx_abapgit_exception,
 
-      push_to_git_repo
-        IMPORTING
-          is_result TYPE zif_abapgit_ci_definitions=>ty_result
-        RAISING
-          zcx_abapgit_exception.
-
-
+    METHODS constructor
+      IMPORTING
+        !iv_url TYPE string
+      RAISING
+        zcx_abapgit_exception .
+    METHODS push_to_git_repo
+      IMPORTING
+        !is_result TYPE zif_abapgit_ci_definitions=>ty_result
+      RAISING
+        zcx_abapgit_exception .
   PROTECTED SECTION.
   PRIVATE SECTION.
     CONSTANTS:

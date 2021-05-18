@@ -1,16 +1,20 @@
 CLASS zcl_abapgit_ci_resource DEFINITION
   PUBLIC
   INHERITING FROM cl_rest_resource
-  CREATE PUBLIC.
+  CREATE PUBLIC .
 
   PUBLIC SECTION.
-    METHODS: if_rest_resource~post REDEFINITION.
 
+    METHODS if_rest_resource~post
+        REDEFINITION .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
 ENDCLASS.
 
 
 
 CLASS zcl_abapgit_ci_resource IMPLEMENTATION.
+
 
   METHOD if_rest_resource~post.
 
@@ -33,5 +37,4 @@ CLASS zcl_abapgit_ci_resource IMPLEMENTATION.
     mo_response->set_status( cl_rest_status_code=>gc_success_ok ).
 
   ENDMETHOD.
-
 ENDCLASS.

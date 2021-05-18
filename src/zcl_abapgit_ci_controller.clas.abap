@@ -4,17 +4,14 @@ CLASS zcl_abapgit_ci_controller DEFINITION
 
   PUBLIC SECTION.
 
-    METHODS:
-      constructor
-        IMPORTING
-          !ii_view          TYPE REF TO zif_abapgit_ci_view
-          !ii_repo_provider TYPE REF TO zif_abapgit_ci_repo_provider
-          !is_options       TYPE zif_abapgit_ci_definitions=>ty_options OPTIONAL,
-
-      run
-        RAISING
-          zcx_abapgit_exception.
-
+    METHODS constructor
+      IMPORTING
+        !ii_view          TYPE REF TO zif_abapgit_ci_view
+        !ii_repo_provider TYPE REF TO zif_abapgit_ci_repo_provider
+        !is_options       TYPE zif_abapgit_ci_definitions=>ty_options OPTIONAL .
+    METHODS run
+      RAISING
+        zcx_abapgit_exception .
   PROTECTED SECTION.
   PRIVATE SECTION.
     DATA:

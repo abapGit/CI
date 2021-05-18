@@ -3,19 +3,18 @@ CLASS zcl_abapgit_ci_slack DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
-    METHODS:
-      constructor
-        IMPORTING
-          iv_token TYPE string
-        RAISING
-          zcx_abapgit_exception,
 
-      post
-        IMPORTING
-          iv_message TYPE string
-        RAISING
-          zcx_abapgit_exception.
-
+    METHODS constructor
+      IMPORTING
+        !iv_token TYPE string
+      RAISING
+        zcx_abapgit_exception .
+    METHODS post
+      IMPORTING
+        !iv_message TYPE string
+      RAISING
+        zcx_abapgit_exception .
+  PROTECTED SECTION.
   PRIVATE SECTION.
     DATA:
       mv_token TYPE string.

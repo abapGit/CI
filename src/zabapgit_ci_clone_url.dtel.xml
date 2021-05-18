@@ -10,7 +10,7 @@
     <SCRLEN1>10</SCRLEN1>
     <SCRLEN2>20</SCRLEN2>
     <SCRLEN3>40</SCRLEN3>
-    <DDTEXT>abapGit CI clone url</DDTEXT>
+    <DDTEXT>abapGit CI: Clone URL</DDTEXT>
     <REPTEXT>Clone url</REPTEXT>
     <SCRTEXT_S>Clone url</SCRTEXT_S>
     <SCRTEXT_M>Clone url</SCRTEXT_M>

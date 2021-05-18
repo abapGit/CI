@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_ABAPGIT_CI_HTML</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>abapGit CI: html renderer</DESCRIPT>
+    <DESCRIPT>abapGit CI: HTML renderer</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

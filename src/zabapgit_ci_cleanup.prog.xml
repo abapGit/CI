@@ -6,6 +6,7 @@
     <NAME>ZABAPGIT_CI_CLEANUP</NAME>
     <DBAPL>S</DBAPL>
     <SUBC>1</SUBC>
+    <RLOAD>E</RLOAD>
     <FIXPT>X</FIXPT>
     <LDBNAME>D$S</LDBNAME>
     <UCCHECK>X</UCCHECK>
@@ -25,8 +26,8 @@
     </item>
     <item>
      <ID>R</ID>
-     <ENTRY>abapGit CI cleanup utility</ENTRY>
-     <LENGTH>26</LENGTH>
+     <ENTRY>abapGit CI: Cleanup utility</ENTRY>
+     <LENGTH>27</LENGTH>
     </item>
     <item>
      <ID>S</ID>

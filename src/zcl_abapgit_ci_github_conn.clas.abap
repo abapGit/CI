@@ -5,13 +5,11 @@ CLASS zcl_abapgit_ci_github_conn DEFINITION
 
   PUBLIC SECTION.
 
-    METHODS:
-      create_http_client
-        RETURNING
-          VALUE(ri_http_client) TYPE REF TO if_http_client
-        RAISING
-          zcx_abapgit_exception.
-
+    METHODS create_http_client
+      RETURNING
+        VALUE(ri_http_client) TYPE REF TO if_http_client
+      RAISING
+        zcx_abapgit_exception .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -19,6 +17,8 @@ ENDCLASS.
 
 
 CLASS zcl_abapgit_ci_github_conn IMPLEMENTATION.
+
+
   METHOD create_http_client.
 
     DATA: li_http_client TYPE REF TO if_http_client,
