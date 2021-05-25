@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_ABAPGIT_CI_GITHUB_CONN</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>abapGit CI GitHub Connection</DESCRIPT>
+    <DESCRIPT>abapGit CI: GitHub connection</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

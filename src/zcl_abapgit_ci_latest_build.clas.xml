@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_ABAPGIT_CI_LATEST_BUILD</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>abapGit CI: check latest build</DESCRIPT>
+    <DESCRIPT>abapGit CI: Check latest build</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

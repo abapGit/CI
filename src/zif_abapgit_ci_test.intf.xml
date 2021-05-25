@@ -5,7 +5,7 @@
    <VSEOINTERF>
     <CLSNAME>ZIF_ABAPGIT_CI_TEST</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>abapGit CI: single CI test case</DESCRIPT>
+    <DESCRIPT>abapGit CI: CI test case</DESCRIPT>
     <EXPOSURE>2</EXPOSURE>
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>

@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_ABAPGIT_CI_SLACK</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>abapGit CI slack integration</DESCRIPT>
+    <DESCRIPT>abapGit CI: Slack integration</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

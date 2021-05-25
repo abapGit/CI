@@ -3,14 +3,12 @@ CLASS zcl_abapgit_ci_latest_build DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
-    INTERFACES:
-      zif_abapgit_ci_test.
 
-    METHODS:
-      constructor
-        RAISING
-          zcx_abapgit_exception.
+    INTERFACES zif_abapgit_ci_test .
 
+    METHODS constructor
+      RAISING
+        zcx_abapgit_exception .
   PROTECTED SECTION.
   PRIVATE SECTION.
     CONSTANTS:

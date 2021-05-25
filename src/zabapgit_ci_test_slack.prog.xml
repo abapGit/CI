@@ -6,6 +6,7 @@
     <NAME>ZABAPGIT_CI_TEST_SLACK</NAME>
     <DBAPL>S</DBAPL>
     <SUBC>1</SUBC>
+    <RLOAD>E</RLOAD>
     <FIXPT>X</FIXPT>
     <LDBNAME>D$S</LDBNAME>
     <UCCHECK>X</UCCHECK>
@@ -13,8 +14,8 @@
    <TPOOL>
     <item>
      <ID>R</ID>
-     <ENTRY>test slack</ENTRY>
-     <LENGTH>10</LENGTH>
+     <ENTRY>abapGit CI: Test Slack</ENTRY>
+     <LENGTH>22</LENGTH>
     </item>
    </TPOOL>
   </asx:values>
