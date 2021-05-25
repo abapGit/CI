@@ -157,13 +157,16 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
   METHOD syntax_check.
 
+    DATA lv_line TYPE i.
+
     DATA(lt_list) = zcl_abapgit_factory=>get_code_inspector( iv_package )->run( 'SYNTAX_CHECK' ).
 
     ASSIGN lt_list[ kind = 'E' ] TO FIELD-SYMBOL(<ls_error>).
     IF sy-subrc = 0.
+      lv_line = <ls_error>-line.
       zcx_abapgit_exception=>raise( |Syntax error in repo { iv_package } |
-                                 && |object { <ls_error>-objtype } { <ls_error>-text } |
-                                 && |{ <ls_error>-text }| ).
+                                 && |object { <ls_error>-objtype } { <ls_error>-objname } { <ls_error>-text } |
+                                 && | [ @{ lv_line } ]| ).
     ENDIF.
 
   ENDMETHOD.
