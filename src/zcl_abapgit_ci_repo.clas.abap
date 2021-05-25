@@ -628,6 +628,11 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     ENDTRY.
 
+    " Check if we want to keep installed repos
+    IF cs_ri_repo-do_not_purge = abap_true.
+      RETURN.
+    ENDIF.
+
     IF lv_transportable = abap_true.
       COMMIT WORK AND WAIT.
       lv_transport = create_transport( iv_repo_name = cs_ri_repo-name

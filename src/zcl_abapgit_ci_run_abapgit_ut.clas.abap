@@ -12,7 +12,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_RUN_ABAPGIT_UT IMPLEMENTATION.
+CLASS zcl_abapgit_ci_run_abapgit_ut IMPLEMENTATION.
 
 
   METHOD zif_abapgit_ci_test~execute.
@@ -25,6 +25,7 @@ CLASS ZCL_ABAPGIT_CI_RUN_ABAPGIT_UT IMPLEMENTATION.
 
       IF <repo>->get_name( ) = 'abapGit'.
         lo_repo ?= <repo>.
+        EXIT.
       ENDIF.
 
     ENDLOOP.

@@ -36,6 +36,7 @@ INTERFACE zif_abapgit_ci_definitions
       check_local         TYPE abap_bool,
       check_transportable TYPE abap_bool,
       layer               TYPE devlayer,
+      no_purge            TYPE abap_bool,
     END OF ty_repo_check_options .
   TYPES:
     BEGIN OF ty_options,
