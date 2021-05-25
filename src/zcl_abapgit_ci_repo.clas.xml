@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_ABAPGIT_CI_REPO</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>abapGit CI repo processing logic</DESCRIPT>
+    <DESCRIPT>abapGit CI: Repo processing logic</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

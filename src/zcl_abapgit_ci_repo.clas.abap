@@ -3,15 +3,13 @@ CLASS zcl_abapgit_ci_repo DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
-    METHODS:
-      constructor,
 
-      run
-        CHANGING
-          cs_ri_repo TYPE zabapgit_ci_result
-        RAISING
-          zcx_abapgit_exception.
-
+    METHODS constructor .
+    METHODS run
+      CHANGING
+        !cs_ri_repo TYPE zabapgit_ci_result
+      RAISING
+        zcx_abapgit_exception .
   PROTECTED SECTION.
   PRIVATE SECTION.
     METHODS:

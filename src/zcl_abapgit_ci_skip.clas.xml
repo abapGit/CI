@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_ABAPGIT_CI_SKIP</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>abapGit CI skip logic</DESCRIPT>
+    <DESCRIPT>abapGit CI: Skip logic</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

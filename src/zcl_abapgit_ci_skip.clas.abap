@@ -2,12 +2,14 @@
 CLASS zcl_abapgit_ci_skip DEFINITION
   PUBLIC
   FINAL
-  CREATE PUBLIC.
+  CREATE PUBLIC .
 
   PUBLIC SECTION.
-    METHODS:
-      constructor,
-      complete_skip_components CHANGING cs_repo TYPE zabapgit_ci_result.
+
+    METHODS constructor .
+    METHODS complete_skip_components
+      CHANGING
+        !cs_repo TYPE zabapgit_ci_result .
   PROTECTED SECTION.
   PRIVATE SECTION.
     TYPES:
@@ -26,7 +28,40 @@ ENDCLASS.
 
 
 CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
+
+
+  METHOD complete_skip_components.
+    FIELD-SYMBOLS: <ls_skip> TYPE gty_skip.
+
+    IF cs_repo-layer IS NOT INITIAL.
+      READ TABLE mt_skipped WITH KEY repo_name          = cs_repo-name
+                                     skip_transportable = abap_true
+                            ASSIGNING <ls_skip>.
+    ELSE.
+      READ TABLE mt_skipped WITH KEY repo_name  = cs_repo-name
+                                     skip_local = abap_true
+                            ASSIGNING <ls_skip>.
+    ENDIF.
+
+    IF <ls_skip> IS ASSIGNED.
+      cs_repo-skip = abap_true.
+      cs_repo-message = <ls_skip>-reason.
+    ELSE.
+      LOOP AT mt_skipped ASSIGNING <ls_skip> WHERE repo_name CA '*'.
+        IF cs_repo-name CP <ls_skip>-repo_name AND
+           ( ( cs_repo-layer IS NOT INITIAL AND <ls_skip>-skip_transportable = abap_true ) OR
+             ( cs_repo-layer IS INITIAL AND <ls_skip>-skip_local = abap_true ) ).
+          cs_repo-skip = abap_true.
+          cs_repo-message = <ls_skip>-reason.
+          EXIT.
+        ENDIF.
+      ENDLOOP.
+    ENDIF.
+  ENDMETHOD.
+
+
   METHOD constructor.
+
     mt_skipped = VALUE #(
       LET no_ads   = xsdbool( do_we_have_an_ads_connection( ) <> abap_true )
           not_hana = xsdbool( cl_db_sys=>is_in_memory_db <> abap_true ) IN
@@ -91,7 +126,9 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_false
         reason             = |Cannot be installed in local $-package| ) ).
+
   ENDMETHOD.
+
 
   METHOD do_we_have_an_ads_connection.
     SELECT SINGLE FROM fpconnect
@@ -116,35 +153,6 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
 
     IF sy-subrc = 0.
       rv_is_ads_on = abap_true.
-    ENDIF.
-  ENDMETHOD.
-
-  METHOD complete_skip_components.
-    FIELD-SYMBOLS: <ls_skip> TYPE gty_skip.
-
-    IF cs_repo-layer IS NOT INITIAL.
-      READ TABLE mt_skipped WITH KEY repo_name          = cs_repo-name
-                                     skip_transportable = abap_true
-                            ASSIGNING <ls_skip>.
-    ELSE.
-      READ TABLE mt_skipped WITH KEY repo_name  = cs_repo-name
-                                     skip_local = abap_true
-                            ASSIGNING <ls_skip>.
-    ENDIF.
-
-    IF <ls_skip> IS ASSIGNED.
-      cs_repo-skip = abap_true.
-      cs_repo-message = <ls_skip>-reason.
-    ELSE.
-      LOOP AT mt_skipped ASSIGNING <ls_skip> WHERE repo_name CA '*'.
-        IF cs_repo-name CP <ls_skip>-repo_name AND
-           ( ( cs_repo-layer IS NOT INITIAL AND <ls_skip>-skip_transportable = abap_true ) OR
-             ( cs_repo-layer IS INITIAL AND <ls_skip>-skip_local = abap_true ) ).
-          cs_repo-skip = abap_true.
-          cs_repo-message = <ls_skip>-reason.
-          EXIT.
-        ENDIF.
-      ENDLOOP.
     ENDIF.
   ENDMETHOD.
 ENDCLASS.

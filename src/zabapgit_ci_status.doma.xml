@@ -9,7 +9,7 @@
     <LENG>000006</LENG>
     <OUTPUTLEN>000006</OUTPUTLEN>
     <VALEXI>X</VALEXI>
-    <DDTEXT>abapGit CI status</DDTEXT>
+    <DDTEXT>abapGit CI: Status</DDTEXT>
     <DOMMASTER>E</DOMMASTER>
    </DD01V>
    <DD07V_TAB>

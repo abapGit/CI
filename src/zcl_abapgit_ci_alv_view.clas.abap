@@ -1,11 +1,10 @@
 CLASS zcl_abapgit_ci_alv_view DEFINITION
   PUBLIC
-  CREATE PUBLIC.
+  CREATE PUBLIC .
 
   PUBLIC SECTION.
-    INTERFACES:
-      zif_abapgit_ci_view.
 
+    INTERFACES zif_abapgit_ci_view .
   PROTECTED SECTION.
   PRIVATE SECTION.
     METHODS:
