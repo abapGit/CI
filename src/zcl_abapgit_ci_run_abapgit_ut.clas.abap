@@ -34,15 +34,8 @@ CLASS zcl_abapgit_ci_run_abapgit_ut IMPLEMENTATION.
       zcx_abapgit_exception=>raise( |Couldn't find abapGit repo| ).
     ENDIF.
 
-    DATA(lt_list) = zcl_abapgit_factory=>get_code_inspector( lo_repo->get_package( )
+    rt_list = zcl_abapgit_factory=>get_code_inspector( lo_repo->get_package( )
       )->run( 'SWF_ABAP_UNIT' ).
-
-    ASSIGN lt_list[ kind = 'E' ] TO FIELD-SYMBOL(<ls_error>).
-    IF sy-subrc = 0.
-      zcx_abapgit_exception=>raise( |Unit test failed: |
-                                 && |Object { <ls_error>-objtype } { <ls_error>-text } |
-                                 && |{ <ls_error>-text }| ).
-    ENDIF.
 
   ENDMETHOD.
 
