@@ -68,6 +68,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
                INTO TABLE rt_repos
                ASSIGNING <ls_ci_repo>.
         <ls_ci_repo>-package = CONV devclass( |$___{ to_upper( <ls_ci_repo>-name ) }| ).
+        <ls_ci_repo>-do_not_purge = is_options-no_purge.
 
         lo_skip->complete_skip_components( CHANGING cs_repo = <ls_ci_repo> ).
       ENDIF.
@@ -78,9 +79,11 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
                ASSIGNING <ls_ci_repo>.
         <ls_ci_repo>-package = CONV devclass( |Z___{ to_upper( <ls_ci_repo>-name ) }| ).
         <ls_ci_repo>-layer = is_options-layer.
+        <ls_ci_repo>-do_not_purge = is_options-no_purge.
 
         lo_skip->complete_skip_components( CHANGING cs_repo = <ls_ci_repo> ).
       ENDIF.
+
     ENDLOOP.
   ENDMETHOD.
 

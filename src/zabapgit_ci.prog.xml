@@ -157,6 +157,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>NO_PURGE</KEY>
+     <ENTRY>Do not purge repos</ENTRY>
+     <LENGTH>26</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_URL</KEY>
      <ENTRY>URL</ENTRY>
      <LENGTH>11</LENGTH>
