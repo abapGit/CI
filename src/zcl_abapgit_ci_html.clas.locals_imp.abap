@@ -63,7 +63,7 @@ CLASS lcl_table_renderer IMPLEMENTATION.
 
         IF <ls_component>-name CS |URL|.
           rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_status( <field> ) }">|
-                            && |<a href="{ <field> }">{ <field> }</a></td>\n|.
+                            && |<a href="{ <field> }">Repo</a></td>\n|.
         ELSE.
           rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_status( <field> ) }">{ <field> }</td>\n|.
         ENDIF.

@@ -18,7 +18,7 @@ CLASS lcl_view IMPLEMENTATION.
                    iv_width  = 60 ).
 
     config_column( iv_column = 'PACKAGE'
-                   iv_width  = 20 ).
+                   iv_width  = 25 ).
 
     config_column( iv_column = 'CREATE_PACKAGE'
                    iv_width  = 15 ).
@@ -45,7 +45,7 @@ CLASS lcl_view IMPLEMENTATION.
                    iv_width  = 8 ).
 
     config_column( iv_column = 'MESSAGE'
-                   iv_width  = 60 ).
+                   iv_width  = 80 ).
 
     config_column( iv_column = 'DESCRIPTION'
                    iv_width  = 60 ).
@@ -157,6 +157,10 @@ CLASS lcl_alv IMPLEMENTATION.
                                        mo_alv->get_columns(
                                             )->get_column( <ls_column_width>-column ) ).
               lo_column->set_output_length( <ls_column_width>-width ).
+
+              IF <ls_column_width>-column = |NAME| or <ls_column_width>-column = |DESCRIPTION|.
+                lo_column->set_key( ).
+              ENDIF.
             CATCH cx_salv_error.
               CONTINUE.
           ENDTRY.
