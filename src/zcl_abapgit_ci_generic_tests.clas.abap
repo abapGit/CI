@@ -11,6 +11,7 @@ CLASS zcl_abapgit_ci_generic_tests DEFINITION
         RAISING
           zcx_abapgit_exception.
 
+  PROTECTED SECTION.
   PRIVATE SECTION.
     METHODS:
       get_test_cases
@@ -22,7 +23,9 @@ CLASS zcl_abapgit_ci_generic_tests DEFINITION
 ENDCLASS.
 
 
+
 CLASS zcl_abapgit_ci_generic_tests IMPLEMENTATION.
+
 
   METHOD execute.
 
@@ -41,15 +44,30 @@ CLASS zcl_abapgit_ci_generic_tests IMPLEMENTATION.
 
       TRY.
           ls_result-description = li_test->get_description( ).
-          li_test->execute( ).
+          DATA(lt_list) = li_test->execute( ).
 
-          ls_result-status = zif_abapgit_ci_definitions=>co_status-ok.
+          READ TABLE lt_list ASSIGNING FIELD-SYMBOL(<ls_error>) WITH KEY kind = 'E'.
+          IF sy-subrc = 0.
+            ls_result-message = 'At least one unit test failed (see below)'.
+            ls_result-status = zif_abapgit_ci_definitions=>co_status-not_ok.
+          ELSE.
+            ls_result-status = zif_abapgit_ci_definitions=>co_status-ok.
+          ENDIF.
 
         CATCH zcx_abapgit_exception INTO DATA(lx_error).
           ls_result-message = lx_error->get_text( ).
       ENDTRY.
 
       INSERT ls_result INTO TABLE rt_result.
+
+      " Add individual tests as result rows
+      LOOP AT lt_list ASSIGNING FIELD-SYMBOL(<ls_list>) WHERE kind = 'E'.
+        CLEAR ls_result.
+        ls_result-description = |UT: { <ls_list>-objtype } { <ls_list>-objname }|.
+        ls_result-status      = zif_abapgit_ci_definitions=>co_status-not_ok.
+        ls_result-message     = |{ <ls_list>-text } [ @{ CONV i( <ls_list>-line ) } ]|.
+        INSERT ls_result INTO TABLE rt_result.
+      ENDLOOP.
 
     ENDLOOP.
 
@@ -69,5 +87,4 @@ CLASS zcl_abapgit_ci_generic_tests IMPLEMENTATION.
     ENDTRY.
 
   ENDMETHOD.
-
 ENDCLASS.
