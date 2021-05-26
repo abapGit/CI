@@ -11,10 +11,10 @@
     <SCRLEN2>20</SCRLEN2>
     <SCRLEN3>40</SCRLEN3>
     <DDTEXT>abapGit CI: Do not purge</DDTEXT>
-    <REPTEXT>Do not purge</REPTEXT>
-    <SCRTEXT_S>No purge</SCRTEXT_S>
-    <SCRTEXT_M>Do not purge</SCRTEXT_M>
-    <SCRTEXT_L>Do not purge</SCRTEXT_L>
+    <REPTEXT>No Purge</REPTEXT>
+    <SCRTEXT_S>No Purge</SCRTEXT_S>
+    <SCRTEXT_M>No Purge</SCRTEXT_M>
+    <SCRTEXT_L>No Purge</SCRTEXT_L>
     <DTELMASTER>E</DTELMASTER>
     <REFKIND>D</REFKIND>
    </DD04V>
