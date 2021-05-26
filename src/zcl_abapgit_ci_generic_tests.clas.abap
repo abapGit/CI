@@ -30,7 +30,6 @@ CLASS zcl_abapgit_ci_generic_tests IMPLEMENTATION.
   METHOD execute.
 
     DATA: li_test   TYPE REF TO zif_abapgit_ci_test,
-          lv_line   TYPE i,
           ls_result LIKE LINE OF rt_result.
 
     DATA(lt_tests) = get_test_cases( ).
@@ -63,11 +62,10 @@ CLASS zcl_abapgit_ci_generic_tests IMPLEMENTATION.
 
       " Add individual tests as result rows
       LOOP AT lt_list ASSIGNING FIELD-SYMBOL(<ls_list>) WHERE kind = 'E'.
-        lv_line = <ls_list>-line.
         CLEAR ls_result.
         ls_result-description = |UT: { <ls_list>-objtype } { <ls_list>-objname }|.
         ls_result-status      = zif_abapgit_ci_definitions=>co_status-not_ok.
-        ls_result-message     = |{ <ls_list>-text } [ @{ lv_line } ]|.
+        ls_result-message     = |{ <ls_list>-text } [ @{ CONV i( <ls_list>-line ) } ]|.
         INSERT ls_result INTO TABLE rt_result.
       ENDLOOP.
 
