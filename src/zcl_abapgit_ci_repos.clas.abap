@@ -162,8 +162,8 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
     ASSIGN lt_list[ kind = 'E' ] TO FIELD-SYMBOL(<ls_error>).
     IF sy-subrc = 0.
       zcx_abapgit_exception=>raise( |Syntax error in repo { iv_package } |
-                                 && |object { <ls_error>-objtype } { <ls_error>-text } |
-                                 && |{ <ls_error>-text }| ).
+                                 && |object { <ls_error>-objtype } { <ls_error>-objname } { <ls_error>-text } |
+                                 && | [ @{ CONV i( <ls_error>-line ) } ]| ).
     ENDIF.
 
   ENDMETHOD.
