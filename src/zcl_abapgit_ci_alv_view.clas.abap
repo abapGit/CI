@@ -52,13 +52,13 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
         eo_row_3 = DATA(lo_row_3)
         eo_row_4 = DATA(lo_row_4) ).
 
-    prepare_header( iv_text      = |abapGit CI: Generic tests|
+    prepare_header( iv_text      = |abapGit CI - Generic Tests|
                     io_container = lo_row_1 ).
 
     NEW lcl_alv( io_container = lo_row_2
                  it_table     = cs_result-generic_result_list )->display( ).
 
-    prepare_header( iv_text      = |abapGit CI repository tests from: https://github.com/abapGit-tests|
+    prepare_header( iv_text      = |abapGit CI - Repository Tests from https://github.com/abapGit-tests|
                     io_container = lo_row_3 ).
 
     NEW lcl_alv( io_container = lo_row_4
