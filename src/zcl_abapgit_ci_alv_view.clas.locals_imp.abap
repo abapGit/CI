@@ -6,6 +6,8 @@ CLASS lcl_view IMPLEMENTATION.
 
   METHOD constructor.
 
+    CONSTANTS lc_width TYPE lvc_outlen VALUE 11.
+
     CREATE DATA mr_table LIKE it_table.
 
     map_status_to_icon( it_table = it_table
@@ -18,38 +20,52 @@ CLASS lcl_view IMPLEMENTATION.
                    iv_width  = 60 ).
 
     config_column( iv_column = 'PACKAGE'
-                   iv_width  = 20 ).
+                   iv_width  = 25 ).
+
+    config_column( iv_column = 'LAYER'
+                   iv_width  = 5 ).
 
     config_column( iv_column = 'CREATE_PACKAGE'
-                   iv_width  = 15 ).
+                   iv_width  = 12 ).
+
+    config_column( iv_column = 'SKIP'
+                   iv_width  = lc_width ).
+
+    config_column( iv_column = 'DO_NOT_PURGE'
+                   iv_width  = lc_width ).
 
     config_column( iv_column = 'CLONE'
-                   iv_width  = 8 ).
+                   iv_width  = lc_width ).
 
     config_column( iv_column = 'PULL'
-                   iv_width  = 8 ).
+                   iv_width  = lc_width ).
 
     config_column( iv_column = 'SYNTAX_CHECK'
-                   iv_width  = 15 ).
+                   iv_width  = lc_width ).
 
     config_column( iv_column = 'OBJECT_CHECK'
-                   iv_width  = 15 ).
+                   iv_width  = lc_width ).
+
+    config_column( iv_column = 'CHECK_CREATE_TRANSPORT'
+                   iv_width  = lc_width ).
 
     config_column( iv_column = 'PURGE'
-                   iv_width  = 8 ).
+                   iv_width  = lc_width ).
+
+    config_column( iv_column = 'CHECK_DELETE_TRANSPORT'
+                   iv_width  = lc_width ).
 
     config_column( iv_column = 'CHECK_LEFTOVERS'
-                   iv_width  = 15 ).
+                   iv_width  = lc_width ).
 
     config_column( iv_column = 'STATUS'
-                   iv_width  = 8 ).
+                   iv_width  = lc_width ).
 
     config_column( iv_column = 'MESSAGE'
-                   iv_width  = 60 ).
+                   iv_width  = 80 ).
 
     config_column( iv_column = 'DESCRIPTION'
                    iv_width  = 60 ).
-
 
   ENDMETHOD.
 
@@ -134,6 +150,8 @@ CLASS lcl_alv IMPLEMENTATION.
 
   METHOD display.
 
+    DATA: ls_color TYPE lvc_s_colo.
+
     FIELD-SYMBOLS: <lt_table> TYPE INDEX TABLE.
 
     ASSIGN mr_table->* TO <lt_table>.
@@ -157,6 +175,16 @@ CLASS lcl_alv IMPLEMENTATION.
                                        mo_alv->get_columns(
                                             )->get_column( <ls_column_width>-column ) ).
               lo_column->set_output_length( <ls_column_width>-width ).
+
+              IF <ls_column_width>-column = |NAME| OR <ls_column_width>-column = |DESCRIPTION|.
+                lo_column->set_key( ).
+              ENDIF.
+
+              IF <ls_column_width>-column = |STATUS|.
+                ls_color-col = col_total.
+                lo_column->set_color( ls_color ).
+              ENDIF.
+
             CATCH cx_salv_error.
               CONTINUE.
           ENDTRY.

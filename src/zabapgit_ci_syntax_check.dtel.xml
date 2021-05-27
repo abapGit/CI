@@ -11,10 +11,10 @@
     <SCRLEN2>20</SCRLEN2>
     <SCRLEN3>40</SCRLEN3>
     <DDTEXT>abapGit CI: Syntax check status</DDTEXT>
-    <REPTEXT>Syntax check</REPTEXT>
-    <SCRTEXT_S>Synt.check</SCRTEXT_S>
-    <SCRTEXT_M>Syntax check</SCRTEXT_M>
-    <SCRTEXT_L>Syntax check</SCRTEXT_L>
+    <REPTEXT>Syntax Check</REPTEXT>
+    <SCRTEXT_S>Synt.Check</SCRTEXT_S>
+    <SCRTEXT_M>Syntax Check</SCRTEXT_M>
+    <SCRTEXT_L>Syntax Check</SCRTEXT_L>
     <DTELMASTER>E</DTELMASTER>
     <REFKIND>D</REFKIND>
    </DD04V>

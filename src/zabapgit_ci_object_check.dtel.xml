@@ -11,10 +11,10 @@
     <SCRLEN2>20</SCRLEN2>
     <SCRLEN3>40</SCRLEN3>
     <DDTEXT>abapGit CI: Object check status</DDTEXT>
-    <REPTEXT>Object check</REPTEXT>
-    <SCRTEXT_S>Obj.check</SCRTEXT_S>
-    <SCRTEXT_M>Object check</SCRTEXT_M>
-    <SCRTEXT_L>Object check</SCRTEXT_L>
+    <REPTEXT>Object Check</REPTEXT>
+    <SCRTEXT_S>Obj.Check</SCRTEXT_S>
+    <SCRTEXT_M>Object Check</SCRTEXT_M>
+    <SCRTEXT_L>Object Check</SCRTEXT_L>
     <DTELMASTER>E</DTELMASTER>
     <REFKIND>D</REFKIND>
    </DD04V>
