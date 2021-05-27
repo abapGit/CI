@@ -10,6 +10,7 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         !cs_ri_repo TYPE zabapgit_ci_result
       RAISING
         zcx_abapgit_exception .
+
   PROTECTED SECTION.
   PRIVATE SECTION.
     METHODS:
@@ -35,6 +36,7 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         CHANGING
           cs_ri_repo   TYPE zabapgit_ci_result
         RAISING
+          zcx_abapgit_cancel
           zcx_abapgit_exception,
 
       purge
@@ -433,21 +435,13 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     cs_ri_repo-pull = zif_abapgit_ci_definitions=>co_status-not_ok.
 
-    DATA(ls_checks) = io_repo->deserialize_checks( ).
-
-    LOOP AT ls_checks-overwrite ASSIGNING FIELD-SYMBOL(<ls_checks>).
-      <ls_checks>-decision = abap_true.
-    ENDLOOP.
-
-    LOOP AT ls_checks-warning_package ASSIGNING FIELD-SYMBOL(<ls_warning_package>).
-      <ls_warning_package>-decision = abap_true.
-    ENDLOOP.
+    DATA(ls_checks) = zcl_abapgit_ci_repo_check=>get( io_repo ).
 
     ls_checks-transport-transport = iv_transport.
 
     io_repo->deserialize(
-        is_checks = ls_checks
-        ii_log    = NEW zcl_abapgit_log( ) ).
+      is_checks = ls_checks
+      ii_log    = NEW zcl_abapgit_log( ) ).
 
     io_repo->refresh( iv_drop_cache = abap_true ).
 
@@ -605,6 +599,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
                                              iv_check_deletion = abap_false
                                    CHANGING  cs_ri_repo        = cs_ri_repo ).
         ENDIF.
+
+      CATCH zcx_abapgit_cancel INTO DATA(lx_cancel).
+        cs_ri_repo-message = lx_cancel->get_text( ).
 
       CATCH zcx_abapgit_exception INTO DATA(lx_error).
 
