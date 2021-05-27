@@ -176,7 +176,9 @@ CLASS lcl_alv IMPLEMENTATION.
                                             )->get_column( <ls_column_width>-column ) ).
               lo_column->set_output_length( <ls_column_width>-width ).
 
-              IF <ls_column_width>-column = |NAME| OR <ls_column_width>-column = |DESCRIPTION|.
+              IF <ls_column_width>-column = |NAME| OR
+                 <ls_column_width>-column = |PACKAGE| OR
+                 <ls_column_width>-column = |DESCRIPTION|.
                 lo_column->set_key( ).
               ENDIF.
 
