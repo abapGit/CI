@@ -193,6 +193,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
       IF <repo>->get_name( ) = iv_repo_name.
         lo_repo ?= <repo>.
+        EXIT.
       ENDIF.
 
     ENDLOOP.
@@ -203,15 +204,17 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
     lo_repo->select_branch( 'refs/heads/main' ).
 
-    DATA(ls_checks) = lo_repo->deserialize_checks( ).
-
-    LOOP AT ls_checks-overwrite ASSIGNING FIELD-SYMBOL(<ls_overwrite>).
-      <ls_overwrite>-decision = abap_true.
-    ENDLOOP.
+    TRY.
+        DATA(ls_checks) = zcl_abapgit_ci_repo_check=>get( lo_repo ).
+      CATCH zcx_abapgit_cancel INTO DATA(lx_cancel).
+        zcx_abapgit_exception=>raise(
+          iv_text     = lx_cancel->get_text( )
+          ix_previous = lx_cancel ).
+    ENDTRY.
 
     lo_repo->deserialize(
-        is_checks = ls_checks
-        ii_log    = NEW zcl_abapgit_log( ) ).
+      is_checks = ls_checks
+      ii_log    = NEW zcl_abapgit_log( ) ).
 
     syntax_check( lo_repo->get_package( ) ).
 
