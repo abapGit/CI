@@ -63,7 +63,7 @@ CLASS zcl_abapgit_ci_generic_tests IMPLEMENTATION.
       " Add individual tests as result rows
       LOOP AT lt_list ASSIGNING FIELD-SYMBOL(<ls_list>) WHERE kind = 'E'.
         CLEAR ls_result.
-        ls_result-description = |UT: { <ls_list>-objtype } { <ls_list>-objname }|.
+        ls_result-description = |Unit Tests: { <ls_list>-objtype } { <ls_list>-objname }|.
         ls_result-status      = zif_abapgit_ci_definitions=>co_status-not_ok.
         ls_result-message     = |{ <ls_list>-text } [ @{ CONV i( <ls_list>-line ) } ]|.
         INSERT ls_result INTO TABLE rt_result.
