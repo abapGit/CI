@@ -11,7 +11,7 @@ CLASS lcl_view IMPLEMENTATION.
     CREATE DATA mr_table LIKE it_table.
 
     map_status_to_icon( it_table = it_table
-         ir_table = mr_table ).
+                        ir_table = mr_table ).
 
     config_column( iv_column = 'NAME'
                    iv_width  = 20 ).
@@ -70,6 +70,9 @@ CLASS lcl_view IMPLEMENTATION.
     config_column( iv_column = 'DESCRIPTION'
                    iv_width  = 60 ).
 
+    config_column( iv_column = 'TITLE'
+                   iv_width  = 120 ).
+
   ENDMETHOD.
 
 
@@ -108,7 +111,6 @@ CLASS lcl_view IMPLEMENTATION.
                OF STRUCTURE <lv_line>
                TO <lv_left>.
         ASSERT sy-subrc = 0.
-
 
         IF <component>-type->get_ddic_header( )-refname CS |STATUS|.
           <lv_left> = SWITCH icon_d(
@@ -185,6 +187,7 @@ CLASS lcl_alv IMPLEMENTATION.
                  <ls_column_width>-column = |PACKAGE| OR
                  <ls_column_width>-column = |DESCRIPTION|.
                 lo_column->set_key( ).
+                lo_column->set_optimized( ).
               ENDIF.
 
               IF <ls_column_width>-column = |STATUS|.
@@ -249,11 +252,19 @@ CLASS lcl_list IMPLEMENTATION.
       ASSIGN mt_column_width[ column = <ls_fieldcat>-fieldname ] TO FIELD-SYMBOL(<ls_column_width>).
       IF sy-subrc = 0.
         <ls_fieldcat>-outputlen = <ls_column_width>-width.
+
+        IF <ls_fieldcat>-fieldname = |NAME| OR
+           <ls_fieldcat>-fieldname = |PACKAGE| OR
+           <ls_fieldcat>-fieldname = |DESCRIPTION| OR
+           <ls_fieldcat>-fieldname = |TITLE|.
+          <ls_fieldcat>-key = abap_true.
+        ENDIF.
       ENDIF.
 
     ENDLOOP.
 
     ls_layout-box_tabname = 'ZABAPGIT_CI_RESULT'.
+    ls_layout-no_colhead  = xsdbool( mv_tabname CS 'HEADER' ).
 
     CALL FUNCTION 'REUSE_ALV_BLOCK_LIST_APPEND'
       EXPORTING
