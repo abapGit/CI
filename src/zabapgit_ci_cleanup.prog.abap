@@ -83,8 +83,8 @@ CLASS lcl_main IMPLEMENTATION.
       zcx_abapgit_exception=>raise( 'No selection for packages found' ).
     ENDIF.
 
-    SELECT COUNT(*) FROM tadir INTO lv_count
-      WHERE pgmid = 'R3TR' AND object = 'DEVC' AND obj_name IN s_pack[]
+    SELECT COUNT(*) FROM tadir INTO @lv_count
+      WHERE pgmid = 'R3TR' AND object = 'DEVC' AND obj_name IN @s_pack[]
       AND ( srcsystem = 'SAP' OR author = 'SAP' ).
 
     IF lv_count > 0.
@@ -97,11 +97,11 @@ CLASS lcl_main IMPLEMENTATION.
     DATA lv_devclass TYPE devclass.
     DATA lv_count TYPE i.
 
-    SELECT devclass FROM tdevc INTO TABLE lt_devclass WHERE devclass IN s_pack[] ORDER BY devclass.
+    SELECT devclass FROM tdevc INTO TABLE @lt_devclass WHERE devclass IN @s_pack[] ORDER BY devclass.
 
     LOOP AT lt_devclass INTO lv_devclass.
-      SELECT COUNT(*) FROM tadir INTO lv_count
-        WHERE pgmid = 'R3TR' AND object <> 'DEVC' AND object <> 'SOTR' AND devclass = lv_devclass.
+      SELECT COUNT(*) FROM tadir INTO @lv_count
+        WHERE pgmid = 'R3TR' AND object <> 'DEVC' AND object <> 'SOTR' AND devclass = @lv_devclass.
 
       IF lv_count = 0.
         delete_package( lv_devclass ).
