@@ -169,6 +169,8 @@ CLASS lcl_alv IMPLEMENTATION.
           CHANGING
             t_table      = <lt_table> ).
 
+        mo_alv->get_selections( )->set_selection_mode( if_salv_c_selection_mode=>row_column ).
+
         mo_alv->get_functions( )->set_all( ).
 
         LOOP AT mt_column_width ASSIGNING FIELD-SYMBOL(<ls_column_width>).

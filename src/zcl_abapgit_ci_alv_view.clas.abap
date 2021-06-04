@@ -7,62 +7,68 @@ CLASS zcl_abapgit_ci_alv_view DEFINITION
     INTERFACES zif_abapgit_ci_view .
   PROTECTED SECTION.
   PRIVATE SECTION.
-    METHODS:
-      prepare_splitter
-        EXPORTING
-          eo_row_1 TYPE REF TO cl_gui_container
-          eo_row_2 TYPE REF TO cl_gui_container
-          eo_row_3 TYPE REF TO cl_gui_container
-          eo_row_4 TYPE REF TO cl_gui_container
-        RAISING
-          zcx_abapgit_exception,
 
-      prepare_header
-        IMPORTING
-          iv_text      TYPE string
-          io_container TYPE REF TO cl_gui_container
-        RAISING
-          zcx_abapgit_exception,
-
-      display_alv
-        CHANGING
-          cs_result TYPE zif_abapgit_ci_definitions=>ty_result
-        RAISING
-          zcx_abapgit_exception,
-
-      display_list
-        CHANGING
-          cs_result TYPE zif_abapgit_ci_definitions=>ty_result
-        RAISING
-          zcx_abapgit_exception.
-
+    METHODS prepare_splitter
+      IMPORTING
+        !iv_gen   TYPE abap_bool
+        !iv_repo  TYPE abap_bool
+      EXPORTING
+        !eo_row_1 TYPE REF TO cl_gui_container
+        !eo_row_2 TYPE REF TO cl_gui_container
+        !eo_row_3 TYPE REF TO cl_gui_container
+        !eo_row_4 TYPE REF TO cl_gui_container
+      RAISING
+        zcx_abapgit_exception .
+    METHODS prepare_header
+      IMPORTING
+        !iv_text      TYPE string
+        !io_container TYPE REF TO cl_gui_container
+      RAISING
+        zcx_abapgit_exception .
+    METHODS display_alv
+      CHANGING
+        !cs_result TYPE zif_abapgit_ci_definitions=>ty_result
+      RAISING
+        zcx_abapgit_exception .
+    METHODS display_list
+      CHANGING
+        !cs_result TYPE zif_abapgit_ci_definitions=>ty_result
+      RAISING
+        zcx_abapgit_exception .
 ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_ALV_VIEW IMPLEMENTATION.
 
 
   METHOD display_alv.
 
     prepare_splitter(
+      EXPORTING
+        iv_gen   = xsdbool( cs_result-generic_result_list IS NOT INITIAL )
+        iv_repo  = xsdbool( cs_result-repo_result_list IS NOT INITIAL )
       IMPORTING
         eo_row_1 = DATA(lo_row_1)
         eo_row_2 = DATA(lo_row_2)
         eo_row_3 = DATA(lo_row_3)
         eo_row_4 = DATA(lo_row_4) ).
 
-    prepare_header( iv_text      = |abapGit CI - Generic Tests|
-                    io_container = lo_row_1 ).
+    IF cs_result-generic_result_list IS NOT INITIAL.
+      prepare_header( iv_text      = |abapGit CI - Generic Tests|
+                      io_container = lo_row_1 ).
 
-    NEW lcl_alv( io_container = lo_row_2
-                 it_table     = cs_result-generic_result_list )->display( ).
+      NEW lcl_alv( io_container = lo_row_2
+                   it_table     = cs_result-generic_result_list )->display( ).
+    ENDIF.
 
-    prepare_header( iv_text      = |abapGit CI - Repository Tests from https://github.com/abapGit-tests|
-                    io_container = lo_row_3 ).
+    IF cs_result-repo_result_list IS NOT INITIAL.
+      prepare_header( iv_text      = |abapGit CI - Repository Tests from https://github.com/abapGit-tests|
+                      io_container = lo_row_3 ).
 
-    NEW lcl_alv( io_container = lo_row_4
-                 it_table     = cs_result-repo_result_list )->display( ).
+      NEW lcl_alv( io_container = lo_row_4
+                   it_table     = cs_result-repo_result_list )->display( ).
+    ENDIF.
 
     WRITE: ''.
 
@@ -181,7 +187,7 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
     lo_splitter->set_row_height(
       EXPORTING
         id                = 1
-        height            = 5
+        height            = COND #( WHEN iv_gen = abap_true THEN 6 ELSE 0 )
       EXCEPTIONS
         cntl_error        = 1
         cntl_system_error = 2
@@ -205,17 +211,19 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
-    lo_splitter->set_row_height(
-      EXPORTING
-        id                = 2
-        height            = 20
-      EXCEPTIONS
-        cntl_error        = 1
-        cntl_system_error = 2
-        OTHERS            = 3 ).
+    IF iv_repo = abap_true.
+      lo_splitter->set_row_height(
+        EXPORTING
+          id                = 2
+          height            = COND #( WHEN iv_gen = abap_true THEN 10 ELSE 0 )
+        EXCEPTIONS
+          cntl_error        = 1
+          cntl_system_error = 2
+          OTHERS            = 3 ).
 
-    IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise_t100( ).
+      IF sy-subrc <> 0.
+        zcx_abapgit_exception=>raise_t100( ).
+      ENDIF.
     ENDIF.
 
     lo_splitter->set_row_sash(
@@ -235,7 +243,7 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
     lo_splitter->set_row_height(
       EXPORTING
         id                = 3
-        height            = 5
+        height            = COND #( WHEN iv_repo = abap_true THEN 6 ELSE 0 )
       EXCEPTIONS
         cntl_error        = 1
         cntl_system_error = 2
@@ -259,17 +267,19 @@ CLASS zcl_abapgit_ci_alv_view IMPLEMENTATION.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
-    lo_splitter->set_row_height(
-      EXPORTING
-        id                = 4
-        height            = 40
-      EXCEPTIONS
-        cntl_error        = 1
-        cntl_system_error = 2
-        OTHERS            = 3 ).
+    IF iv_gen = abap_true.
+      lo_splitter->set_row_height(
+        EXPORTING
+          id                = 4
+          height            = COND #( WHEN iv_repo = abap_true THEN 40 ELSE 0 )
+        EXCEPTIONS
+          cntl_error        = 1
+          cntl_system_error = 2
+          OTHERS            = 3 ).
 
-    IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise_t100( ).
+      IF sy-subrc <> 0.
+        zcx_abapgit_exception=>raise_t100( ).
+      ENDIF.
     ENDIF.
 
   ENDMETHOD.
