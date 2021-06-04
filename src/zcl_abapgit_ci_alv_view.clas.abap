@@ -8,8 +8,10 @@ CLASS zcl_abapgit_ci_alv_view DEFINITION
   PROTECTED SECTION.
   PRIVATE SECTION.
 
-    CONSTANTS co_title_generic TYPE string VALUE 'abapGit CI - Generic Tests' ##NO_TEXT.
-    CONSTANTS co_title_repos TYPE string VALUE 'abapGit CI - Repository Tests from https://github.com/abapGit-tests' ##NO_TEXT.
+    CONSTANTS co_title_generic TYPE string
+      VALUE 'abapGit CI - Generic Tests' ##NO_TEXT.
+    CONSTANTS co_title_repos TYPE string
+      VALUE 'abapGit CI - Repository Tests from https://github.com/abapGit-tests' ##NO_TEXT.
 
     METHODS prepare_splitter
       IMPORTING
