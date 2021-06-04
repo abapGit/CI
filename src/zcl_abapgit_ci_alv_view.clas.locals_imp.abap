@@ -264,7 +264,7 @@ CLASS lcl_list IMPLEMENTATION.
     ENDLOOP.
 
     ls_layout-box_tabname = 'ZABAPGIT_CI_RESULT'.
-    ls_layout-no_colhead  = COND #( WHEN mv_tabname CS 'HEADER' THEN abap_true ).
+    ls_layout-no_colhead  = xsdbool( mv_tabname CS 'HEADER' ).
 
     CALL FUNCTION 'REUSE_ALV_BLOCK_LIST_APPEND'
       EXPORTING
