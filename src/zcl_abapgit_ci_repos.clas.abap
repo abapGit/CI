@@ -115,12 +115,19 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
 
   METHOD process_repos.
+
+    DATA:
+      lv_start_timestamp TYPE timestampl,
+      lv_finish_timestamp TYPE timestampl.
+
     rt_result_list = get_repo_list_with_packages( it_repos = it_repos is_options = is_options ).
 
     LOOP AT rt_result_list ASSIGNING FIELD-SYMBOL(<ls_ci_repo>).
       IF <ls_ci_repo>-skip = abap_true.
         CONTINUE.
       ENDIF.
+
+      GET TIME STAMP FIELD lv_start_timestamp.
 
       TRY.
           process_repo(
@@ -149,6 +156,12 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
         <ls_ci_repo>-status = zif_abapgit_ci_definitions=>co_status-ok.
 
       ENDIF.
+
+      GET TIME STAMP FIELD lv_finish_timestamp.
+
+      <ls_ci_repo>-duration = cl_abap_timestamp_util=>get_instance( )->tstmpl_seconds_between(
+        iv_timestamp0 = lv_start_timestamp
+        iv_timestamp1 = lv_finish_timestamp ).
 
     ENDLOOP.
 

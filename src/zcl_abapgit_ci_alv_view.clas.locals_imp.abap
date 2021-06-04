@@ -61,6 +61,9 @@ CLASS lcl_view IMPLEMENTATION.
     config_column( iv_column = 'STATUS'
                    iv_width  = lc_width ).
 
+    config_column( iv_column = 'DURATION'
+                   iv_width  = 10 ).
+
     config_column( iv_column = 'MESSAGE'
                    iv_width  = 80 ).
 
