@@ -31,6 +31,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_PACK</KEY>
+     <ENTRY>Remove empty packages</ENTRY>
+     <LENGTH>29</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_PREV</KEY>
      <ENTRY>Preview transports</ENTRY>
      <LENGTH>26</LENGTH>
@@ -38,14 +44,14 @@
     <item>
      <ID>S</ID>
      <KEY>P_PURGE</KEY>
-     <ENTRY>Purge and delete repository</ENTRY>
-     <LENGTH>35</LENGTH>
+     <ENTRY>Purge and delete repositories</ENTRY>
+     <LENGTH>37</LENGTH>
     </item>
     <item>
      <ID>S</ID>
      <KEY>P_REMOV</KEY>
-     <ENTRY>Delete repository</ENTRY>
-     <LENGTH>25</LENGTH>
+     <ENTRY>Delete repositories</ENTRY>
+     <LENGTH>27</LENGTH>
     </item>
     <item>
      <ID>S</ID>

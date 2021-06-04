@@ -6,7 +6,8 @@ PARAMETERS: p_uninst TYPE abap_bool RADIOBUTTON GROUP r1 DEFAULT 'X'.
 SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
 SELECT-OPTIONS: s_pack FOR gv_package.
 PARAMETERS: p_purge TYPE abap_bool RADIOBUTTON GROUP r2 DEFAULT 'X',
-            p_remov TYPE abap_bool RADIOBUTTON GROUP r2.
+            p_remov TYPE abap_bool RADIOBUTTON GROUP r2,
+            p_pack  TYPE abap_bool RADIOBUTTON GROUP r2.
 SELECTION-SCREEN END OF BLOCK b1.
 
 SELECTION-SCREEN SKIP.
@@ -22,6 +23,9 @@ CLASS lcl_main DEFINITION.
     METHODS:
       run RAISING zcx_abapgit_exception,
       uninstall_repos RAISING zcx_abapgit_exception,
+      check_packages RAISING zcx_abapgit_exception,
+      drop_packages RAISING zcx_abapgit_exception,
+      delete_package IMPORTING iv_package TYPE devclass RAISING zcx_abapgit_exception,
       release_transports RAISING zcx_abapgit_exception.
   PROTECTED SECTION.
   PRIVATE SECTION.
@@ -31,7 +35,12 @@ CLASS lcl_main IMPLEMENTATION.
   METHOD run.
     CASE abap_true.
       WHEN p_uninst.
-        uninstall_repos( ).
+        check_packages( ).
+        IF p_pack = abap_true.
+          drop_packages( ).
+        ELSE.
+          uninstall_repos( ).
+        ENDIF.
       WHEN p_trrel.
         release_transports( ).
     ENDCASE.
@@ -65,6 +74,117 @@ CLASS lcl_main IMPLEMENTATION.
           li_repo_srv->delete( lo_repo ).
       ENDCASE.
     ENDLOOP.
+  ENDMETHOD.
+
+  METHOD check_packages.
+    DATA lv_count TYPE i.
+
+    IF s_pack[] IS INITIAL.
+      zcx_abapgit_exception=>raise( 'No selection for packages found' ).
+    ENDIF.
+
+    SELECT COUNT(*) FROM tadir INTO @lv_count
+      WHERE pgmid = 'R3TR' AND object = 'DEVC' AND obj_name IN @s_pack[]
+      AND ( srcsystem = 'SAP' OR author = 'SAP' ).
+
+    IF lv_count > 0.
+      zcx_abapgit_exception=>raise( 'Selection contains standard SAP packages' ).
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD drop_packages.
+    DATA lt_devclass TYPE TABLE OF devclass.
+    DATA lv_devclass TYPE devclass.
+    DATA lv_count TYPE i.
+
+    SELECT devclass FROM tdevc INTO TABLE @lt_devclass WHERE devclass IN @s_pack[] ORDER BY devclass.
+
+    LOOP AT lt_devclass INTO lv_devclass.
+      SELECT COUNT(*) FROM tadir INTO @lv_count
+        WHERE pgmid = 'R3TR' AND object <> 'DEVC' AND object <> 'SOTR' AND devclass = @lv_devclass.
+
+      IF lv_count = 0.
+        delete_package( lv_devclass ).
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD delete_package.
+    DATA lv_transport TYPE trkorr.
+    DATA li_package TYPE REF TO if_package.
+
+    IF iv_package(1) <> '$'.
+      lv_transport = zcl_abapgit_ui_factory=>get_popups( )->popup_transport_request(
+        VALUE #( request = 'K' task = 'S' ) ).
+    ENDIF.
+
+    cl_package_factory=>load_package(
+      EXPORTING
+        i_package_name             = iv_package
+        i_force_reload             = abap_true
+      IMPORTING
+        e_package                  = li_package
+      EXCEPTIONS
+        object_not_existing        = 1
+        unexpected_error           = 2
+        intern_err                 = 3
+        no_access                  = 4
+        object_locked_and_modified = 5
+        OTHERS                     = 6 ).
+
+    IF li_package IS NOT BOUND.
+      RETURN.
+    ENDIF.
+
+    li_package->set_changeable(
+      EXPORTING
+        i_changeable                = abap_true
+        i_suppress_dialog           = abap_true
+      EXCEPTIONS
+        object_locked_by_other_user = 1
+        permission_failure          = 2
+        object_already_changeable   = 3
+        object_already_unlocked     = 4
+        object_just_created         = 5
+        object_deleted              = 6
+        object_modified             = 7
+        object_not_existing         = 8
+        object_invalid              = 9
+        unexpected_error            = 10
+        OTHERS                      = 11 ).
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+    li_package->delete(
+      EXPORTING
+        i_suppress_dialog     = abap_true
+      EXCEPTIONS
+        object_not_empty      = 1
+        object_not_changeable = 2
+        object_invalid        = 3
+        intern_err            = 4
+        OTHERS                = 5 ).
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+    li_package->save(
+      EXPORTING
+        i_suppress_dialog     = abap_true
+        i_transport_request   = lv_transport
+      EXCEPTIONS
+        object_invalid        = 1
+        object_not_changeable = 2
+        cancelled_in_corr     = 3
+        permission_failure    = 4
+        unexpected_error      = 5
+        intern_err            = 6
+        OTHERS                = 7 ).
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
   ENDMETHOD.
 
   METHOD release_transports.
@@ -158,7 +278,8 @@ CLASS lcl_main IMPLEMENTATION.
 ENDCLASS.
 
 INITIALIZATION.
-  s_pack[] = VALUE #( ( sign = 'I' option = 'CP' low = 'Z___*' ) ).
+  s_pack[] = VALUE #( ( sign = 'I' option = 'CP' low = 'Z___*' )
+                      ( sign = 'I' option = 'CP' low = '$___*' ) ).
 
 START-OF-SELECTION.
   TRY.

@@ -31,7 +31,7 @@
     "no_yoda_conditions": true,
     "prefer_raise_exception_new": true,
     "select_add_order_by": true,
-    "select_performance": true,
+    "select_performance": false,
     "unsecure_fae": true,
     "use_class_based_exceptions": true,
     "identical_descriptions": true,
