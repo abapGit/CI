@@ -20,7 +20,7 @@
   "syntax": {
     "version": "v750",
     "errorNamespace": "^(Z|Y)",
-    "globalConstants": ["icon_change", "icon_checked", "icon_incomplete", "icon_led_inactive"],
+    "globalConstants": [],
     "globalMacros": []
   },
   "rules": {
