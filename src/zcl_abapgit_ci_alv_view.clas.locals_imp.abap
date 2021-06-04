@@ -11,7 +11,7 @@ CLASS lcl_view IMPLEMENTATION.
     CREATE DATA mr_table LIKE it_table.
 
     map_status_to_icon( it_table = it_table
-         ir_table = mr_table ).
+                        ir_table = mr_table ).
 
     config_column( iv_column = 'NAME'
                    iv_width  = 20 ).
@@ -187,6 +187,7 @@ CLASS lcl_alv IMPLEMENTATION.
                  <ls_column_width>-column = |PACKAGE| OR
                  <ls_column_width>-column = |DESCRIPTION|.
                 lo_column->set_key( ).
+                lo_column->set_optimized( ).
               ENDIF.
 
               IF <ls_column_width>-column = |STATUS|.
