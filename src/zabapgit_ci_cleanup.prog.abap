@@ -93,23 +93,30 @@ CLASS lcl_main IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD drop_packages.
+    DATA lt_devclass TYPE TABLE OF devclass.
     DATA lv_devclass TYPE devclass.
     DATA lv_count TYPE i.
 
-    SELECT devclass FROM tdevc INTO lv_devclass WHERE devclass IN s_pack[] ORDER BY devclass.
+    SELECT devclass FROM tdevc INTO TABLE lt_devclass WHERE devclass IN s_pack[] ORDER BY devclass.
 
+    LOOP AT lt_devclass INTO lv_devclass.
       SELECT COUNT(*) FROM tadir INTO lv_count
-        WHERE pgmid = 'R3TR' AND ( object <> 'DEVC' AND object <> 'SOTR' ) AND devclass = lv_devclass.
+        WHERE pgmid = 'R3TR' AND object <> 'DEVC' AND object <> 'SOTR' AND devclass = lv_devclass.
 
       IF lv_count = 0.
         delete_package( lv_devclass ).
       ENDIF.
-
-    ENDSELECT.
+    ENDLOOP.
   ENDMETHOD.
 
   METHOD delete_package.
+    DATA lv_transport TYPE trkorr.
     DATA li_package TYPE REF TO if_package.
+
+    IF iv_package(1) <> '$'.
+      lv_transport = zcl_abapgit_ui_factory=>get_popups( )->popup_transport_request(
+        VALUE #( request = 'K' task = 'S' ) ).
+    ENDIF.
 
     cl_package_factory=>load_package(
       EXPORTING
@@ -129,18 +136,54 @@ CLASS lcl_main IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    TRY.
-        li_package->set_changeable(
-          i_changeable      = abap_true
-          i_suppress_dialog = abap_true ).
+    li_package->set_changeable(
+      EXPORTING
+        i_changeable                = abap_true
+        i_suppress_dialog           = abap_true
+      EXCEPTIONS
+        object_locked_by_other_user = 1
+        permission_failure          = 2
+        object_already_changeable   = 3
+        object_already_unlocked     = 4
+        object_just_created         = 5
+        object_deleted              = 6
+        object_modified             = 7
+        object_not_existing         = 8
+        object_invalid              = 9
+        unexpected_error            = 10
+        OTHERS                      = 11 ).
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
 
-        li_package->delete( i_suppress_dialog = abap_true ).
+    li_package->delete(
+      EXPORTING
+        i_suppress_dialog     = abap_true
+      EXCEPTIONS
+        object_not_empty      = 1
+        object_not_changeable = 2
+        object_invalid        = 3
+        intern_err            = 4
+        OTHERS                = 5 ).
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
 
-        li_package->save( i_suppress_dialog = abap_true ).
-
-      CATCH cx_root INTO DATA(lx_error).
-        zcx_abapgit_exception=>raise( |Error deleting package { iv_package }: { lx_error->get_text( ) }| ).
-    ENDTRY.
+    li_package->save(
+      EXPORTING
+        i_suppress_dialog     = abap_true
+        i_transport_request   = lv_transport
+      EXCEPTIONS
+        object_invalid        = 1
+        object_not_changeable = 2
+        cancelled_in_corr     = 3
+        permission_failure    = 4
+        unexpected_error      = 5
+        intern_err            = 6
+        OTHERS                = 7 ).
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
 
   ENDMETHOD.
 
