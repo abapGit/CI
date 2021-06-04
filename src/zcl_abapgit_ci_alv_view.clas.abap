@@ -6,35 +6,35 @@ CLASS zcl_abapgit_ci_alv_view DEFINITION
 
     INTERFACES zif_abapgit_ci_view .
   PROTECTED SECTION.
-private section.
+  PRIVATE SECTION.
 
-  methods PREPARE_SPLITTER
-    importing
-      !IV_GEN type ABAP_BOOL
-      !IV_REPO type ABAP_BOOL
-    exporting
-      !EO_ROW_1 type ref to CL_GUI_CONTAINER
-      !EO_ROW_2 type ref to CL_GUI_CONTAINER
-      !EO_ROW_3 type ref to CL_GUI_CONTAINER
-      !EO_ROW_4 type ref to CL_GUI_CONTAINER
-    raising
-      ZCX_ABAPGIT_EXCEPTION .
-  methods PREPARE_HEADER
-    importing
-      !IV_TEXT type STRING
-      !IO_CONTAINER type ref to CL_GUI_CONTAINER
-    raising
-      ZCX_ABAPGIT_EXCEPTION .
-  methods DISPLAY_ALV
-    changing
-      !CS_RESULT type ZIF_ABAPGIT_CI_DEFINITIONS=>TY_RESULT
-    raising
-      ZCX_ABAPGIT_EXCEPTION .
-  methods DISPLAY_LIST
-    changing
-      !CS_RESULT type ZIF_ABAPGIT_CI_DEFINITIONS=>TY_RESULT
-    raising
-      ZCX_ABAPGIT_EXCEPTION .
+    METHODS prepare_splitter
+      IMPORTING
+        !iv_gen   TYPE abap_bool
+        !iv_repo  TYPE abap_bool
+      EXPORTING
+        !eo_row_1 TYPE REF TO cl_gui_container
+        !eo_row_2 TYPE REF TO cl_gui_container
+        !eo_row_3 TYPE REF TO cl_gui_container
+        !eo_row_4 TYPE REF TO cl_gui_container
+      RAISING
+        zcx_abapgit_exception .
+    METHODS prepare_header
+      IMPORTING
+        !iv_text      TYPE string
+        !io_container TYPE REF TO cl_gui_container
+      RAISING
+        zcx_abapgit_exception .
+    METHODS display_alv
+      CHANGING
+        !cs_result TYPE zif_abapgit_ci_definitions=>ty_result
+      RAISING
+        zcx_abapgit_exception .
+    METHODS display_list
+      CHANGING
+        !cs_result TYPE zif_abapgit_ci_definitions=>ty_result
+      RAISING
+        zcx_abapgit_exception .
 ENDCLASS.
 
 
