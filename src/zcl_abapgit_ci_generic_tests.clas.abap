@@ -29,12 +29,17 @@ CLASS zcl_abapgit_ci_generic_tests IMPLEMENTATION.
 
   METHOD execute.
 
-    DATA: li_test   TYPE REF TO zif_abapgit_ci_test,
-          ls_result LIKE LINE OF rt_result.
+    DATA:
+      li_test             TYPE REF TO zif_abapgit_ci_test,
+      ls_result           LIKE LINE OF rt_result,
+      lv_start_timestamp  TYPE timestampl,
+      lv_finish_timestamp TYPE timestampl.
 
     DATA(lt_tests) = get_test_cases( ).
 
     LOOP AT lt_tests ASSIGNING FIELD-SYMBOL(<ls_test>).
+
+      GET TIME STAMP FIELD lv_start_timestamp.
 
       CLEAR: ls_result.
 
@@ -57,6 +62,12 @@ CLASS zcl_abapgit_ci_generic_tests IMPLEMENTATION.
         CATCH zcx_abapgit_exception INTO DATA(lx_error).
           ls_result-message = lx_error->get_text( ).
       ENDTRY.
+
+      GET TIME STAMP FIELD lv_finish_timestamp.
+
+      ls_result-duration = cl_abap_timestamp_util=>get_instance( )->tstmpl_seconds_between(
+        iv_timestamp0 = lv_start_timestamp
+        iv_timestamp1 = lv_finish_timestamp ).
 
       INSERT ls_result INTO TABLE rt_result.
 

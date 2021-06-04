@@ -61,6 +61,9 @@ CLASS lcl_view IMPLEMENTATION.
     config_column( iv_column = 'STATUS'
                    iv_width  = lc_width ).
 
+    config_column( iv_column = 'DURATION'
+                   iv_width  = 10 ).
+
     config_column( iv_column = 'MESSAGE'
                    iv_width  = 80 ).
 
@@ -165,6 +168,8 @@ CLASS lcl_alv IMPLEMENTATION.
             r_salv_table = mo_alv
           CHANGING
             t_table      = <lt_table> ).
+
+        mo_alv->get_selections( )->set_selection_mode( if_salv_c_selection_mode=>row_column ).
 
         mo_alv->get_functions( )->set_all( ).
 
