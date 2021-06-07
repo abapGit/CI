@@ -73,6 +73,22 @@ INITIALIZATION.
   opt02 = TEXT-o02.
   opt03 = TEXT-o03.
 
+  " Get default transport layer
+  CALL FUNCTION 'TR_GET_TRANSPORT_TARGET'
+    EXPORTING
+      iv_use_default             = abap_true
+      iv_get_layer_only          = abap_true
+    IMPORTING
+      ev_layer                   = layer
+    EXCEPTIONS
+      wrong_call                 = 1
+      invalid_input              = 2
+      cts_initialization_failure = 3
+      OTHERS                     = 4.
+  IF sy-subrc <> 0.
+    CLEAR layer.
+  ENDIF.
+
 AT SELECTION-SCREEN OUTPUT.
   LOOP AT SCREEN.
     IF screen-group1 = 'M1'.
@@ -83,10 +99,6 @@ AT SELECTION-SCREEN OUTPUT.
     IF screen-name = 'LAYER'.
       screen-input = COND #( WHEN repo = abap_true AND repot = abap_true THEN '1' ELSE '0' ).
       MODIFY SCREEN.
-    ENDIF.
-
-    IF repot = abap_false.
-      CLEAR layer.
     ENDIF.
 
     IF repo = abap_false.
