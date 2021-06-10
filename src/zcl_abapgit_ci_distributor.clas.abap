@@ -6,7 +6,8 @@ CLASS zcl_abapgit_ci_distributor DEFINITION
 
     METHODS constructor
       IMPORTING
-        !iv_url TYPE string
+        !iv_url     TYPE string
+        !iv_history TYPE abap_bool DEFAULT abap_false
       RAISING
         zcx_abapgit_exception .
     METHODS push_to_git_repo
@@ -16,51 +17,137 @@ CLASS zcl_abapgit_ci_distributor DEFINITION
         zcx_abapgit_exception .
   PROTECTED SECTION.
   PRIVATE SECTION.
-    CONSTANTS:
-      co_package TYPE devclass VALUE '$_ABAPGIT_CI_RESULTS' ##NO_TEXT.
 
-    DATA:
-      mv_url TYPE string.
+    CONSTANTS co_package TYPE devclass VALUE '$_ABAPGIT_CI_RESULTS' ##NO_TEXT.
+    CONSTANTS co_mime_public TYPE string VALUE '/SAP/PUBLIC' ##NO_TEXT.
+    CONSTANTS co_mime_abapgit_ci TYPE string VALUE 'ZABAPGIT_CI' ##NO_TEXT.
+    CONSTANTS co_mime_history TYPE string VALUE 'HISTORY' ##NO_TEXT.
+    CONSTANTS co_mime_result_html TYPE string VALUE 'abapGit_CI_result.html' ##NO_TEXT.
+    CONSTANTS co_mime_result_json TYPE string VALUE 'abapGit_CI_result.json' ##NO_TEXT.
+    CONSTANTS co_mime_history_html TYPE string VALUE 'result_&.html' ##NO_TEXT.
+    CONSTANTS co_mime_history_json TYPE string VALUE 'result_&.json' ##NO_TEXT.
+    DATA mv_history TYPE abap_bool.
+    DATA mv_url TYPE string .
 
-    METHODS:
-      get_repo
-        RETURNING
-          VALUE(ro_repo) TYPE REF TO zcl_abapgit_repo_online
-        RAISING
-          zcx_abapgit_exception,
-
-      create_package
-        RAISING
-          zcx_abapgit_exception,
-
-      save_results_in_mime_repo
-        IMPORTING
-          is_result TYPE zif_abapgit_ci_definitions=>ty_result
-        RAISING
-          zcx_abapgit_exception,
-
-      stage
-        IMPORTING
-          io_repo         TYPE REF TO zcl_abapgit_repo_online
-        RETURNING
-          VALUE(ro_stage) TYPE REF TO zcl_abapgit_stage
-        RAISING
-          zcx_abapgit_exception.
-
+    METHODS get_repo
+      RETURNING
+        VALUE(ro_repo) TYPE REF TO zcl_abapgit_repo_online
+      RAISING
+        zcx_abapgit_exception .
+    METHODS create_package
+      RAISING
+        zcx_abapgit_exception .
+    METHODS save_results_in_mime_repo
+      IMPORTING
+        !is_result TYPE zif_abapgit_ci_definitions=>ty_result
+      RAISING
+        zcx_abapgit_exception .
+    METHODS stage
+      IMPORTING
+        !io_repo        TYPE REF TO zcl_abapgit_repo_online
+      RETURNING
+        VALUE(ro_stage) TYPE REF TO zcl_abapgit_stage
+      RAISING
+        zcx_abapgit_exception .
+    METHODS create_mime_folder
+      IMPORTING
+        !iv_folder      TYPE string
+        !iv_description TYPE string
+        !iv_loio        TYPE smimloio-loio_id
+      RAISING
+        zcx_abapgit_exception .
+    METHODS add_file_to_mime_repo
+      IMPORTING
+        !iv_url         TYPE string
+        !iv_description TYPE string
+        !iv_data        TYPE string
+      RAISING
+        zcx_abapgit_exception .
 ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_DISTRIBUTOR IMPLEMENTATION.
+
+
+  METHOD add_file_to_mime_repo.
+
+    TRY.
+        DATA(lv_xstring) = cl_bcs_convert=>string_to_xstring( iv_data ).
+
+      CATCH cx_bcs INTO DATA(lx_bcs).
+        zcx_abapgit_exception=>raise_with_text( lx_bcs ).
+    ENDTRY.
+
+    DATA(lo_mime_api) = cl_mime_repository_api=>get_api( ).
+
+    lo_mime_api->put(
+      EXPORTING
+        i_url                   = iv_url
+        i_content               = lv_xstring
+        i_description           = zif_abapgit_ci_definitions=>co_title && iv_description
+        i_dev_package           = co_package
+      EXCEPTIONS
+        parameter_missing       = 1
+        error_occured           = 2
+        cancelled               = 3
+        permission_failure      = 4
+        data_inconsistency      = 5
+        new_loio_already_exists = 6
+        is_folder               = 7
+        OTHERS                  = 8 ).
+
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+  ENDMETHOD.
 
 
   METHOD constructor.
 
     IF iv_url IS INITIAL.
-      zcx_abapgit_exception=>raise( |Please supply git repo url| ).
+      zcx_abapgit_exception=>raise( |Please supply Git repository URL| ).
     ENDIF.
 
     mv_url = iv_url.
+    mv_history = iv_history.
+
+  ENDMETHOD.
+
+
+  METHOD create_mime_folder.
+
+    DATA ls_loio TYPE skwf_io.
+
+    SELECT SINGLE loio_id FROM smimloio INTO @ls_loio-objid WHERE prop09 = @iv_folder.
+    IF sy-subrc <> 0.
+
+      " Create folders with hardcoded IDs (otherwise system assigns new IDs which lead to diffs)
+      ls_loio-objtype = 'F'. "folder
+      ls_loio-class   = 'M_FOLDER'.
+      ls_loio-objid   = iv_loio.
+
+      DATA(lo_mime_api) = cl_mime_repository_api=>get_api( ).
+
+      lo_mime_api->create_folder(
+        EXPORTING
+          i_url              = co_mime_public && iv_folder
+          i_description      = zif_abapgit_ci_definitions=>co_title && iv_description
+          i_dev_package      = co_package
+          i_folder_loio      = ls_loio
+        EXCEPTIONS
+          parameter_missing  = 1
+          error_occured      = 2
+          cancelled          = 3
+          permission_failure = 4
+          folder_exists      = 5
+          OTHERS             = 6 ).
+      IF sy-subrc <> 5 AND sy-subrc <> 0.
+        zcx_abapgit_exception=>raise_t100( ).
+      ENDIF.
+
+    ENDIF.
 
   ENDMETHOD.
 
@@ -74,7 +161,7 @@ CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
       lo_package->create( VALUE #(
                             as4user  = sy-uname
                             devclass = co_package
-                            ctext    = |abapGit CI run results|
+                            ctext    = zif_abapgit_ci_definitions=>co_title
                           ) ).
 
     ENDIF.
@@ -107,10 +194,20 @@ CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
 
     create_package( ).
 
+    create_mime_folder(
+      iv_folder      = co_mime_abapgit_ci
+      iv_description = ''
+      iv_loio        = '0242AC1100021EEBB1BAD91FD0049E35' ).
+
+    create_mime_folder(
+      iv_folder      = co_mime_history
+      iv_description = ': History'
+      iv_loio        = '0242AC1100021EEBB1BAAF746A2D3E35' ).
+
     ro_repo ?= zcl_abapgit_repo_srv=>get_instance( )->new_online(
-        iv_url         = mv_url
-        iv_branch_name = 'refs/heads/main'
-        iv_package     = co_package ).
+      iv_url         = mv_url
+      iv_branch_name = 'refs/heads/main'
+      iv_package     = co_package ).
 
   ENDMETHOD.
 
@@ -126,9 +223,7 @@ CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
     TRY.
         DATA(ls_checks) = zcl_abapgit_ci_repo_check=>get( lo_repo ).
       CATCH zcx_abapgit_cancel INTO DATA(lx_cancel).
-        zcx_abapgit_exception=>raise(
-          iv_text     = lx_cancel->get_text( )
-          ix_previous = lx_cancel ).
+        zcx_abapgit_exception=>raise_with_text( lx_cancel ).
     ENDTRY.
 
     lo_repo->deserialize(
@@ -160,75 +255,70 @@ CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
       INTO DATE DATA(start_date)
            TIME DATA(start_time).
 
-    ls_comment-comment = |abapGit CI results from { start_date DATE = USER } { start_time TIME = USER }|.
+    ls_comment-comment = |{ zif_abapgit_ci_definitions=>co_title }|
+                      && | from { start_date DATE = USER } { start_time TIME = USER }|.
 
     lo_repo->push( is_comment = ls_comment
                    io_stage   = lo_stage ).
+
+    COMMIT WORK AND WAIT.
 
   ENDMETHOD.
 
 
   METHOD save_results_in_mime_repo.
 
-    DATA(lo_mime_api) = cl_mime_repository_api=>get_api( ).
-
-    DATA(json) = /ui2/cl_json=>serialize( is_result ).
-
-
+    " Get results as JSON and HTML
     TRY.
-        DATA(xstring) = cl_bcs_convert=>string_to_xstring( json ).
+        DATA(lo_json) = zcl_abapgit_ajson=>create_empty( ).
 
-      CATCH cx_bcs INTO DATA(lx_bcs).
-        zcx_abapgit_exception=>raise( iv_text     = lx_bcs->get_text( )
-                                      ix_previous = lx_bcs ).
+        lo_json->set(
+          iv_path = '/'
+          iv_val  = is_result ).
+
+        DATA(lv_json) = lo_json->stringify( 2 ).
+      CATCH zcx_abapgit_ajson_error INTO DATA(lx_error).
+        zcx_abapgit_exception=>raise_with_text( lx_error ).
     ENDTRY.
 
-    lo_mime_api->put(
-      EXPORTING
-        i_url                   = '/SAP/PUBLIC/abapGit_CI_result.json'
-        i_content               = xstring
-        i_description           = 'abapGit CI results'
-        i_dev_package           = co_package
-      EXCEPTIONS
-        parameter_missing       = 1
-        error_occured           = 2
-        cancelled               = 3
-        permission_failure      = 4
-        data_inconsistency      = 5
-        new_loio_already_exists = 6
-        is_folder               = 7
-        OTHERS                  = 8 ).
+    DATA(lv_html) = NEW zcl_abapgit_ci_html( is_result )->render( ).
 
-    IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise_t100( ).
-    ENDIF.
+    " Save results to MIME repo (overwrites previous results)
+    DATA(lv_path) = co_mime_public && '/' && co_mime_abapgit_ci && '/'.
 
-    TRY.
-        xstring = cl_bcs_convert=>string_to_xstring( NEW zcl_abapgit_ci_html( is_result )->render( ) ).
+    add_file_to_mime_repo(
+      iv_description = ` (JSON)`
+      iv_data        = lv_json
+      iv_url         = lv_path && co_mime_result_json ).
 
-      CATCH cx_bcs INTO lx_bcs.
-        zcx_abapgit_exception=>raise( iv_text     = lx_bcs->get_text( )
-                                      ix_previous = lx_bcs ).
-    ENDTRY.
+    add_file_to_mime_repo(
+      iv_description = ` (HTML)`
+      iv_data        = lv_html
+      iv_url         = lv_path && co_mime_result_html ).
 
-    lo_mime_api->put(
-      EXPORTING
-        i_url                   = '/SAP/PUBLIC/abapGit_CI_result.html'
-        i_content               = xstring
-        i_description           = 'abapGit CI results'
-        i_dev_package           = co_package
-      EXCEPTIONS
-        parameter_missing       = 1
-        error_occured           = 2
-        cancelled               = 3
-        permission_failure      = 4
-        data_inconsistency      = 5
-        new_loio_already_exists = 6
-        is_folder               = 7
-        OTHERS                  = 8 ).
+    " Add results to history folder
+    IF mv_history = abap_true.
+      lv_path = lv_path && co_mime_history && '/'.
 
-    IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise_t100( ).
+      DATA(lv_html_url) = replace(
+        val  = co_mime_history_html
+        sub  = '&'
+        with = |{ sy-datum DATE = ISO }| ).
+
+      add_file_to_mime_repo(
+        iv_description = |: { sy-datum DATE = ISO } (HTML)|
+        iv_data        = lv_html
+        iv_url         = lv_path && lv_html_url ).
+
+      DATA(lv_json_url) = replace(
+        val  = co_mime_history_json
+        sub  = '&'
+        with = |{ sy-datum DATE = ISO }| ).
+
+      add_file_to_mime_repo(
+        iv_description = |: { sy-datum DATE = ISO } (JSON)|
+        iv_data        = lv_json
+        iv_url         = lv_path && lv_json_url ).
     ENDIF.
 
   ENDMETHOD.

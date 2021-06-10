@@ -42,7 +42,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_CONTROLLER IMPLEMENTATION.
 
 
   METHOD calculate_statistics.
@@ -136,7 +136,9 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
     calculate_statistics( CHANGING cs_result = ls_result ).
 
     IF ms_options-result_git_repo_url IS NOT INITIAL.
-      NEW zcl_abapgit_ci_distributor( ms_options-result_git_repo_url )->push_to_git_repo( is_result = ls_result ).
+      NEW zcl_abapgit_ci_distributor(
+        iv_url     = ms_options-result_git_repo_url
+        iv_history = ms_options-save_to_history )->push_to_git_repo( is_result = ls_result ).
     ENDIF.
 
     IF ls_result-ci_has_errors = abap_true

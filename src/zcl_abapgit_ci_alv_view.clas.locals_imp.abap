@@ -117,7 +117,8 @@ CLASS lcl_view IMPLEMENTATION.
                      <lv_right>
                        WHEN zif_abapgit_ci_definitions=>co_status-ok        THEN icon_checked
                        WHEN zif_abapgit_ci_definitions=>co_status-not_ok    THEN icon_incomplete
-                       WHEN zif_abapgit_ci_definitions=>co_status-undefined THEN icon_led_inactive ).
+                       WHEN zif_abapgit_ci_definitions=>co_status-undefined THEN icon_led_inactive
+                       ELSE icon_space ).
         ELSE.
           <lv_left> = <lv_right>.
         ENDIF.

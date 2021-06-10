@@ -41,12 +41,17 @@ INTERFACE zif_abapgit_ci_definitions
   TYPES:
     BEGIN OF ty_options,
       result_git_repo_url    TYPE string,
+      save_to_history        TYPE abap_bool,
       post_errors_to_slack   TYPE abap_bool,
       slack_oauth_token      TYPE string,
       exec_generic_checks    TYPE abap_bool,
       exec_repository_checks TYPE abap_bool,
       repo_check_options     TYPE ty_repo_check_options,
     END OF ty_options .
+
+  CONSTANTS co_title TYPE string VALUE 'abapGit CI Results' ##NO_TEXT.
+  CONSTANTS co_title_generic TYPE string VALUE 'abapGit CI - Generic Tests' ##NO_TEXT.
+  CONSTANTS co_title_repos TYPE string VALUE 'abapGit CI - Repository Tests' ##NO_TEXT.
 
   CONSTANTS:
     BEGIN OF co_status,
