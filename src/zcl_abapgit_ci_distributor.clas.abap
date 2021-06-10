@@ -10,59 +10,70 @@ CLASS zcl_abapgit_ci_distributor DEFINITION
         !iv_history TYPE abap_bool DEFAULT abap_false
       RAISING
         zcx_abapgit_exception .
+
     METHODS push_to_git_repo
       IMPORTING
         !is_result TYPE zif_abapgit_ci_definitions=>ty_result
       RAISING
         zcx_abapgit_exception .
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 
-    CONSTANTS co_package TYPE devclass VALUE '$_ABAPGIT_CI_RESULTS' ##NO_TEXT.
-    CONSTANTS co_mime_public TYPE string VALUE '/SAP/PUBLIC' ##NO_TEXT.
-    CONSTANTS co_mime_abapgit_ci TYPE string VALUE 'ZABAPGIT_CI' ##NO_TEXT.
-    CONSTANTS co_mime_history TYPE string VALUE 'HISTORY' ##NO_TEXT.
-    CONSTANTS co_mime_result_html TYPE string VALUE 'abapGit_CI_result.html' ##NO_TEXT.
-    CONSTANTS co_mime_result_json TYPE string VALUE 'abapGit_CI_result.json' ##NO_TEXT.
-    CONSTANTS co_mime_history_html TYPE string VALUE 'result_&.html' ##NO_TEXT.
-    CONSTANTS co_mime_history_json TYPE string VALUE 'result_&.json' ##NO_TEXT.
-    DATA mv_history TYPE abap_bool.
-    DATA mv_url TYPE string .
+    CONSTANTS:
+      co_package           TYPE devclass VALUE '$_ABAPGIT_CI_RESULTS',
+      co_mime_public       TYPE string VALUE '/SAP/PUBLIC',
+      co_mime_abapgit_ci   TYPE string VALUE 'ZABAPGIT_CI',
+      co_mime_history      TYPE string VALUE 'HISTORY',
+      co_mime_result_html  TYPE string VALUE 'abapGit_CI_result.html',
+      co_mime_result_json  TYPE string VALUE 'abapGit_CI_result.json',
+      co_mime_history_html TYPE string VALUE 'result_&.html',
+      co_mime_history_json TYPE string VALUE 'result_&.json'.
 
-    METHODS get_repo
-      RETURNING
-        VALUE(ro_repo) TYPE REF TO zcl_abapgit_repo_online
-      RAISING
-        zcx_abapgit_exception .
-    METHODS create_package
-      RAISING
-        zcx_abapgit_exception .
-    METHODS save_results_in_mime_repo
-      IMPORTING
-        !is_result TYPE zif_abapgit_ci_definitions=>ty_result
-      RAISING
-        zcx_abapgit_exception .
-    METHODS stage
-      IMPORTING
-        !io_repo        TYPE REF TO zcl_abapgit_repo_online
-      RETURNING
-        VALUE(ro_stage) TYPE REF TO zcl_abapgit_stage
-      RAISING
-        zcx_abapgit_exception .
-    METHODS create_mime_folder
-      IMPORTING
-        !iv_folder      TYPE string
-        !iv_description TYPE string
-        !iv_loio        TYPE smimloio-loio_id
-      RAISING
-        zcx_abapgit_exception .
-    METHODS add_file_to_mime_repo
-      IMPORTING
-        !iv_url         TYPE string
-        !iv_description TYPE string
-        !iv_data        TYPE string
-      RAISING
-        zcx_abapgit_exception .
+    DATA:
+      mv_history TYPE abap_bool,
+      mv_url     TYPE string.
+
+    METHODS:
+      get_repo
+        RETURNING
+          VALUE(ro_repo) TYPE REF TO zcl_abapgit_repo_online
+        RAISING
+          zcx_abapgit_exception,
+
+      create_package
+        RAISING
+          zcx_abapgit_exception,
+
+      save_results_in_mime_repo
+        IMPORTING
+          is_result TYPE zif_abapgit_ci_definitions=>ty_result
+        RAISING
+          zcx_abapgit_exception,
+
+      stage
+        IMPORTING
+          io_repo         TYPE REF TO zcl_abapgit_repo_online
+        RETURNING
+          VALUE(ro_stage) TYPE REF TO zcl_abapgit_stage
+        RAISING
+          zcx_abapgit_exception,
+
+      create_mime_folder
+        IMPORTING
+          !iv_folder      TYPE string
+          !iv_description TYPE string
+          !iv_loio        TYPE smimloio-loio_id
+        RAISING
+          zcx_abapgit_exception,
+
+      add_file_to_mime_repo
+        IMPORTING
+          !iv_url         TYPE string
+          !iv_description TYPE string
+          !iv_data        TYPE string
+        RAISING
+          zcx_abapgit_exception.
 ENDCLASS.
 
 
