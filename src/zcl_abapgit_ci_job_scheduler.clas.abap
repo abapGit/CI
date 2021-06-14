@@ -5,28 +5,32 @@ CLASS zcl_abapgit_ci_job_scheduler DEFINITION
   PUBLIC SECTION.
     CONSTANTS:
       BEGIN OF co_report,
-        update_abapgit    TYPE sy-repid VALUE 'ZABAPGIT_CI_UPDATE_ABAPGIT',
-        update_abapgit_ci TYPE sy-repid VALUE 'ZABAPGIT_CI_UPDATE_ABAPGIT_CI',
-        run_abapgit_ci    TYPE sy-repid VALUE 'ZABAPGIT_CI',
+        update_abapgit     TYPE sy-repid VALUE 'ZABAPGIT_CI_UPDATE_ABAPGIT',
+        update_abapgit_ci  TYPE sy-repid VALUE 'ZABAPGIT_CI_UPDATE_ABAPGIT_CI',
+        run_abapgit_ci     TYPE sy-repid VALUE 'ZABAPGIT_CI',
+        cleanup_abapgit_ci TYPE sy-repid VALUE 'ZABAPGIT_CI_CLEANUP',
       END OF co_report.
 
     METHODS:
       constructor
         IMPORTING
-          iv_variant_update_abapgit    TYPE raldb-variant OPTIONAL
-          iv_variant_update_abapgit_ci TYPE raldb-variant OPTIONAL
-          iv_variant_run_abapgit_ci    TYPE raldb-variant OPTIONAL,
+          iv_variant_update_abapgit      TYPE raldb-variant OPTIONAL
+          iv_variant_update_abapgit_ci   TYPE raldb-variant OPTIONAL
+          iv_variant_run_abapgit_ci      TYPE raldb-variant OPTIONAL
+          iv_variant_cleanup1_abapgit_ci TYPE raldb-variant OPTIONAL
+          iv_variant_cleanup2_abapgit_ci TYPE raldb-variant OPTIONAL
+          iv_variant_cleanup3_abapgit_ci TYPE raldb-variant OPTIONAL,
 
       schedule_jobs
         RAISING
           zcx_abapgit_exception.
-
   PROTECTED SECTION.
     CONSTANTS:
       BEGIN OF co_job_name,
-        update_abapgit    TYPE btcjob VALUE 'ABAPGIT CI: UPDATE ABAPGIT',
-        update_abapgit_ci TYPE btcjob VALUE 'ABAPGIT CI: UPDATE ABAPGIT CI',
-        run_abapgit_ci    TYPE btcjob VALUE 'ABAPGIT CI: RUN ABAPGIT CI',
+        update_abapgit     TYPE btcjob VALUE 'ABAPGIT CI: UPDATE ABAPGIT',
+        update_abapgit_ci  TYPE btcjob VALUE 'ABAPGIT CI: UPDATE ABAPGIT CI',
+        run_abapgit_ci     TYPE btcjob VALUE 'ABAPGIT CI: RUN ABAPGIT CI',
+        cleanup_abapgit_ci TYPE btcjob VALUE 'ABAPGIT CI: CLEANUP ABAPGIT CI',
       END OF co_job_name.
 
     METHODS:
@@ -50,23 +54,79 @@ CLASS zcl_abapgit_ci_job_scheduler DEFINITION
 
   PRIVATE SECTION.
     DATA:
-      mv_variant_update_abapgit    TYPE raldb-variant,
-      mv_variant_update_abapgit_ci TYPE raldb-variant,
-      mv_variant_run_abapgit_ci    TYPE raldb-variant.
+      mv_variant_update_abapgit      TYPE raldb-variant,
+      mv_variant_update_abapgit_ci   TYPE raldb-variant,
+      mv_variant_run_abapgit_ci      TYPE raldb-variant,
+      mv_variant_cleanup1_abapgit_ci TYPE raldb-variant,
+      mv_variant_cleanup2_abapgit_ci TYPE raldb-variant,
+      mv_variant_cleanup3_abapgit_ci TYPE raldb-variant.
 
 ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_job_scheduler IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_JOB_SCHEDULER IMPLEMENTATION.
+
 
   METHOD constructor.
 
     mv_variant_update_abapgit    = iv_variant_update_abapgit.
     mv_variant_update_abapgit_ci = iv_variant_update_abapgit_ci.
     mv_variant_run_abapgit_ci    = iv_variant_run_abapgit_ci.
+    mv_variant_cleanup1_abapgit_ci = iv_variant_cleanup1_abapgit_ci.
+    mv_variant_cleanup2_abapgit_ci = iv_variant_cleanup2_abapgit_ci.
+    mv_variant_cleanup3_abapgit_ci = iv_variant_cleanup3_abapgit_ci.
 
   ENDMETHOD.
+
+
+  METHOD schedule_jobs.
+
+    DATA(jobcount_update_abapgit) = schedule_update_abapgit( ).
+
+    DATA(jobcount_update_abapgit_ci) = schedule_job_with_predecessor(
+        iv_pred_jobcount = jobcount_update_abapgit
+        iv_pred_jobname  = co_job_name-update_abapgit
+        iv_new_jobname   = co_job_name-update_abapgit_ci
+        iv_report        = co_report-update_abapgit_ci
+        iv_variant       = mv_variant_update_abapgit_ci ).
+
+    schedule_job_with_predecessor(
+        iv_pred_jobcount = jobcount_update_abapgit_ci
+        iv_pred_jobname  = co_job_name-update_abapgit_ci
+        iv_new_jobname   = co_job_name-run_abapgit_ci
+        iv_report        = co_report-run_abapgit_ci
+        iv_variant       = mv_variant_run_abapgit_ci ).
+
+    IF mv_variant_cleanup1_abapgit_ci IS NOT INITIAL.
+      schedule_job_with_predecessor(
+        iv_pred_jobcount = jobcount_update_abapgit_ci
+        iv_pred_jobname  = co_job_name-run_abapgit_ci
+        iv_new_jobname   = co_job_name-cleanup_abapgit_ci && '-1'
+        iv_report        = co_report-cleanup_abapgit_ci
+        iv_variant       = mv_variant_cleanup1_abapgit_ci ).
+    ENDIF.
+
+    IF mv_variant_cleanup2_abapgit_ci IS NOT INITIAL.
+      schedule_job_with_predecessor(
+        iv_pred_jobcount = jobcount_update_abapgit_ci
+        iv_pred_jobname  = co_job_name-cleanup_abapgit_ci && '-1'
+        iv_new_jobname   = co_job_name-cleanup_abapgit_ci && '-2'
+        iv_report        = co_report-cleanup_abapgit_ci
+        iv_variant       = mv_variant_cleanup2_abapgit_ci ).
+    ENDIF.
+
+    IF mv_variant_cleanup3_abapgit_ci IS NOT INITIAL.
+      schedule_job_with_predecessor(
+        iv_pred_jobcount = jobcount_update_abapgit_ci
+        iv_pred_jobname  = co_job_name-cleanup_abapgit_ci && '-2'
+        iv_new_jobname   = co_job_name-cleanup_abapgit_ci && '-3'
+        iv_report        = co_report-cleanup_abapgit_ci
+        iv_variant       = mv_variant_cleanup3_abapgit_ci ).
+    ENDIF.
+
+  ENDMETHOD.
+
 
   METHOD schedule_job_with_predecessor.
 
@@ -133,6 +193,7 @@ CLASS zcl_abapgit_ci_job_scheduler IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD schedule_update_abapgit.
 
     CALL FUNCTION 'JOB_OPEN'
@@ -195,25 +256,4 @@ CLASS zcl_abapgit_ci_job_scheduler IMPLEMENTATION.
     ENDIF.
 
   ENDMETHOD.
-
-  METHOD schedule_jobs.
-
-    DATA(jobcount_update_abapgit) = schedule_update_abapgit( ).
-
-    DATA(jobcount_update_abapgit_ci) = schedule_job_with_predecessor(
-        iv_pred_jobcount = jobcount_update_abapgit
-        iv_pred_jobname  = co_job_name-update_abapgit
-        iv_new_jobname   = co_job_name-update_abapgit_ci
-        iv_report        = co_report-update_abapgit_ci
-        iv_variant       = mv_variant_update_abapgit_ci ).
-
-    schedule_job_with_predecessor(
-        iv_pred_jobcount = jobcount_update_abapgit_ci
-        iv_pred_jobname  = co_job_name-update_abapgit_ci
-        iv_new_jobname   = co_job_name-run_abapgit_ci
-        iv_report        = co_report-run_abapgit_ci
-        iv_variant       = mv_variant_run_abapgit_ci ).
-
-  ENDMETHOD.
-
 ENDCLASS.

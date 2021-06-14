@@ -13,11 +13,6 @@
    </PROGDIR>
    <TPOOL>
     <item>
-     <ID>R</ID>
-     <ENTRY>abapGit CI: Schedule job sequence</ENTRY>
-     <LENGTH>33</LENGTH>
-    </item>
-    <item>
      <ID>I</ID>
      <KEY>000</KEY>
      <ENTRY>Description</ENTRY>
@@ -66,22 +61,16 @@
      <LENGTH>96</LENGTH>
     </item>
     <item>
-     <ID>S</ID>
-     <KEY>P_VAR1</KEY>
-     <ENTRY>ZABAPGIT_CI_UPDATE_ABAPGIT</ENTRY>
-     <LENGTH>34</LENGTH>
+     <ID>I</ID>
+     <KEY>C06</KEY>
+     <ENTRY>4. Clean-up abapGit CI tests</ENTRY>
+     <LENGTH>50</LENGTH>
     </item>
     <item>
-     <ID>S</ID>
-     <KEY>P_VAR2</KEY>
-     <ENTRY>ZABAPGIT_CI_UPDATE_ABAPGIT_CI</ENTRY>
-     <LENGTH>37</LENGTH>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_VAR3</KEY>
-     <ENTRY>ZABAPGIT_CI</ENTRY>
-     <LENGTH>19</LENGTH>
+     <ID>I</ID>
+     <KEY>C07</KEY>
+     <ENTRY>Enter up to three variants to run clean-up tasks:</ENTRY>
+     <LENGTH>60</LENGTH>
     </item>
     <item>
      <ID>I</ID>
@@ -100,6 +89,47 @@
      <KEY>V03</KEY>
      <ENTRY>ZABAPGIT_CI</ENTRY>
      <LENGTH>11</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>V04</KEY>
+     <ENTRY>ZABAPGIT_CI_CLEANUP</ENTRY>
+     <LENGTH>29</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>V05</KEY>
+     <ENTRY>ZABAPGIT_CI_CLEANUP</ENTRY>
+     <LENGTH>29</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>V06</KEY>
+     <ENTRY>ZABAPGIT_CI_CLEANUP</ENTRY>
+     <LENGTH>29</LENGTH>
+    </item>
+    <item>
+     <ID>R</ID>
+     <ENTRY>abapGit CI: Schedule job sequence</ENTRY>
+     <LENGTH>33</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_VAR1</KEY>
+     <ENTRY>ZABAPGIT_CI_UPDATE_ABAPGIT</ENTRY>
+     <LENGTH>34</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_VAR2</KEY>
+     <ENTRY>ZABAPGIT_CI_UPDATE_ABAPGIT_CI</ENTRY>
+     <LENGTH>37</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_VAR3</KEY>
+     <ENTRY>ZABAPGIT_CI</ENTRY>
+     <LENGTH>19</LENGTH>
     </item>
    </TPOOL>
   </asx:values>
