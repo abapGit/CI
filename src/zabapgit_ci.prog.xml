@@ -13,30 +13,6 @@
    <TPOOL>
     <item>
      <ID>I</ID>
-     <KEY>000</KEY>
-     <ENTRY>Options</ENTRY>
-     <LENGTH>17</LENGTH>
-    </item>
-    <item>
-     <ID>I</ID>
-     <KEY>001</KEY>
-     <ENTRY>You can optionally push the results to a git repo. The result json will be</ENTRY>
-     <LENGTH>132</LENGTH>
-    </item>
-    <item>
-     <ID>I</ID>
-     <KEY>002</KEY>
-     <ENTRY>stored in the MIME repository and then the file is pushed to the</ENTRY>
-     <LENGTH>128</LENGTH>
-    </item>
-    <item>
-     <ID>I</ID>
-     <KEY>003</KEY>
-     <ENTRY>specified git repository.</ENTRY>
-     <LENGTH>50</LENGTH>
-    </item>
-    <item>
-     <ID>I</ID>
      <KEY>B01</KEY>
      <ENTRY>Description</ENTRY>
      <LENGTH>21</LENGTH>
@@ -62,7 +38,7 @@
     <item>
      <ID>I</ID>
      <KEY>B05</KEY>
-     <ENTRY>Restrict repository selection</ENTRY>
+     <ENTRY>Restrict Repository Selection</ENTRY>
      <LENGTH>40</LENGTH>
     </item>
     <item>
@@ -122,7 +98,7 @@
     <item>
      <ID>I</ID>
      <KEY>O01</KEY>
-     <ENTRY>You can optionally push the results to a git repo. The result json will be</ENTRY>
+     <ENTRY>You can optionally push the results to a Git repo. The results will be</ENTRY>
      <LENGTH>132</LENGTH>
     </item>
     <item>
@@ -160,6 +136,12 @@
      <KEY>NO_PURGE</KEY>
      <ENTRY>Do not purge repos</ENTRY>
      <LENGTH>26</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_HIST</KEY>
+     <ENTRY>Save results to history folder</ENTRY>
+     <LENGTH>38</LENGTH>
     </item>
     <item>
      <ID>S</ID>

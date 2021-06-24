@@ -22,7 +22,8 @@ SELECTION-SCREEN COMMENT /1(79) opt02.
 SELECTION-SCREEN COMMENT /1(79) opt03.
 SELECTION-SCREEN SKIP.
 PARAMETERS:
-  p_url  TYPE string LOWER CASE.
+  p_url  TYPE string LOWER CASE,
+  p_hist TYPE abap_bool AS CHECKBOX.
 SELECTION-SCREEN END OF BLOCK b2.
 
 SELECTION-SCREEN BEGIN OF BLOCK b5 WITH FRAME TITLE TEXT-b05.
@@ -130,6 +131,7 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
           ii_view          = NEW zcl_abapgit_ci_alv_view( )
           is_options       = VALUE #(
             result_git_repo_url    = p_url
+            save_to_history        = p_hist
             post_errors_to_slack   = slack
             slack_oauth_token      = token
             exec_generic_checks    = generic

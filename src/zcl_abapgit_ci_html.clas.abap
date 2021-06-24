@@ -40,7 +40,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_html IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_HTML IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -56,15 +56,30 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
            && |<html>\n|
            && |  <head>\n|
            && |    { render_style( ) }\n|
-           && |  <title>ci.abapgit.org</title>\n|
+           && |  <title>{ zif_abapgit_ci_definitions=>co_title }</title>\n|
            && |  </head>\n|
            && |  <body>\n|
+           && |    <h1>{ zif_abapgit_ci_definitions=>co_title }</h1>\n|
            && |    { render_head( ) }\n|
+           && |    <br/><br/>\n|.
+
+    IF ms_result-generic_result_list IS NOT INITIAL.
+      rv_html = rv_html
+           && |    <h2>{ zif_abapgit_ci_definitions=>co_title_generic }</h2>\n|
            && |    { render_table( ms_result-generic_result_list ) }\n|
-           && |    <br/><br/>\n|
+           && |    <br/><br/>\n|.
+    ENDIF.
+
+    IF ms_result-repo_result_list IS NOT INITIAL.
+      rv_html = rv_html
+           && |    <h2>{ zif_abapgit_ci_definitions=>co_title_repos }</h2>\n|
            && |    { render_table( ms_result-repo_result_list ) }\n|
-           && |  </body>\n|
-           && |</html>|.
+           && |    <br/><br/>\n|.
+    ENDIF.
+
+    rv_html = rv_html
+         && |  </body>\n|
+         && |</html>|.
 
   ENDMETHOD.
 
@@ -94,19 +109,19 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
                              ELSE |ok|
                        ) }">{
                      COND #( WHEN ms_result-ci_has_errors = abap_true
-                             THEN |CI failed|
-                             ELSE |CI successful| ) }</h2>\n|
+                             THEN |CI Failed|
+                             ELSE |CI Successful| ) }</h2>\n|
            && |<h3>Date: { date DATE = USER } |
            && |- Time: { time TIME = USER } { lv_timezone } |
-           && |- Duration { ms_result-statistics-duration_in_seconds } seconds</h3>\n|
-           && |<h3>Repo links: \n|
-           && |<a href='https://github.com/larshp/abapGit'>abapGit</a> \| \n|
+           && |- Duration: { ms_result-statistics-duration_in_seconds } seconds</h3>\n|
+           && |<h3>abapGit Version: { zif_abapgit_version=>gc_abap_version }</h3>\n|
+           && |<h3>Repo Links: \n|
+           && |<a href='https://github.com/abapGit/abapGit'>abapGit</a> \| \n|
            && |<a href='https://github.com/abapGit/CI'>abapGit CI</a> \| \n|
            && |<a href='https://github.com/abapGit/ci.abapgit.org'>abapGit CI results</a></h3>\n|
-           && |<h3>Test cases: Total { ms_result-statistics-test_cases-total } \| |
+           && |<h3>Test Cases: Total { ms_result-statistics-test_cases-total } \| |
            && |Successful { ms_result-statistics-test_cases-successful } \| |
-           && |Failed { ms_result-statistics-test_cases-failed } \n|
-           && |<br/><br/>\n|.
+           && |Failed { ms_result-statistics-test_cases-failed } \n|.
 
   ENDMETHOD.
 
@@ -119,11 +134,15 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
            && |.tg td\{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;|
            && |border-width:1px;overflow:hidden;word-break:normal;border-color:black;\}\n|
            && |.tg th\{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;|
-           && |border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;\}\n|
-           && |.tg .tg-kiyi\{font-weight:bold;border-color:inherit;text-align:left\}\n|
-           && |.tg .tg-xldj\{border-color:inherit;text-align:left\}\n|
-           && |.ok \{ background-color: lightgreen \}\n|
-           && |.not_ok \{ background-color: red \}\n|
+           && |border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;|
+           && |background-color:darkgray;\}\n|
+           && |.tg .tg-kiyi\{font-weight:bold;border-color:inherit;text-align:left;\}\n|
+           && |.tg .tg-xldj\{border-color:inherit;text-align:left;\}\n|
+           && |td.status \{ width:80px; \}\n|
+           && |.ok \{ background-color: lightgreen; \}\n|
+           && |.not_ok \{ background-color: red; \}\n|
+           && |.undefined \{ background-color: lightgray; \}\n|
+           && |.key \{ background-color: lightblue; \}\n|
            && |</style>\n|.
 
   ENDMETHOD.

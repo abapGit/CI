@@ -8,11 +8,6 @@ CLASS zcl_abapgit_ci_alv_view DEFINITION
   PROTECTED SECTION.
   PRIVATE SECTION.
 
-    CONSTANTS co_title_generic TYPE string
-      VALUE 'abapGit CI - Generic Tests' ##NO_TEXT.
-    CONSTANTS co_title_repos TYPE string
-      VALUE 'abapGit CI - Repository Tests from https://github.com/abapGit-tests' ##NO_TEXT.
-
     METHODS prepare_splitter
       IMPORTING
         !iv_gen   TYPE abap_bool
@@ -60,7 +55,7 @@ CLASS ZCL_ABAPGIT_CI_ALV_VIEW IMPLEMENTATION.
         eo_row_4 = DATA(lo_row_4) ).
 
     IF cs_result-generic_result_list IS NOT INITIAL.
-      prepare_header( iv_text      = co_title_generic
+      prepare_header( iv_text      = zif_abapgit_ci_definitions=>co_title_generic
                       io_container = lo_row_1 ).
 
       NEW lcl_alv( io_container = lo_row_2
@@ -68,7 +63,7 @@ CLASS ZCL_ABAPGIT_CI_ALV_VIEW IMPLEMENTATION.
     ENDIF.
 
     IF cs_result-repo_result_list IS NOT INITIAL.
-      prepare_header( iv_text      = co_title_repos
+      prepare_header( iv_text      = zif_abapgit_ci_definitions=>co_title_repos
                       io_container = lo_row_3 ).
 
       NEW lcl_alv( io_container = lo_row_4
@@ -90,7 +85,7 @@ CLASS ZCL_ABAPGIT_CI_ALV_VIEW IMPLEMENTATION.
         i_callback_program = sy-cprog.
 
     IF cs_result-generic_result_list IS NOT INITIAL.
-      lt_header = VALUE #( ( title = co_title_generic ) ).
+      lt_header = VALUE #( ( title = zif_abapgit_ci_definitions=>co_title_generic ) ).
 
       NEW lcl_list( it_table   = lt_header
                     iv_tabname = 'ZABAPGIT_CI_RESULT_HEADER' )->display( ).
@@ -100,7 +95,7 @@ CLASS ZCL_ABAPGIT_CI_ALV_VIEW IMPLEMENTATION.
     ENDIF.
 
     IF cs_result-repo_result_list IS NOT INITIAL.
-      lt_header = VALUE #( ( title = co_title_repos ) ).
+      lt_header = VALUE #( ( title = zif_abapgit_ci_definitions=>co_title_repos ) ).
 
       NEW lcl_list( it_table   = lt_header
                     iv_tabname = 'ZABAPGIT_CI_RESULT_HEADER' )->display( ).
