@@ -49,6 +49,7 @@
     "identical_contents": false,
     "line_break_style": false,
     "many_parenthesis": true,
+    "unused_ddic": true,
     "method_overwrites_builtin": true,
     "names_no_dash": true,
     "omit_parameter_name": false,
