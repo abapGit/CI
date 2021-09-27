@@ -48,7 +48,7 @@
     "identical_conditions": true,
     "identical_contents": false,
     "line_break_style": false,
-    "many_parenthesis": true,
+    "many_parentheses": true,
     "unused_ddic": true,
     "method_overwrites_builtin": true,
     "names_no_dash": true,
@@ -208,6 +208,9 @@
       "multiply": true,
       "move": true,
       "divide": true,
+      "callTransformation": true,
+      "regex": true,
+      "sortByFS": true,
       "requested": true
     },
     "parser_error": true,
