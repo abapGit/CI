@@ -28,20 +28,20 @@ CLASS zcl_abapgit_ci_repo_check IMPLEMENTATION.
 
     " Auto-confirm all decisions
     LOOP AT rs_checks-overwrite ASSIGNING FIELD-SYMBOL(<ls_overwrite>).
-      <ls_overwrite>-decision = zif_abapgit_definitions=>gc_yes.
+      <ls_overwrite>-decision = zif_abapgit_definitions=>c_yes.
     ENDLOOP.
 
     LOOP AT rs_checks-warning_package ASSIGNING FIELD-SYMBOL(<ls_warning_package>).
-      <ls_warning_package>-decision = zif_abapgit_definitions=>gc_yes.
+      <ls_warning_package>-decision = zif_abapgit_definitions=>c_yes.
     ENDLOOP.
 
     " If requirements are not met, cancel process
-    IF rs_checks-requirements-met <> zif_abapgit_definitions=>gc_yes.
+    IF rs_checks-requirements-met <> zif_abapgit_definitions=>c_yes.
       zcx_abapgit_cancel=>raise( 'Requirements not met' ).
     ENDIF.
 
     " If dependencies are not met, cancel process
-    IF rs_checks-dependencies-met <> zif_abapgit_definitions=>gc_yes.
+    IF rs_checks-dependencies-met <> zif_abapgit_definitions=>c_yes.
       zcx_abapgit_cancel=>raise( 'Dependencies not met' ).
     ENDIF.
 

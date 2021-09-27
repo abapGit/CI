@@ -40,7 +40,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_HTML IMPLEMENTATION.
+CLASS zcl_abapgit_ci_html IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -114,7 +114,7 @@ CLASS ZCL_ABAPGIT_CI_HTML IMPLEMENTATION.
            && |<h3>Date: { date DATE = USER } |
            && |- Time: { time TIME = USER } { lv_timezone } |
            && |- Duration: { ms_result-statistics-duration_in_seconds } seconds</h3>\n|
-           && |<h3>abapGit Version: { zif_abapgit_version=>gc_abap_version }</h3>\n|
+           && |<h3>abapGit Version: { zif_abapgit_version=>c_abap_version }</h3>\n|
            && |<h3>Repo Links: \n|
            && |<a href='https://github.com/abapGit/abapGit'>abapGit</a> \| \n|
            && |<a href='https://github.com/abapGit/CI'>abapGit CI</a> \| \n|
