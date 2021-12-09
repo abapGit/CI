@@ -102,7 +102,7 @@ CLASS lcl_controller IMPLEMENTATION.
 
     MESSAGE |Job scheduled successfully| TYPE 'S'.
 
-    IF zcl_abapgit_ui_factory=>get_gui_functions( )->gui_is_available( ).
+    IF zcl_abapgit_ui_factory=>get_frontend_services( )->gui_is_available( ).
       call_job_overview( ).
     ENDIF.
 

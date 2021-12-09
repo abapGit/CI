@@ -299,7 +299,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD constructor.
 
-    zcl_abapgit_ui_injector=>set_gui_functions( NEW lcl_mock_ui_functions( ) ).
+    zcl_abapgit_ui_injector=>set_frontend_services( NEW lcl_mock_frontend_services( ) ).
 
   ENDMETHOD.
 

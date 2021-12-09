@@ -1,25 +1,73 @@
-*"* use this source file for the definition and implementation of
-*"* local helper classes, interface definitions and type
-*"* declarations
+CLASS lcl_mock_frontend_services IMPLEMENTATION.
 
-CLASS lcl_mock_ui_functions IMPLEMENTATION.
-
-  METHOD zif_abapgit_gui_functions~gui_is_available.
+  METHOD zif_abapgit_frontend_services~gui_is_available.
 
     rv_gui_is_available = abap_false.
 
   ENDMETHOD.
 
-  METHOD zif_abapgit_gui_functions~is_sapgui_for_java.
+  METHOD zif_abapgit_frontend_services~is_sapgui_for_java.
 
     rv_result = abap_false.
 
   ENDMETHOD.
 
-  METHOD zif_abapgit_gui_functions~is_sapgui_for_windows.
+  METHOD zif_abapgit_frontend_services~is_sapgui_for_windows.
 
     rv_result = abap_false.
 
+  ENDMETHOD.
+
+  METHOD zif_abapgit_frontend_services~file_upload.
+    RETURN.
+  ENDMETHOD.
+
+  METHOD zif_abapgit_frontend_services~file_download.
+    RETURN.
+  ENDMETHOD.
+
+  METHOD zif_abapgit_frontend_services~show_file_save_dialog.
+    RETURN.
+  ENDMETHOD.
+
+  METHOD zif_abapgit_frontend_services~show_file_open_dialog.
+    RETURN.
+  ENDMETHOD.
+
+  METHOD zif_abapgit_frontend_services~clipboard_export.
+    RETURN.
+  ENDMETHOD.
+
+  METHOD zif_abapgit_frontend_services~execute.
+    RETURN.
+  ENDMETHOD.
+
+  METHOD zif_abapgit_frontend_services~get_system_directory.
+    RETURN.
+  ENDMETHOD.
+
+  METHOD zif_abapgit_frontend_services~directory_browse.
+    RETURN.
+  ENDMETHOD.
+
+  METHOD zif_abapgit_frontend_services~get_file_separator.
+    RETURN.
+  ENDMETHOD.
+
+  METHOD zif_abapgit_frontend_services~get_gui_version.
+    RETURN.
+  ENDMETHOD.
+
+  METHOD zif_abapgit_frontend_services~directory_exist.
+    RETURN.
+  ENDMETHOD.
+
+  METHOD zif_abapgit_frontend_services~directory_create.
+    RETURN.
+  ENDMETHOD.
+
+  METHOD zif_abapgit_frontend_services~is_webgui.
+    RETURN.
   ENDMETHOD.
 
 ENDCLASS.
