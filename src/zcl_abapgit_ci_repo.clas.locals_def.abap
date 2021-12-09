@@ -4,10 +4,10 @@
 
 
 
-CLASS lcl_mock_ui_functions DEFINITION.
+CLASS lcl_mock_frontend_services DEFINITION.
 
   PUBLIC SECTION.
     INTERFACES:
-      zif_abapgit_gui_functions.
+      zif_abapgit_frontend_services.
 
 ENDCLASS.

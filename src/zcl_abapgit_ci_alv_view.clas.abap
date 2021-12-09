@@ -308,7 +308,7 @@ CLASS ZCL_ABAPGIT_CI_ALV_VIEW IMPLEMENTATION.
 
   METHOD zif_abapgit_ci_view~display.
 
-    IF zcl_abapgit_ui_factory=>get_gui_functions( )->gui_is_available( ).
+    IF zcl_abapgit_ui_factory=>get_frontend_services( )->gui_is_available( ).
       display_alv( CHANGING cs_result = cs_result ).
     ELSE.
       display_list( CHANGING cs_result = cs_result ).
