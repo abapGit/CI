@@ -47,6 +47,7 @@ INTERFACE zif_abapgit_ci_definitions
       exec_generic_checks    TYPE abap_bool,
       exec_repository_checks TYPE abap_bool,
       repo_check_options     TYPE ty_repo_check_options,
+      sync_processing        TYPE abap_bool,
     END OF ty_options .
 
   CONSTANTS co_title TYPE string VALUE 'abapGit CI Results' ##NO_TEXT.

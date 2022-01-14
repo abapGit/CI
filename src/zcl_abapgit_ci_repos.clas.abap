@@ -13,15 +13,21 @@ CLASS zcl_abapgit_ci_repos DEFINITION
           zcx_abapgit_exception.
 
     METHODS:
+      constructor
+        IMPORTING
+          !iv_sync TYPE abap_bool OPTIONAL,
+
       process_repos
         IMPORTING
-          it_repos              TYPE zif_abapgit_ci_definitions=>tty_repo
-          is_options            TYPE zif_abapgit_ci_definitions=>ty_repo_check_options
+          !it_repos             TYPE zif_abapgit_ci_definitions=>tty_repo
+          !is_options           TYPE zif_abapgit_ci_definitions=>ty_repo_check_options
         RETURNING
           VALUE(rt_result_list) TYPE zif_abapgit_ci_definitions=>ty_result-repo_result_list.
 
   PROTECTED SECTION.
   PRIVATE SECTION.
+    DATA mv_sync TYPE abap_bool.
+
     CLASS-METHODS:
       update_repo
         IMPORTING
@@ -53,6 +59,11 @@ ENDCLASS.
 
 
 CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
+
+
+  METHOD constructor.
+    mv_sync = iv_sync.
+  ENDMETHOD.
 
 
   METHOD get_repo_list_with_packages.
@@ -96,14 +107,22 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
     ASSERT cs_ci_repo-package IS NOT INITIAL.
 
-    CALL FUNCTION 'ZABAPGIT_CI_PROCESS_REPO'
-      DESTINATION 'NONE'
-      CHANGING
-        cs_ci_repo            = cs_ci_repo
-      EXCEPTIONS
-        communication_failure = 1 MESSAGE lv_message
-        system_failure        = 2 MESSAGE lv_message
-        OTHERS                = 3.
+    IF mv_sync = abap_true.
+      " Synchronous for debugging
+      CALL FUNCTION 'ZABAPGIT_CI_PROCESS_REPO'
+        CHANGING
+          cs_ci_repo = cs_ci_repo.
+    ELSE.
+      " Asynchronous for mass processing
+      CALL FUNCTION 'ZABAPGIT_CI_PROCESS_REPO'
+        DESTINATION 'NONE'
+        CHANGING
+          cs_ci_repo            = cs_ci_repo
+        EXCEPTIONS
+          communication_failure = 1 MESSAGE lv_message
+          system_failure        = 2 MESSAGE lv_message
+          OTHERS                = 3.
+    ENDIF.
 
     IF sy-subrc <> 0.
       cs_ci_repo-message = |Failure in ZABAPGIT_CI_PROCESS_REPO. Subrc = { sy-subrc } { lv_message }|.
@@ -117,7 +136,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
   METHOD process_repos.
 
     DATA:
-      lv_start_timestamp TYPE timestampl,
+      lv_start_timestamp  TYPE timestampl,
       lv_finish_timestamp TYPE timestampl.
 
     rt_result_list = get_repo_list_with_packages( it_repos = it_repos is_options = is_options ).
@@ -125,6 +144,10 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
     LOOP AT rt_result_list ASSIGNING FIELD-SYMBOL(<ls_ci_repo>).
       IF <ls_ci_repo>-skip = abap_true.
         CONTINUE.
+      ENDIF.
+
+      IF sy-batch = abap_true.
+        MESSAGE |Start processing repo { <ls_ci_repo>-name }| TYPE 'I'.
       ENDIF.
 
       GET TIME STAMP FIELD lv_start_timestamp.
@@ -162,6 +185,10 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
       <ls_ci_repo>-duration = cl_abap_timestamp_util=>get_instance( )->tstmpl_seconds_between(
         iv_timestamp0 = lv_start_timestamp
         iv_timestamp1 = lv_finish_timestamp ).
+
+      IF sy-batch = abap_true.
+        MESSAGE |Runtime: { <ls_ci_repo>-duration } seconds| TYPE 'I'.
+      ENDIF.
 
     ENDLOOP.
 

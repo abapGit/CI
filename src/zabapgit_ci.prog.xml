@@ -43,6 +43,12 @@
     </item>
     <item>
      <ID>I</ID>
+     <KEY>B06</KEY>
+     <ENTRY>Debugging</ENTRY>
+     <LENGTH>19</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>D01</KEY>
      <ENTRY>This report starts the abapGit CI process.</ENTRY>
      <LENGTH>112</LENGTH>
@@ -142,6 +148,12 @@
      <KEY>P_HIST</KEY>
      <ENTRY>Save results to history folder</ENTRY>
      <LENGTH>38</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_SYNC</KEY>
+     <ENTRY>Synchronous processing</ENTRY>
+     <LENGTH>30</LENGTH>
     </item>
     <item>
      <ID>S</ID>
