@@ -452,7 +452,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD purge.
 
-    IF io_repo IS NOT BOUND.
+    IF io_repo IS NOT BOUND OR cs_ri_repo-do_not_purge = abap_true.
       RETURN.
     ENDIF.
 
