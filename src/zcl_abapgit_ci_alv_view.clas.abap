@@ -121,53 +121,22 @@ CLASS ZCL_ABAPGIT_CI_ALV_VIEW IMPLEMENTATION.
 
 
   METHOD prepare_header.
+    DATA(lo_dd) = NEW cl_dd_document( ).
 
-    DATA: lt_html TYPE STANDARD TABLE OF char255,
-          lv_url  TYPE char255.
+    lo_dd->add_text_as_heading(
+      text          = CONV #( iv_text )
+      sap_fontstyle = cl_dd_area=>sans_serif
+      heading_level = 1 ).
 
-    lt_html = VALUE #( ( |<html>| )
-                       ( |  <head>| )
-                       ( |  <style>| )
-                       ( |    body \{ font-family: arial\}| )
-                       ( |  </style>| )
-                       ( |  </head>| )
-                       ( |  <body>| )
-                       ( |    <h1>{ iv_text }</h1>| )
-                       ( |  </body>| )
-                       ( |</html>| ) ).
-
-    DATA(lo_html_viewer) = NEW cl_gui_html_viewer( io_container ).
-
-    lo_html_viewer->load_data(
-      IMPORTING
-        assigned_url           = lv_url
-      CHANGING
-        data_table             = lt_html
-      EXCEPTIONS
-        dp_invalid_parameter   = 1
-        dp_error_general       = 2
-        cntl_error             = 3
-        html_syntax_notcorrect = 4
-        OTHERS                 = 5 ).
-
-    IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise_t100( ).
-    ENDIF.
-
-    lo_html_viewer->show_url(
+    lo_dd->display_document(
       EXPORTING
-        url                    = lv_url
+        parent             = io_container
       EXCEPTIONS
-        cntl_error             = 1
-        cnht_error_not_allowed = 2
-        cnht_error_parameter   = 3
-        dp_error_general       = 4
-        OTHERS                 = 5 ).
-
+        html_display_error = 1
+        OTHERS             = 2 ).
     IF sy-subrc <> 0.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
-
   ENDMETHOD.
 
 
