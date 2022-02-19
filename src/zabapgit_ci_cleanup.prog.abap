@@ -47,10 +47,14 @@ CLASS lcl_main IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD uninstall_repos.
-    DATA: lv_transport TYPE trkorr.
+    DATA: lv_transport TYPE trkorr,
+          lo_repo      TYPE REF TO zcl_abapgit_repo.
+
     DATA(li_repo_srv) = zcl_abapgit_repo_srv=>get_instance( ).
 
-    LOOP AT li_repo_srv->list( ) INTO DATA(lo_repo).
+    LOOP AT li_repo_srv->list( ) INTO DATA(li_repo).
+      lo_repo ?= li_repo.
+
       IF lo_repo->get_package( ) NOT IN s_pack[].
         CONTINUE.
       ENDIF.
@@ -68,7 +72,7 @@ CLASS lcl_main IMPLEMENTATION.
       CASE abap_true.
         WHEN p_purge.
           WRITE: / |Purge { lo_repo->get_name( ) } in { lo_repo->get_package( ) }|.
-          li_repo_srv->purge( io_repo = lo_repo is_checks = ls_checks ).
+          li_repo_srv->purge( ii_repo = lo_repo is_checks = ls_checks ).
         WHEN p_remov.
           WRITE: / |Delete { lo_repo->get_name( ) } in { lo_repo->get_package( ) }|.
           li_repo_srv->delete( lo_repo ).

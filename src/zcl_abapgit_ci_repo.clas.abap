@@ -281,7 +281,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     cs_ri_repo-clone = zif_abapgit_ci_definitions=>co_status-not_ok.
 
     TRY.
-        co_repo = zcl_abapgit_repo_srv=>get_instance( )->new_online(
+        co_repo ?= zcl_abapgit_repo_srv=>get_instance( )->new_online(
           iv_url         = |{ cs_ri_repo-clone_url }|
           iv_branch_name = 'refs/heads/main'
           iv_package     = cs_ri_repo-package ).
@@ -463,7 +463,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
         ls_checks-transport-transport = iv_transport.
 
-        zcl_abapgit_repo_srv=>get_instance( )->purge( io_repo   = io_repo
+        zcl_abapgit_repo_srv=>get_instance( )->purge( ii_repo   = io_repo
                                                       is_checks = ls_checks ).
 
         COMMIT WORK AND WAIT.
