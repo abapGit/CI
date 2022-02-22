@@ -67,7 +67,7 @@ CLASS ZCL_ABAPGIT_CI_CONTROLLER IMPLEMENTATION.
     mi_repo_provider = ii_repo_provider.
     ms_options       = is_options.
 
-    mo_ci_repos = NEW zcl_abapgit_ci_repos( ).
+    mo_ci_repos = NEW zcl_abapgit_ci_repos( ms_options-sync_processing ).
     mo_ci_generic = NEW zcl_abapgit_ci_generic_tests( ).
 
   ENDMETHOD.
