@@ -31,6 +31,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_OTR</KEY>
+     <ENTRY>Remove leftover texts (OTR)</ENTRY>
+     <LENGTH>35</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_PACK</KEY>
      <ENTRY>Remove empty packages</ENTRY>
      <LENGTH>29</LENGTH>

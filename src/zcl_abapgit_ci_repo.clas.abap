@@ -98,10 +98,12 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
 
 
   METHOD check_leftovers.
+
+    DATA lv_count TYPE i.
 
     cs_ri_repo-check_leftovers = zif_abapgit_ci_definitions=>co_status-not_ok.
 
@@ -110,14 +112,25 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     LOOP AT lt_tadir ASSIGNING FIELD-SYMBOL(<ls_tadir>)
                      WHERE object <> 'DEVC'.
-      zcx_abapgit_exception=>raise( |Left over object { <ls_tadir>-object } { <ls_tadir>-obj_name }| ).
+      zcx_abapgit_exception=>raise( |Leftover object { <ls_tadir>-object } { <ls_tadir>-obj_name }| ).
     ENDLOOP.
 
     IF cs_ri_repo-layer IS INITIAL. " Only check leftover local packages
       LOOP AT lt_tadir ASSIGNING <ls_tadir>
                        WHERE object = 'DEVC'.
-        zcx_abapgit_exception=>raise( |Left over package { <ls_tadir>-obj_name }| ).
+        zcx_abapgit_exception=>raise( |Leftover package { <ls_tadir>-obj_name }| ).
       ENDLOOP.
+    ENDIF.
+
+    " Check for leftover texts in OTR
+    SELECT COUNT(*) FROM sotr_head INTO @lv_count WHERE paket = @cs_ri_repo-package.
+    IF lv_count > 0.
+      zcx_abapgit_exception=>raise( |Leftover short texts: { lv_count }| ).
+    ENDIF.
+
+    SELECT COUNT(*) FROM sotr_headu INTO @lv_count WHERE paket = @cs_ri_repo-package.
+    IF lv_count > 0.
+      zcx_abapgit_exception=>raise( |Leftover long texts: { lv_count }| ).
     ENDIF.
 
     cs_ri_repo-check_leftovers = zif_abapgit_ci_definitions=>co_status-ok.

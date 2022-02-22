@@ -7,6 +7,7 @@ SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
 SELECT-OPTIONS: s_pack FOR gv_package.
 PARAMETERS: p_purge TYPE abap_bool RADIOBUTTON GROUP r2 DEFAULT 'X',
             p_remov TYPE abap_bool RADIOBUTTON GROUP r2,
+            p_otr   TYPE abap_bool RADIOBUTTON GROUP r2,
             p_pack  TYPE abap_bool RADIOBUTTON GROUP r2.
 SELECTION-SCREEN END OF BLOCK b1.
 
@@ -25,6 +26,7 @@ CLASS lcl_main DEFINITION.
       uninstall_repos RAISING zcx_abapgit_exception,
       check_packages RAISING zcx_abapgit_exception,
       drop_packages RAISING zcx_abapgit_exception,
+      drop_otr RAISING zcx_abapgit_exception,
       delete_package IMPORTING iv_package TYPE devclass RAISING zcx_abapgit_exception,
       release_transports RAISING zcx_abapgit_exception.
   PROTECTED SECTION.
@@ -38,6 +40,8 @@ CLASS lcl_main IMPLEMENTATION.
         check_packages( ).
         IF p_pack = abap_true.
           drop_packages( ).
+        ELSEIF p_otr = abap_true.
+          drop_otr( ).
         ELSE.
           uninstall_repos( ).
         ENDIF.
@@ -105,12 +109,76 @@ CLASS lcl_main IMPLEMENTATION.
 
     LOOP AT lt_devclass INTO lv_devclass.
       SELECT COUNT(*) FROM tadir INTO @lv_count
-        WHERE pgmid = 'R3TR' AND object <> 'DEVC' AND object <> 'SOTR' AND devclass = @lv_devclass.
+        WHERE pgmid = 'R3TR' AND object <> 'DEVC' AND object <> 'SOTR' AND object <> 'SOTS' AND devclass = @lv_devclass.
 
       IF lv_count = 0.
         delete_package( lv_devclass ).
       ENDIF.
     ENDLOOP.
+  ENDMETHOD.
+
+  METHOD drop_otr.
+    DATA lt_head TYPE STANDARD TABLE OF sotr_head.
+    DATA lt_headu TYPE STANDARD TABLE OF sotr_headu.
+
+    SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket IN @s_pack[] ORDER BY paket, concept.
+
+    WRITE: / 'Short Texts:', lines( lt_head ).
+    SKIP.
+
+    LOOP AT lt_head INTO DATA(ls_head).
+      WRITE: AT /5 ls_head-concept, ls_head-paket, ls_head-crea_name, ls_head-crea_tstut.
+
+      CALL FUNCTION 'BTFR_DELETE_SINGLE_TEXT'
+        EXPORTING
+          concept               = ls_head-concept
+          flag_string           = abap_false
+          flag_correction_entry = abap_false
+        EXCEPTIONS
+          text_not_found        = 1
+          invalid_package       = 2
+          text_not_changeable   = 3
+          text_enqueued         = 4
+          no_correction         = 5
+          parameter_error       = 6
+          OTHERS                = 7.
+      IF sy-subrc <> 0.
+        WRITE: 'Error' COLOR COL_NEGATIVE.
+      ELSE.
+        WRITE: 'Deleted' COLOR COL_POSITIVE.
+      ENDIF.
+    ENDLOOP.
+    SKIP.
+
+    SELECT * FROM sotr_headu INTO TABLE @lt_headu WHERE paket IN @s_pack ORDER BY paket, concept.
+
+    WRITE: / 'Long Texts:', lines( lt_headu ).
+    SKIP.
+
+    LOOP AT lt_headu INTO DATA(ls_headu).
+      WRITE: AT /5 ls_headu-concept, ls_headu-paket, ls_headu-crea_name, ls_headu-crea_tstut.
+
+      CALL FUNCTION 'BTFR_DELETE_SINGLE_TEXT'
+        EXPORTING
+          concept               = ls_headu-concept
+          flag_string           = abap_true
+          flag_correction_entry = abap_false
+        EXCEPTIONS
+          text_not_found        = 1
+          invalid_package       = 2
+          text_not_changeable   = 3
+          text_enqueued         = 4
+          no_correction         = 5
+          parameter_error       = 6
+          OTHERS                = 7.
+      IF sy-subrc <> 0.
+        WRITE: 'Error' COLOR COL_NEGATIVE.
+      ELSE.
+        WRITE: 'Deleted' COLOR COL_POSITIVE.
+      ENDIF.
+    ENDLOOP.
+    SKIP.
+
   ENDMETHOD.
 
   METHOD delete_package.
