@@ -123,12 +123,12 @@ CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
     ENDIF.
 
     " Check for leftover texts in OTR
-    SELECT COUNT(*) FROM sotr_head INTO lv_count WHERE paket = cs_ri_repo-package.
+    SELECT COUNT(*) FROM sotr_head INTO @lv_count WHERE paket = @cs_ri_repo-package.
     IF lv_count > 0.
       zcx_abapgit_exception=>raise( |Leftover short texts: { lv_count }| ).
     ENDIF.
 
-    SELECT COUNT(*) FROM sotr_headu INTO lv_count WHERE paket = cs_ri_repo-package.
+    SELECT COUNT(*) FROM sotr_headu INTO @lv_count WHERE paket = @cs_ri_repo-package.
     IF lv_count > 0.
       zcx_abapgit_exception=>raise( |Leftover long texts: { lv_count }| ).
     ENDIF.
