@@ -127,8 +127,7 @@ CLASS ZCL_ABAPGIT_CI_SKIP IMPLEMENTATION.
       ( repo_name          = |SQSC|
         skip_local         = not_hana
         skip_transportable = not_hana
-        reason             = |Requires SAP HANA| )
-      ).
+        reason             = |Requires SAP HANA| ) ).
 
   ENDMETHOD.
 
