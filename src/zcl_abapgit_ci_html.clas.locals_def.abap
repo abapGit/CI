@@ -35,7 +35,13 @@ CLASS lcl_table_renderer DEFINITION FINAL.
         IMPORTING
           iv_status           TYPE any
         RETURNING
-          VALUE(rv_css_class) TYPE string.
+          VALUE(rv_css_class) TYPE string,
+
+      get_value_for_status
+        IMPORTING
+          iv_status       TYPE csequence
+        RETURNING
+          VALUE(rv_value) TYPE string.
 
     DATA:
       mr_table        TYPE REF TO data,
