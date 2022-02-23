@@ -25,6 +25,7 @@ INTERFACE zif_abapgit_ci_definitions
         BEGIN OF test_cases,
           total      TYPE i,
           successful TYPE i,
+          skipped    TYPE i,
           failed     TYPE i,
         END OF test_cases,
       END OF statistics,
@@ -57,6 +58,7 @@ INTERFACE zif_abapgit_ci_definitions
   CONSTANTS:
     BEGIN OF co_status,
       undefined TYPE char6 VALUE ' ',
+      skipped   TYPE char6 VALUE 'X',
       ok        TYPE char6 VALUE 'OK',
       not_ok    TYPE char6 VALUE 'NOT_OK',
     END OF co_status .

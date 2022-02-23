@@ -1,8 +1,3 @@
-*"* use this source file for the definition and implementation of
-*"* local helper classes, interface definitions and type
-*"* declarations
-
-
 CLASS lcl_table_renderer IMPLEMENTATION.
 
   METHOD constructor.
@@ -29,7 +24,8 @@ CLASS lcl_table_renderer IMPLEMENTATION.
     rv_html = |<thead>\n|.
     rv_html = rv_html && |<tr>\n|.
 
-    LOOP AT mo_struct_descr->get_components( ) ASSIGNING FIELD-SYMBOL(<ls_component>).
+    LOOP AT mo_struct_descr->get_components( ) ASSIGNING FIELD-SYMBOL(<ls_component>)
+      WHERE name <> 'SKIP'.
 
       rv_html = rv_html
             && |<th class="tg-kiyi">|
@@ -59,7 +55,8 @@ CLASS lcl_table_renderer IMPLEMENTATION.
 
       rv_html = rv_html && |<tr>\n|.
 
-      LOOP AT mo_struct_descr->get_components( ) ASSIGNING FIELD-SYMBOL(<ls_component>).
+      LOOP AT mo_struct_descr->get_components( ) ASSIGNING FIELD-SYMBOL(<ls_component>)
+        WHERE name <> 'SKIP'.
 
         ASSIGN COMPONENT <ls_component>-name
                OF STRUCTURE <ls_line>
@@ -70,8 +67,12 @@ CLASS lcl_table_renderer IMPLEMENTATION.
           rv_html = rv_html && |<td class="tg-xldj">|
                             && |<a href="{ <lv_field> }">Repo</a></td>\n|.
         ELSEIF <ls_component>-type->get_ddic_header( )-refname CS |STATUS|.
-          rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_status( <lv_field> ) }">|
+          rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_status( <lv_field> ) }|
+                            && | { get_css_class_for_keys( <ls_component>-name ) }">|
                             && |{ get_value_for_status( <lv_field> ) }</td>\n|.
+        ELSEIF <ls_component>-name = |MESSAGE|.
+          rv_html = rv_html && |<td class="tg-xldj">|
+                            && |{ replace_url_with_link( <lv_field> ) }</td>\n|.
         ELSE.
           rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_keys( <ls_component>-name ) }">|
                             && |{ <lv_field> }</td>\n|.
@@ -91,6 +92,8 @@ CLASS lcl_table_renderer IMPLEMENTATION.
 
     IF iv_name = |NAME| OR iv_name = |PACKAGE| OR iv_name = |DESCRIPTION|.
       rv_css_class = 'key'.
+    ELSEIF iv_name = |STATUS|.
+      rv_css_class = 'total'.
     ENDIF.
 
   ENDMETHOD.
@@ -102,6 +105,7 @@ CLASS lcl_table_renderer IMPLEMENTATION.
                        WHEN zif_abapgit_ci_definitions=>co_status-ok THEN |status ok|
                        WHEN zif_abapgit_ci_definitions=>co_status-not_ok THEN |status not_ok|
                        WHEN zif_abapgit_ci_definitions=>co_status-undefined THEN |status undefined|
+                       WHEN zif_abapgit_ci_definitions=>co_status-skipped THEN |skipped|
                        ELSE || ).
 
   ENDMETHOD.
@@ -112,7 +116,18 @@ CLASS lcl_table_renderer IMPLEMENTATION.
                  |{ iv_status }|
                    WHEN zif_abapgit_ci_definitions=>co_status-ok THEN |&#10003;|      "check mark
                    WHEN zif_abapgit_ci_definitions=>co_status-not_ok THEN |&#10007;|  "cross mark
+                   WHEN zif_abapgit_ci_definitions=>co_status-skipped THEN |&#8677;|  "arrow right
                    ELSE |{ iv_status }| ).
 
   ENDMETHOD.
+
+  METHOD replace_url_with_link.
+
+    rv_value = replace( val   = iv_field
+                        regex = '(http.*/)(\d*)'
+                        with  = '<a href="$1$2">#$2</a>'
+                        occ   = 0 ).
+
+  ENDMETHOD.
+
 ENDCLASS.

@@ -58,7 +58,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_REPOS IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -143,6 +143,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
     LOOP AT rt_result_list ASSIGNING FIELD-SYMBOL(<ls_ci_repo>).
       IF <ls_ci_repo>-skip = abap_true.
+        <ls_ci_repo>-status = zif_abapgit_ci_definitions=>co_status-skipped.
         CONTINUE.
       ENDIF.
 

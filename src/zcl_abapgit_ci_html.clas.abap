@@ -40,7 +40,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_html IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_HTML IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -119,9 +119,10 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
            && |<a href='https://github.com/abapGit/abapGit'>abapGit</a> \| \n|
            && |<a href='https://github.com/abapGit/CI'>abapGit CI</a> \| \n|
            && |<a href='https://github.com/abapGit/ci.abapgit.org'>abapGit CI results</a></h3>\n|
-           && |<h3>Test Cases: Total { ms_result-statistics-test_cases-total } \| |
-           && |Successful { ms_result-statistics-test_cases-successful } \| |
-           && |Failed { ms_result-statistics-test_cases-failed } \n|.
+           && |<h3>Test Cases: <span class="box key">Total: { ms_result-statistics-test_cases-total }</span> |
+           && |<span class="box ok">Successful: { ms_result-statistics-test_cases-successful }</span> |
+           && |<span class="box skipped">Skipped: { ms_result-statistics-test_cases-skipped }</span> |
+           && |<span class="box not_ok">Failed: { ms_result-statistics-test_cases-failed }</span>\n|.
 
   ENDMETHOD.
 
@@ -138,11 +139,14 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
            && |background-color:darkgray;\}\n|
            && |.tg .tg-kiyi\{font-weight:bold;border-color:inherit;text-align:left;\}\n|
            && |.tg .tg-xldj\{border-color:inherit;text-align:left;\}\n|
-           && |td.status \{ width:80px; \}\n|
-           && |.ok \{ background-color: lightgreen; \}\n|
-           && |.not_ok \{ background-color: red; \}\n|
+           && |td.status \{ width:70px; \}\n|
+           && |.box \{ border-style:solid;border-width:1px;border-radius:3px;padding:3px;margin-right:5px; \}\n|
+           && |.ok \{ background-color: #2dc937; \}\n|
+           && |.not_ok \{ background-color: #cc3232; \}\n|
            && |.undefined \{ background-color: lightgray; \}\n|
+           && |.skipped \{ background-color: #e7b416; \}\n|
            && |.key \{ background-color: lightblue; \}\n|
+           && |.total \{ font-weight:bold; \}\n|
            && |</style>\n|.
 
   ENDMETHOD.

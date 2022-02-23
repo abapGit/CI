@@ -1,7 +1,3 @@
-*"* use this source file for any type of declarations (class
-*"* definitions, interfaces or type declarations) you need for
-*"* components in the private section
-
 CLASS lcl_table_renderer DEFINITION FINAL.
 
   PUBLIC SECTION.
@@ -36,6 +32,12 @@ CLASS lcl_table_renderer DEFINITION FINAL.
           iv_status           TYPE any
         RETURNING
           VALUE(rv_css_class) TYPE string,
+
+      replace_url_with_link
+        IMPORTING
+          iv_field        TYPE any
+        RETURNING
+          VALUE(rv_value) TYPE string,
 
       get_value_for_status
         IMPORTING
