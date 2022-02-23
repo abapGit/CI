@@ -20,14 +20,15 @@ CLASS zcl_abapgit_ci_skip DEFINITION
         reason             TYPE string,
       END OF gty_skip.
     METHODS:
-      do_we_have_an_ads_connection RETURNING VALUE(rv_is_ads_on) TYPE abap_bool.
+      do_we_have_an_ads_connection RETURNING VALUE(rv_is_ads_on) TYPE abap_bool,
+      does_system_support_aff RETURNING VALUE(rv_is_aff_on) TYPE abap_bool.
     DATA:
       mt_skipped TYPE SORTED TABLE OF gty_skip WITH UNIQUE KEY repo_name skip_local skip_transportable.
 ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_SKIP IMPLEMENTATION.
 
 
   METHOD complete_skip_components.
@@ -64,69 +65,83 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
 
     mt_skipped = VALUE #(
       LET no_ads   = xsdbool( do_we_have_an_ads_connection( ) <> abap_true )
+          no_aff   = xsdbool( does_system_support_aff( ) <> abap_true )
+          not_diag = xsdbool( sy-batch = abap_true )
           not_hana = xsdbool( cl_db_sys=>is_in_memory_db <> abap_true ) IN
-      ( repo_name          = |CUS0|
+      ( repo_name          = |BranchTest|
         skip_local         = abap_true
         skip_transportable = abap_true
-        reason             = |skip because UI is called| )
-      ( repo_name          = |FDT0|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |https://github.com/larshp/abapGit/pull/2688| )
-      ( repo_name          = |*SPRX_server_proxy*|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |https://github.com/larshp/abapGit/issues/87| )
-      ( repo_name          = |SFSW|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |https://github.com/larshp/abapGit/issues/2083| )
+        reason             = |Not an object type| )
+      ( repo_name          = |CHKC|
+        skip_local         = no_aff
+        skip_transportable = no_aff
+        reason             = |Requires support for ABAP File Format (AFF)| )
+      ( repo_name          = |CHKO|
+        skip_local         = no_aff
+        skip_transportable = no_aff
+        reason             = |Requires support for ABAP File Format (AFF)| )
+      ( repo_name          = |CHKV|
+        skip_local         = no_aff
+        skip_transportable = no_aff
+        reason             = |Requires support for ABAP File Format (AFF)| )
       ( repo_name          = |DDLX_old|
         skip_local         = abap_true
         skip_transportable = abap_true
-        reason             = |Skip because it's an old testcase. abapGit indicates diff because migration to new | &&
-                             |format| )
-      ( repo_name          = |DEVC_component|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |https://github.com/larshp/abapGit/issues/1880| )
-      ( repo_name          = |SQSC|
-        skip_local         = not_hana
-        skip_transportable = not_hana
-        reason             = |Runs only on HANA| )
+        reason             = |Old testcase (diff because migration to new format)| )
+      ( repo_name          = |DOMA_append|
+        skip_local         = not_diag
+        skip_transportable = not_diag
+        reason             = |Requires user-interaction (not available in batch)| )
+      ( repo_name          = |Language_DE|
+        skip_local         = xsdbool( sy-langu <> 'D' )
+        skip_transportable = xsdbool( sy-langu <> 'D' )
+        reason             = |Requires logon in German| )
       ( repo_name          = |SFPF|
         skip_local         = no_ads
         skip_transportable = no_ads
-        reason             = |Adobe Document Service (ADS) connection neccessary| )
-      ( repo_name          = |TTYP_with_CLAS_reference|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |circular dependency https://github.com/larshp/abapGit/issues/2338| )
-      ( repo_name          = |SHLP_with_exit|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |circular dependency https://github.com/larshp/abapGit/issues/2338| )
-      ( repo_name          = |PROG_ci_variant|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |activation error https://github.com/larshp/abapGit/issues/2338| )
-      ( repo_name          = |DOMA_fixed_values_single_translated|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |https://github.com/larshp/abapGit/issues/2385| )
+        reason             = |Requires Adobe Document Service (ADS)| )
       ( repo_name          = |SFBF|
         skip_local         = abap_true
         skip_transportable = abap_true
-        reason             = |https://github.com/larshp/abapGit/issues/2469| )
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/2469| )
       ( repo_name          = |SFBS|
         skip_local         = abap_true
         skip_transportable = abap_true
-        reason             = |https://github.com/larshp/abapGit/issues/2469| )
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/2469| )
+      ( repo_name          = |SFSW|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/2083| )
+      ( repo_name          = |SHI5*|
+        skip_local         = not_diag
+        skip_transportable = not_diag
+        reason             = |Requires user-interaction (not available in batch)| )
       ( repo_name          = |SOTS|
         skip_local         = abap_true
         skip_transportable = abap_false
-        reason             = |Cannot be installed in local $-package| ) ).
+        reason             = |Cannot be installed in local package| )
+      ( repo_name          = |SPRX_server_proxy|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/87| )
+      ( repo_name          = |SQSC|
+        skip_local         = not_hana
+        skip_transportable = not_hana
+        reason             = |Requires SAP HANA| )
+      ).
 
+  ENDMETHOD.
+
+
+  METHOD does_system_support_aff.
+    DATA lo_handler_factory TYPE REF TO object.
+
+    TRY.
+        CREATE OBJECT lo_handler_factory TYPE ('CL_AFF_OBJECT_HANDLER_FACTORY').
+        rv_is_aff_on = abap_true.
+      CATCH cx_root.
+        rv_is_aff_on = abap_false.
+    ENDTRY.
   ENDMETHOD.
 
 

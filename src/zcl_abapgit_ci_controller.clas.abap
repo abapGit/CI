@@ -51,11 +51,16 @@ CLASS ZCL_ABAPGIT_CI_CONTROLLER IMPLEMENTATION.
         = count_by_status( is_result = cs_result
                            iv_status = zif_abapgit_ci_definitions=>co_status-ok ).
 
+    cs_result-statistics-test_cases-skipped
+        = count_by_status( is_result = cs_result
+                           iv_status = zif_abapgit_ci_definitions=>co_status-skipped ).
+
     cs_result-statistics-test_cases-failed
         = count_by_status( is_result = cs_result
                            iv_status = zif_abapgit_ci_definitions=>co_status-not_ok ).
 
     cs_result-statistics-test_cases-total = cs_result-statistics-test_cases-successful
+                                          + cs_result-statistics-test_cases-skipped
                                           + cs_result-statistics-test_cases-failed.
 
   ENDMETHOD.

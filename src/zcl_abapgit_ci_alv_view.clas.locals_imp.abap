@@ -114,11 +114,12 @@ CLASS lcl_view IMPLEMENTATION.
 
         IF <component>-type->get_ddic_header( )-refname CS |STATUS|.
           <lv_left> = SWITCH icon_d(
-                     <lv_right>
-                       WHEN zif_abapgit_ci_definitions=>co_status-ok        THEN icon_checked
-                       WHEN zif_abapgit_ci_definitions=>co_status-not_ok    THEN icon_incomplete
-                       WHEN zif_abapgit_ci_definitions=>co_status-undefined THEN icon_led_inactive
-                       ELSE icon_space ).
+                        <lv_right>
+                          WHEN zif_abapgit_ci_definitions=>co_status-ok        THEN icon_checked
+                          WHEN zif_abapgit_ci_definitions=>co_status-not_ok    THEN icon_incomplete
+                          WHEN zif_abapgit_ci_definitions=>co_status-undefined THEN icon_led_inactive
+                          WHEN zif_abapgit_ci_definitions=>co_status-skipped   THEN icon_total_right
+                          ELSE icon_space ).
         ELSE.
           <lv_left> = <lv_right>.
         ENDIF.
@@ -191,6 +192,10 @@ CLASS lcl_alv IMPLEMENTATION.
                 lo_column->set_optimized( ).
               ENDIF.
 
+              IF <ls_column_width>-column = |SKIP|.
+                lo_column->set_technical( ).
+              ENDIF.
+
               IF <ls_column_width>-column = |STATUS|.
                 ls_color-col = col_total.
                 lo_column->set_color( ls_color ).
@@ -259,6 +264,10 @@ CLASS lcl_list IMPLEMENTATION.
            <ls_fieldcat>-fieldname = |DESCRIPTION| OR
            <ls_fieldcat>-fieldname = |TITLE|.
           <ls_fieldcat>-key = abap_true.
+        ENDIF.
+
+        IF <ls_fieldcat>-fieldname = |SKIP|.
+          <ls_fieldcat>-no_out = abap_true.
         ENDIF.
       ENDIF.
 
