@@ -3,12 +3,22 @@ CLASS zcl_abapgit_ci_repos DEFINITION
   CREATE PUBLIC.
 
   PUBLIC SECTION.
+    CONSTANTS:
+      gc_default_branch TYPE string VALUE 'refs/heads/main'.
+
     CLASS-METHODS:
       update_abapgit_repo
         RAISING
           zcx_abapgit_exception,
 
       update_abapgit_ci_repo
+        RAISING
+          zcx_abapgit_exception,
+
+      update_repository
+        IMPORTING
+          iv_repo_name TYPE string
+          iv_branch    TYPE string DEFAULT gc_default_branch
         RAISING
           zcx_abapgit_exception.
 
@@ -32,6 +42,7 @@ CLASS zcl_abapgit_ci_repos DEFINITION
       update_repo
         IMPORTING
           iv_repo_name TYPE string
+          iv_branch    TYPE string DEFAULT gc_default_branch
         RAISING
           zcx_abapgit_exception,
 
@@ -58,7 +69,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_REPOS IMPLEMENTATION.
+CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -224,6 +235,13 @@ CLASS ZCL_ABAPGIT_CI_REPOS IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD update_repository.
+
+    update_repo( iv_repo_name = iv_repo_name iv_branch = iv_branch ).
+
+  ENDMETHOD.
+
+
   METHOD update_repo.
 
     DATA: lo_repo TYPE REF TO zcl_abapgit_repo_online.
@@ -243,7 +261,7 @@ CLASS ZCL_ABAPGIT_CI_REPOS IMPLEMENTATION.
       zcx_abapgit_exception=>raise( |Couldn't find { iv_repo_name } repo| ).
     ENDIF.
 
-    lo_repo->select_branch( 'refs/heads/main' ).
+    lo_repo->select_branch( iv_branch ).
 
     TRY.
         DATA(ls_checks) = zcl_abapgit_ci_repo_check=>get( lo_repo ).
