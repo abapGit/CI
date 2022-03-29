@@ -68,6 +68,14 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         RAISING
           zcx_abapgit_exception,
 
+      cleanup_tadir
+        IMPORTING
+          is_tadir             TYPE zif_abapgit_definitions=>ty_tadir
+        RETURNING
+          VALUE(rv_cleaned_up) TYPE abap_bool
+        RAISING
+          zcx_abapgit_exception,
+
       create_transport
         IMPORTING
           iv_repo_name        TYPE zabapgit_ci_repo_name
@@ -112,7 +120,9 @@ CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
 
     LOOP AT lt_tadir ASSIGNING FIELD-SYMBOL(<ls_tadir>)
                      WHERE object <> 'DEVC'.
-      zcx_abapgit_exception=>raise( |Leftover object { <ls_tadir>-object } { <ls_tadir>-obj_name }| ).
+      IF cleanup_tadir( <ls_tadir> ) = abap_false.
+        zcx_abapgit_exception=>raise( |Leftover object { <ls_tadir>-object } { <ls_tadir>-obj_name }| ).
+      ENDIF.
     ENDLOOP.
 
     IF cs_ri_repo-layer IS INITIAL. " Only check leftover local packages
@@ -286,6 +296,30 @@ CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
     ELSE.
       cs_ri_repo-check_delete_transport = zif_abapgit_ci_definitions=>co_status-ok.
     ENDIF.
+  ENDMETHOD.
+
+
+  METHOD cleanup_tadir.
+
+    DATA lv_cproject TYPE tadir-cproject.
+
+    " In case of transportable packages, some objects cannot be deleted (error TR 024):
+    " Object directory entry cannot be deleted, since the object is distributed
+    " This is normal but for the CI tests we ignore such entries and clean them up
+    DATA(lv_transportable) = xsdbool( is_tadir-devclass(1) <> '$' ).
+
+    IF lv_transportable = abap_true.
+      SELECT SINGLE cproject FROM tadir INTO @lv_cproject
+        WHERE pgmid = @is_tadir-pgmid AND object = @is_tadir-object AND obj_name = @is_tadir-obj_name.
+      IF sy-subrc = 0 AND lv_cproject+1(1) CA ' S'.
+        DELETE FROM tadir
+          WHERE pgmid = @is_tadir-pgmid AND object = @is_tadir-object AND obj_name = @is_tadir-obj_name.
+        IF sy-subrc = 0.
+          rv_cleaned_up = abap_true.
+        ENDIF.
+      ENDIF.
+    ENDIF.
+
   ENDMETHOD.
 
 
