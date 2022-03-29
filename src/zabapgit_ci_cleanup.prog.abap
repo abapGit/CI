@@ -1,4 +1,4 @@
-REPORT zabapgit_ci_cleanup.
+REPORT zabapgit_ci_cleanup LINE-SIZE 255.
 
 DATA: gv_package TYPE devclass.
 
@@ -7,6 +7,7 @@ SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
 SELECT-OPTIONS: s_pack FOR gv_package.
 PARAMETERS: p_purge TYPE abap_bool RADIOBUTTON GROUP r2 DEFAULT 'X',
             p_remov TYPE abap_bool RADIOBUTTON GROUP r2,
+            p_obj   TYPE abap_bool RADIOBUTTON GROUP r2,
             p_otr   TYPE abap_bool RADIOBUTTON GROUP r2,
             p_pack  TYPE abap_bool RADIOBUTTON GROUP r2.
 SELECTION-SCREEN END OF BLOCK b1.
@@ -26,8 +27,28 @@ CLASS lcl_main DEFINITION.
       uninstall_repos RAISING zcx_abapgit_exception,
       check_packages RAISING zcx_abapgit_exception,
       drop_packages RAISING zcx_abapgit_exception,
+      drop_objects RAISING zcx_abapgit_exception,
       drop_otr RAISING zcx_abapgit_exception,
-      delete_package IMPORTING iv_package TYPE devclass RAISING zcx_abapgit_exception,
+      delete_package
+        IMPORTING
+          iv_package   TYPE devclass
+          iv_transport TYPE trkorr
+        RAISING
+          zcx_abapgit_exception,
+      delete_object
+        IMPORTING
+          iv_package   TYPE devclass
+          iv_obj_type  TYPE tadir-object
+          iv_obj_name  TYPE tadir-obj_name
+          iv_transport TYPE trkorr
+        RAISING
+          zcx_abapgit_exception,
+      delete_tadir
+        IMPORTING
+          iv_obj_type TYPE tadir-object
+          iv_obj_name TYPE tadir-obj_name
+        RAISING
+          zcx_abapgit_exception,
       release_transports RAISING zcx_abapgit_exception.
   PROTECTED SECTION.
   PRIVATE SECTION.
@@ -40,6 +61,8 @@ CLASS lcl_main IMPLEMENTATION.
         check_packages( ).
         IF p_pack = abap_true.
           drop_packages( ).
+        ELSEIF p_obj = abap_true.
+          drop_objects( ).
         ELSEIF p_otr = abap_true.
           drop_otr( ).
         ELSE.
@@ -101,25 +124,93 @@ CLASS lcl_main IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD drop_packages.
+    DATA lv_transport TYPE trkorr.
     DATA lt_devclass TYPE TABLE OF devclass.
     DATA lv_devclass TYPE devclass.
     DATA lv_count TYPE i.
 
     SELECT devclass FROM tdevc INTO TABLE @lt_devclass WHERE devclass IN @s_pack[] ORDER BY devclass.
 
+    WRITE: / 'Packages:', lines( lt_devclass ).
+    SKIP.
+
     LOOP AT lt_devclass INTO lv_devclass.
+      WRITE: AT /5 lv_devclass.
+
       SELECT COUNT(*) FROM tadir INTO @lv_count
         WHERE pgmid = 'R3TR' AND object <> 'DEVC' AND object <> 'SOTR' AND object <> 'SOTS' AND devclass = @lv_devclass.
 
       IF lv_count = 0.
-        delete_package( lv_devclass ).
+        TRY.
+            IF lv_devclass(1) <> '$' AND lv_transport IS INITIAL.
+              lv_transport = zcl_abapgit_ui_factory=>get_popups( )->popup_transport_request(
+                VALUE #( request = 'K' task = 'S' ) ).
+            ENDIF.
+
+            delete_package(
+              iv_package   = lv_devclass
+              iv_transport = lv_transport ).
+
+            WRITE: 'Deleted' COLOR COL_POSITIVE.
+          CATCH zcx_abapgit_exception INTO DATA(lx_ex).
+            WRITE: 'Error' COLOR COL_NEGATIVE, lx_ex->get_text( ).
+        ENDTRY.
+      ELSE.
+        WRITE: 'Not empty' COLOR COL_TOTAL.
       ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD drop_objects.
+    DATA lv_transport TYPE trkorr.
+    DATA lt_devclass TYPE TABLE OF devclass.
+    DATA lv_devclass TYPE devclass.
+    DATA lt_object TYPE TABLE OF tadir.
+    DATA ls_object TYPE tadir.
+
+    SELECT devclass FROM tdevc INTO TABLE @lt_devclass WHERE devclass IN @s_pack[] ORDER BY devclass.
+
+    WRITE: / 'Packages:', lines( lt_devclass ).
+    SKIP.
+
+    LOOP AT lt_devclass INTO lv_devclass.
+      WRITE: AT /5 lv_devclass.
+
+      IF lv_devclass(1) <> '$' AND lv_transport IS INITIAL.
+        lv_transport = zcl_abapgit_ui_factory=>get_popups( )->popup_transport_request(
+          VALUE #( request = 'K' task = 'S' ) ).
+      ENDIF.
+
+      SELECT * FROM tadir INTO TABLE @lt_object
+        WHERE pgmid = 'R3TR' AND object <> 'DEVC' AND object <> 'SOTR' AND object <> 'SOTS'
+          AND delflag = '' AND devclass = @lv_devclass
+        ORDER BY PRIMARY KEY.
+
+      LOOP AT lt_object INTO ls_object.
+        WRITE: AT /10 ls_object-object, ls_object-obj_name.
+
+        TRY.
+            delete_object(
+              iv_package   = lv_devclass
+              iv_obj_type  = ls_object-object
+              iv_obj_name  = ls_object-obj_name
+              iv_transport = lv_transport ).
+
+            WRITE: 'Deleted' COLOR COL_POSITIVE.
+          CATCH zcx_abapgit_exception INTO DATA(lx_ex).
+            WRITE: 'Error' COLOR COL_NEGATIVE, lx_ex->get_text( ).
+        ENDTRY.
+
+      ENDLOOP.
+
     ENDLOOP.
   ENDMETHOD.
 
   METHOD drop_otr.
     DATA lt_head TYPE STANDARD TABLE OF sotr_head.
     DATA lt_headu TYPE STANDARD TABLE OF sotr_headu.
+    DATA lv_paket TYPE devclass.
+    DATA lt_paket TYPE STANDARD TABLE OF devclass.
 
     SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket IN @s_pack[] ORDER BY paket, concept.
 
@@ -179,16 +270,28 @@ CLASS lcl_main IMPLEMENTATION.
     ENDLOOP.
     SKIP.
 
+    " Drop TADIR
+    SELECT devclass FROM tdevc INTO TABLE @lt_paket WHERE devclass IN @s_pack ORDER BY PRIMARY KEY.
+
+    LOOP AT lt_paket INTO lv_paket.
+      SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket = @lv_paket ORDER BY PRIMARY KEY.
+      IF sy-subrc = 4.
+        delete_tadir(
+          iv_obj_type = 'SOTR'
+          iv_obj_name = |{ lv_paket }| ).
+      ENDIF.
+      SELECT * FROM sotr_headu INTO TABLE @lt_headu WHERE paket = @lv_paket ORDER BY PRIMARY KEY.
+      IF sy-subrc = 4.
+        delete_tadir(
+          iv_obj_type = 'SOTS'
+          iv_obj_name = |{ lv_paket }| ).
+      ENDIF.
+    ENDLOOP.
+
   ENDMETHOD.
 
   METHOD delete_package.
-    DATA lv_transport TYPE trkorr.
     DATA li_package TYPE REF TO if_package.
-
-    IF iv_package(1) <> '$'.
-      lv_transport = zcl_abapgit_ui_factory=>get_popups( )->popup_transport_request(
-        VALUE #( request = 'K' task = 'S' ) ).
-    ENDIF.
 
     cl_package_factory=>load_package(
       EXPORTING
@@ -244,7 +347,7 @@ CLASS lcl_main IMPLEMENTATION.
     li_package->save(
       EXPORTING
         i_suppress_dialog     = abap_true
-        i_transport_request   = lv_transport
+        i_transport_request   = iv_transport
       EXCEPTIONS
         object_invalid        = 1
         object_not_changeable = 2
@@ -255,6 +358,56 @@ CLASS lcl_main IMPLEMENTATION.
         OTHERS                = 7 ).
     IF sy-subrc <> 0.
       zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+  ENDMETHOD.
+
+  METHOD delete_object.
+    DATA ls_item TYPE zif_abapgit_definitions=>ty_item.
+    DATA lv_class_name TYPE seoclsname.
+    DATA lx_error TYPE REF TO zcx_abapgit_exception.
+    DATA li_obj TYPE REF TO zif_abapgit_object.
+
+    ls_item-obj_type = iv_obj_type.
+    ls_item-obj_name = iv_obj_name.
+
+    IF zcl_abapgit_objects=>is_type_supported( ls_item-obj_type ) = abap_false.
+      RETURN.
+    ENDIF.
+
+    lv_class_name = 'ZCL_ABAPGIT_OBJECT_' && iv_obj_type.
+
+    CREATE OBJECT li_obj TYPE (lv_class_name)
+      EXPORTING
+        is_item     = ls_item
+        iv_language = zif_abapgit_definitions=>c_english.
+
+    li_obj->delete( iv_package   = iv_package
+                    iv_transport = iv_transport ).
+
+    delete_tadir(
+      iv_obj_type = ls_item-obj_type
+      iv_obj_name = ls_item-obj_name ).
+
+  ENDMETHOD.
+
+  METHOD delete_tadir.
+    DATA lv_msg TYPE string.
+
+    CALL FUNCTION 'TR_TADIR_INTERFACE'
+      EXPORTING
+        wi_delete_tadir_entry = abap_true
+        wi_tadir_pgmid        = 'R3TR'
+        wi_tadir_object       = iv_obj_type
+        wi_tadir_obj_name     = iv_obj_name
+        wi_test_modus         = abap_false
+      EXCEPTIONS
+        OTHERS                = 1 ##FM_SUBRC_OK.
+    IF sy-subrc <> 0.
+      " Object directory entry cannot be deleted, since the object is distributed (TR 024)
+      " Force deletion of TADIR
+      DELETE FROM tadir
+        WHERE pgmid = 'R3TR' AND object = @iv_obj_type AND obj_name = @iv_obj_name.
     ENDIF.
 
   ENDMETHOD.
