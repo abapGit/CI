@@ -124,6 +124,14 @@ CLASS ZCL_ABAPGIT_CI_SKIP IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Issue https://github.com/abapGit/abapGit/issues/87| )
+      ( repo_name          = |SUSC_and_SUSO|
+        skip_local         = abap_false
+        skip_transportable = abap_true
+        reason             = |Transportable authorization objects cannot be uninstalled| )
+      ( repo_name          = |SUSO|
+        skip_local         = abap_false
+        skip_transportable = abap_true
+        reason             = |Transportable authorization objects cannot be uninstalled| )
       ( repo_name          = |SQSC|
         skip_local         = not_hana
         skip_transportable = not_hana
