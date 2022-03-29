@@ -29,7 +29,7 @@
     "max_one_method_parameter_per_line": true,
     "modify_only_own_db_tables": {
       "ownTables": "^[tadir|y|z]"
-    }
+    },
     "no_yoda_conditions": true,
     "prefer_raise_exception_new": true,
     "select_add_order_by": true,
