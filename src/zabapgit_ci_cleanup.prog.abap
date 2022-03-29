@@ -4,20 +4,20 @@ DATA: gv_package TYPE devclass.
 
 PARAMETERS: p_uninst TYPE abap_bool RADIOBUTTON GROUP r1 DEFAULT 'X'.
 SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
-SELECT-OPTIONS: s_pack FOR gv_package.
-PARAMETERS: p_purge TYPE abap_bool RADIOBUTTON GROUP r2 DEFAULT 'X',
-            p_remov TYPE abap_bool RADIOBUTTON GROUP r2,
-            p_obj   TYPE abap_bool RADIOBUTTON GROUP r2,
-            p_otr   TYPE abap_bool RADIOBUTTON GROUP r2,
-            p_pack  TYPE abap_bool RADIOBUTTON GROUP r2.
+  SELECT-OPTIONS: s_pack FOR gv_package.
+  PARAMETERS: p_purge TYPE abap_bool RADIOBUTTON GROUP r2 DEFAULT 'X',
+              p_remov TYPE abap_bool RADIOBUTTON GROUP r2,
+              p_obj   TYPE abap_bool RADIOBUTTON GROUP r2,
+              p_otr   TYPE abap_bool RADIOBUTTON GROUP r2,
+              p_pack  TYPE abap_bool RADIOBUTTON GROUP r2.
 SELECTION-SCREEN END OF BLOCK b1.
 
 SELECTION-SCREEN SKIP.
 
 PARAMETERS: p_trrel TYPE abap_bool RADIOBUTTON GROUP r1.
 SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-002.
-PARAMETERS: p_txt  TYPE as4text DEFAULT 'abapGit CI*',
-            p_prev TYPE abap_bool AS CHECKBOX DEFAULT abap_true.
+  PARAMETERS: p_txt  TYPE as4text DEFAULT 'abapGit CI*',
+              p_prev TYPE abap_bool AS CHECKBOX DEFAULT abap_true.
 SELECTION-SCREEN END OF BLOCK b2.
 
 CLASS lcl_main DEFINITION.
@@ -183,7 +183,8 @@ CLASS lcl_main IMPLEMENTATION.
 
       SELECT * FROM tadir INTO TABLE @lt_object
         WHERE pgmid = 'R3TR' AND object <> 'DEVC' AND object <> 'SOTR' AND object <> 'SOTS'
-          AND delflag = '' AND devclass = @lv_devclass.
+          AND delflag = '' AND devclass = @lv_devclass
+        ORDER BY PRIMARY KEY.
 
       LOOP AT lt_object INTO ls_object.
         WRITE: AT /10 ls_object-object, ls_object-obj_name.
@@ -270,16 +271,16 @@ CLASS lcl_main IMPLEMENTATION.
     SKIP.
 
     " Drop TADIR
-    SELECT devclass FROM tdevc INTO TABLE @lt_paket WHERE devclass IN @s_pack.
+    SELECT devclass FROM tdevc INTO TABLE @lt_paket WHERE devclass IN @s_pack ORDER BY PRIMARY KEY.
 
     LOOP AT lt_paket INTO lv_paket.
-      SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket = @lv_paket.
+      SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket = @lv_paket ORDER BY PRIMARY KEY.
       IF sy-subrc = 4.
         delete_tadir(
           iv_obj_type = 'SOTR'
           iv_obj_name = |{ lv_paket }| ).
       ENDIF.
-      SELECT * FROM sotr_headu INTO TABLE @lt_headu WHERE paket = @lv_paket.
+      SELECT * FROM sotr_headu INTO TABLE @lt_headu WHERE paket = @lv_paket ORDER BY PRIMARY KEY.
       IF sy-subrc = 4.
         delete_tadir(
           iv_obj_type = 'SOTS'
@@ -406,7 +407,7 @@ CLASS lcl_main IMPLEMENTATION.
       " Object directory entry cannot be deleted, since the object is distributed (TR 024)
       " Force deletion of TADIR
       DELETE FROM tadir
-        WHERE pgmid = 'R3TR' AND object = iv_obj_type AND obj_name = iv_obj_name.
+        WHERE pgmid = 'R3TR' AND object = @iv_obj_type AND obj_name = @iv_obj_name.
     ENDIF.
 
   ENDMETHOD.

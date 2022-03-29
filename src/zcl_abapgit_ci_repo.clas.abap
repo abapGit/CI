@@ -309,11 +309,11 @@ CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
     DATA(lv_transportable) = xsdbool( is_tadir-devclass(1) <> '$' ).
 
     IF lv_transportable = abap_true.
-      SELECT SINGLE cproject FROM tadir INTO lv_cproject
-        WHERE pgmid = is_tadir-pgmid AND object = is_tadir-object AND obj_name = is_tadir-obj_name.
+      SELECT SINGLE cproject FROM tadir INTO @lv_cproject
+        WHERE pgmid = @is_tadir-pgmid AND object = @is_tadir-object AND obj_name = @is_tadir-obj_name.
       IF sy-subrc = 0 AND lv_cproject+1(1) CA ' S'.
         DELETE FROM tadir
-          WHERE pgmid = is_tadir-pgmid AND object = is_tadir-object AND obj_name = is_tadir-obj_name.
+          WHERE pgmid = @is_tadir-pgmid AND object = @is_tadir-object AND obj_name = @is_tadir-obj_name.
         IF sy-subrc = 0.
           rv_cleaned_up = abap_true.
         ENDIF.
