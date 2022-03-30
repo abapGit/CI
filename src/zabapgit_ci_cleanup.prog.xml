@@ -31,6 +31,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_LIST</KEY>
+     <ENTRY>Show all leftovers</ENTRY>
+     <LENGTH>27</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_OBJ</KEY>
      <ENTRY>Remove leftover objects</ENTRY>
      <LENGTH>31</LENGTH>
