@@ -227,6 +227,9 @@ CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
+    " Ignore entries for SOTR/SOTS
+    DELETE lt_objects WHERE pgmid = 'LIMU' AND object = 'ADIR' AND obj_name CP 'R3TRSOT*'.
+
     " Convert LIMU to R3TR
     CALL FUNCTION 'TRINT_COMPLETE_REQUEST'
       EXPORTING
