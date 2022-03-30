@@ -5,7 +5,8 @@ DATA: gv_package TYPE devclass.
 PARAMETERS: p_uninst TYPE abap_bool RADIOBUTTON GROUP r1 DEFAULT 'X'.
 SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
 SELECT-OPTIONS: s_pack FOR gv_package.
-PARAMETERS: p_purge TYPE abap_bool RADIOBUTTON GROUP r2 DEFAULT 'X',
+PARAMETERS: p_list  TYPE abap_bool RADIOBUTTON GROUP r2 DEFAULT 'X',
+            p_purge TYPE abap_bool RADIOBUTTON GROUP r2,
             p_remov TYPE abap_bool RADIOBUTTON GROUP r2,
             p_obj   TYPE abap_bool RADIOBUTTON GROUP r2,
             p_otr   TYPE abap_bool RADIOBUTTON GROUP r2,
@@ -24,6 +25,7 @@ CLASS lcl_main DEFINITION.
   PUBLIC SECTION.
     METHODS:
       run RAISING zcx_abapgit_exception,
+      list RAISING zcx_abapgit_exception,
       uninstall_repos RAISING zcx_abapgit_exception,
       check_packages RAISING zcx_abapgit_exception,
       drop_packages RAISING zcx_abapgit_exception,
@@ -52,6 +54,11 @@ CLASS lcl_main DEFINITION.
       release_transports RAISING zcx_abapgit_exception.
   PROTECTED SECTION.
   PRIVATE SECTION.
+    CONSTANTS c_width TYPE i VALUE 200.
+    METHODS:
+      list_packages RAISING zcx_abapgit_exception,
+      list_objects,
+      list_otr.
 ENDCLASS.
 
 CLASS lcl_main IMPLEMENTATION.
@@ -65,12 +72,153 @@ CLASS lcl_main IMPLEMENTATION.
           drop_objects( ).
         ELSEIF p_otr = abap_true.
           drop_otr( ).
+        ELSEIF p_list = abap_true.
+          list( ).
         ELSE.
           uninstall_repos( ).
         ENDIF.
       WHEN p_trrel.
         release_transports( ).
     ENDCASE.
+  ENDMETHOD.
+
+  METHOD list.
+
+    list_packages( ).
+
+    list_objects( ).
+
+    list_otr( ).
+
+  ENDMETHOD.
+
+  METHOD list_packages.
+
+    DATA:
+      lt_devclass TYPE STANDARD TABLE OF devclass,
+      li_repo     TYPE REF TO zif_abapgit_repo.
+
+    SELECT devclass FROM tdevc INTO TABLE @lt_devclass WHERE devclass IN @s_pack[] ORDER BY devclass.
+
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'Packages:', lines( lt_devclass ), AT c_width space.
+    FORMAT COLOR OFF.
+    SKIP.
+
+    IF sy-subrc = 0.
+      LOOP AT lt_devclass INTO DATA(lv_devclass).
+        FORMAT COLOR COL_NORMAL.
+        WRITE: AT /5 lv_devclass, AT c_width space.
+        FORMAT COLOR OFF.
+      ENDLOOP.
+      SKIP.
+    ENDIF.
+
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'Repositories:', AT c_width space.
+    FORMAT COLOR OFF.
+    SKIP.
+
+    DATA(li_repo_srv) = zcl_abapgit_repo_srv=>get_instance( ).
+
+    LOOP AT lt_devclass INTO lv_devclass.
+      TRY.
+          li_repo_srv->get_repo_from_package(
+            EXPORTING
+              iv_package = lv_devclass
+            IMPORTING
+              ei_repo    = li_repo ).
+          IF li_repo IS NOT INITIAL.
+            DATA(lv_found) = abap_true.
+            FORMAT COLOR COL_NORMAL.
+            WRITE: AT /5 'Repository:', li_repo->get_name( ), AT c_width space.
+            SKIP.
+          ENDIF.
+        CATCH zcx_abapgit_exception.
+      ENDTRY.
+    ENDLOOP.
+
+    IF lv_found = abap_false.
+      FORMAT COLOR COL_NORMAL.
+      WRITE: AT /5 'None', AT c_width space.
+      SKIP.
+    ENDIF.
+
+  ENDMETHOD.
+
+  METHOD list_objects.
+    DATA lt_tadir TYPE STANDARD TABLE OF tadir.
+
+    SELECT * FROM tadir INTO TABLE @lt_tadir WHERE devclass IN @s_pack[]
+      ORDER BY devclass, pgmid, object, obj_name.
+
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'Objects:', lines( lt_tadir ), AT c_width space.
+    FORMAT COLOR OFF.
+    SKIP.
+
+    IF sy-subrc = 0.
+      LOOP AT lt_tadir INTO DATA(ls_tadir).
+        FORMAT COLOR COL_NORMAL.
+        WRITE: AT /5 ls_tadir-object, ls_tadir-obj_name, ls_tadir-devclass, AT c_width space.
+        FORMAT COLOR OFF.
+      ENDLOOP.
+      SKIP.
+    ENDIF.
+
+  ENDMETHOD.
+
+  METHOD list_otr.
+    DATA:
+      lt_head  TYPE STANDARD TABLE OF sotr_head,
+      lt_headu TYPE STANDARD TABLE OF sotr_headu,
+      ls_use   TYPE sotr_use,
+      ls_useu  TYPE sotr_useu.
+
+    SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket IN @s_pack[]
+      ORDER BY paket, concept.
+
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'Short Texts:', lines( lt_head ), AT c_width space.
+    FORMAT COLOR OFF.
+    SKIP.
+
+    IF sy-subrc = 0.
+      LOOP AT lt_head INTO DATA(ls_head).
+        FORMAT COLOR COL_NORMAL.
+        WRITE: AT /5 ls_head-concept.
+        SELECT SINGLE * FROM sotr_use INTO @ls_use WHERE concept = @ls_head-concept.
+        IF sy-subrc = 0.
+          WRITE: ls_use-object, ls_use-obj_name.
+        ENDIF.
+        WRITE AT c_width space.
+        FORMAT COLOR OFF.
+      ENDLOOP.
+      SKIP.
+    ENDIF.
+
+    SELECT * FROM sotr_headu INTO TABLE @lt_headu WHERE paket IN @s_pack[]
+      ORDER BY paket, concept.
+
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'Long Texts:', lines( lt_headu ), AT c_width space.
+    FORMAT COLOR OFF.
+    SKIP.
+
+    IF sy-subrc = 0.
+      LOOP AT lt_headu INTO DATA(ls_headu).
+        FORMAT COLOR COL_NORMAL.
+        WRITE: AT /5 ls_headu-concept.
+        SELECT SINGLE * FROM sotr_useu INTO @ls_useu WHERE concept = @ls_headu-concept.
+        IF sy-subrc = 0.
+          WRITE: ls_useu-object, ls_useu-obj_name.
+        ENDIF.
+        WRITE AT c_width space.
+        FORMAT COLOR OFF.
+      ENDLOOP.
+      SKIP.
+    ENDIF.
+
   ENDMETHOD.
 
   METHOD uninstall_repos.
@@ -126,7 +274,6 @@ CLASS lcl_main IMPLEMENTATION.
   METHOD drop_packages.
     DATA lv_transport TYPE trkorr.
     DATA lt_devclass TYPE TABLE OF devclass.
-    DATA lv_devclass TYPE devclass.
     DATA lv_count TYPE i.
 
     SELECT devclass FROM tdevc INTO TABLE @lt_devclass WHERE devclass IN @s_pack[] ORDER BY devclass.
@@ -134,7 +281,7 @@ CLASS lcl_main IMPLEMENTATION.
     WRITE: / 'Packages:', lines( lt_devclass ).
     SKIP.
 
-    LOOP AT lt_devclass INTO lv_devclass.
+    LOOP AT lt_devclass INTO DATA(lv_devclass).
       WRITE: AT /5 lv_devclass.
 
       SELECT COUNT(*) FROM tadir INTO @lv_count
@@ -209,7 +356,6 @@ CLASS lcl_main IMPLEMENTATION.
   METHOD drop_otr.
     DATA lt_head TYPE STANDARD TABLE OF sotr_head.
     DATA lt_headu TYPE STANDARD TABLE OF sotr_headu.
-    DATA lv_paket TYPE devclass.
     DATA lt_paket TYPE STANDARD TABLE OF devclass.
 
     SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket IN @s_pack[] ORDER BY paket, concept.
@@ -273,7 +419,7 @@ CLASS lcl_main IMPLEMENTATION.
     " Drop TADIR
     SELECT devclass FROM tdevc INTO TABLE @lt_paket WHERE devclass IN @s_pack ORDER BY PRIMARY KEY.
 
-    LOOP AT lt_paket INTO lv_paket.
+    LOOP AT lt_paket INTO DATA(lv_paket).
       SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket = @lv_paket ORDER BY PRIMARY KEY.
       IF sy-subrc = 4.
         delete_tadir(
