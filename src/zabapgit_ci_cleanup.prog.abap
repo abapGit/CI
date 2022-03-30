@@ -4,21 +4,21 @@ DATA: gv_package TYPE devclass.
 
 PARAMETERS: p_uninst TYPE abap_bool RADIOBUTTON GROUP r1 DEFAULT 'X'.
 SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
-SELECT-OPTIONS: s_pack FOR gv_package.
-PARAMETERS: p_list  TYPE abap_bool RADIOBUTTON GROUP r2 DEFAULT 'X',
-            p_purge TYPE abap_bool RADIOBUTTON GROUP r2,
-            p_remov TYPE abap_bool RADIOBUTTON GROUP r2,
-            p_obj   TYPE abap_bool RADIOBUTTON GROUP r2,
-            p_otr   TYPE abap_bool RADIOBUTTON GROUP r2,
-            p_pack  TYPE abap_bool RADIOBUTTON GROUP r2.
+  SELECT-OPTIONS: s_pack FOR gv_package.
+  PARAMETERS: p_list  TYPE abap_bool RADIOBUTTON GROUP r2 DEFAULT 'X',
+              p_purge TYPE abap_bool RADIOBUTTON GROUP r2,
+              p_remov TYPE abap_bool RADIOBUTTON GROUP r2,
+              p_obj   TYPE abap_bool RADIOBUTTON GROUP r2,
+              p_otr   TYPE abap_bool RADIOBUTTON GROUP r2,
+              p_pack  TYPE abap_bool RADIOBUTTON GROUP r2.
 SELECTION-SCREEN END OF BLOCK b1.
 
 SELECTION-SCREEN SKIP.
 
 PARAMETERS: p_trrel TYPE abap_bool RADIOBUTTON GROUP r1.
 SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-002.
-PARAMETERS: p_txt  TYPE as4text DEFAULT 'abapGit CI*',
-            p_prev TYPE abap_bool AS CHECKBOX DEFAULT abap_true.
+  PARAMETERS: p_txt  TYPE as4text DEFAULT 'abapGit CI*',
+              p_prev TYPE abap_bool AS CHECKBOX DEFAULT abap_true.
 SELECTION-SCREEN END OF BLOCK b2.
 
 CLASS lcl_main DEFINITION.
@@ -55,6 +55,7 @@ CLASS lcl_main DEFINITION.
   PROTECTED SECTION.
   PRIVATE SECTION.
     CONSTANTS c_width TYPE i VALUE 200.
+    CONSTANTS c_count TYPE i VALUE 20.
     TYPES: ty_devc_tt TYPE STANDARD TABLE OF devclass WITH DEFAULT KEY.
     METHODS:
       get_packages RETURNING VALUE(rt_devclass) TYPE ty_devc_tt,
@@ -105,7 +106,7 @@ CLASS lcl_main IMPLEMENTATION.
     SELECT devclass FROM tdevc INTO TABLE @lt_devclass WHERE devclass IN @s_pack[] ORDER BY devclass.
 
     FORMAT COLOR COL_KEY.
-    WRITE: / 'Packages:', lines( lt_devclass ), AT c_width space.
+    WRITE: / 'Packages:', AT c_count lines( lt_devclass ), AT c_width space.
     FORMAT COLOR OFF.
     SKIP.
 
@@ -160,7 +161,7 @@ CLASS lcl_main IMPLEMENTATION.
       ORDER BY devclass, pgmid, object, obj_name.
 
     FORMAT COLOR COL_KEY.
-    WRITE: / 'Objects:', lines( lt_tadir ), AT c_width space.
+    WRITE: / 'Objects:', AT c_count lines( lt_tadir ), AT c_width space.
     FORMAT COLOR OFF.
     SKIP.
 
@@ -189,7 +190,7 @@ CLASS lcl_main IMPLEMENTATION.
       ORDER BY paket, concept.
 
     FORMAT COLOR COL_KEY.
-    WRITE: / 'Short Texts:', lines( lt_head ), AT c_width space.
+    WRITE: / 'Short Texts:', AT c_count lines( lt_head ), AT c_width space.
     FORMAT COLOR OFF.
     SKIP.
 
@@ -214,7 +215,7 @@ CLASS lcl_main IMPLEMENTATION.
       ORDER BY paket, concept.
 
     FORMAT COLOR COL_KEY.
-    WRITE: / 'Long Texts:', lines( lt_headu ), AT c_width space.
+    WRITE: / 'Long Texts:', AT c_count lines( lt_headu ), AT c_width space.
     FORMAT COLOR OFF.
     SKIP.
 
@@ -304,7 +305,7 @@ CLASS lcl_main IMPLEMENTATION.
     DATA(lt_devclass) = get_packages( ).
 
     FORMAT COLOR COL_KEY.
-    WRITE: / 'Packages:', lines( lt_devclass ), AT c_width space.
+    WRITE: / 'Packages:', AT c_count lines( lt_devclass ), AT c_width space.
     FORMAT COLOR OFF.
     SKIP.
 
@@ -357,7 +358,7 @@ CLASS lcl_main IMPLEMENTATION.
     DATA(lt_devclass) = get_packages( ).
 
     FORMAT COLOR COL_KEY.
-    WRITE: / 'Packages:', lines( lt_devclass ), AT c_width space.
+    WRITE: / 'Packages:', AT c_count lines( lt_devclass ), AT c_width space.
     FORMAT COLOR OFF.
     SKIP.
 
@@ -422,7 +423,7 @@ CLASS lcl_main IMPLEMENTATION.
     SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket IN @s_pack[] ORDER BY paket, concept.
 
     FORMAT COLOR COL_KEY.
-    WRITE: / 'Short Texts:', lines( lt_head ), AT c_width space.
+    WRITE: / 'Short Texts:', AT c_count lines( lt_head ), AT c_width space.
     FORMAT COLOR OFF.
     SKIP.
 
@@ -462,7 +463,7 @@ CLASS lcl_main IMPLEMENTATION.
     SELECT * FROM sotr_headu INTO TABLE @lt_headu WHERE paket IN @s_pack ORDER BY paket, concept.
 
     FORMAT COLOR COL_KEY.
-    WRITE: / 'Long Texts:', lines( lt_headu ), AT c_width space.
+    WRITE: / 'Long Texts:', AT c_count lines( lt_headu ), AT c_width space.
     FORMAT COLOR OFF.
     SKIP.
 
