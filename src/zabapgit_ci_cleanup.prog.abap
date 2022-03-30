@@ -55,7 +55,10 @@ CLASS lcl_main DEFINITION.
   PROTECTED SECTION.
   PRIVATE SECTION.
     CONSTANTS c_width TYPE i VALUE 200.
+    CONSTANTS c_count TYPE i VALUE 20.
+    TYPES: ty_devc_tt TYPE STANDARD TABLE OF devclass WITH DEFAULT KEY.
     METHODS:
+      get_packages RETURNING VALUE(rt_devclass) TYPE ty_devc_tt,
       list_packages RAISING zcx_abapgit_exception,
       list_objects,
       list_otr.
@@ -98,10 +101,12 @@ CLASS lcl_main IMPLEMENTATION.
       lt_devclass TYPE STANDARD TABLE OF devclass,
       li_repo     TYPE REF TO zif_abapgit_repo.
 
+    DATA(lv_found) = abap_false.
+
     SELECT devclass FROM tdevc INTO TABLE @lt_devclass WHERE devclass IN @s_pack[] ORDER BY devclass.
 
     FORMAT COLOR COL_KEY.
-    WRITE: / 'Packages:', lines( lt_devclass ), AT c_width space.
+    WRITE: / 'Packages:', AT c_count lines( lt_devclass ), AT c_width space.
     FORMAT COLOR OFF.
     SKIP.
 
@@ -111,8 +116,11 @@ CLASS lcl_main IMPLEMENTATION.
         WRITE: AT /5 lv_devclass, AT c_width space.
         FORMAT COLOR OFF.
       ENDLOOP.
-      SKIP.
+    ELSE.
+      FORMAT COLOR COL_POSITIVE.
+      WRITE: AT /5 'None', AT c_width space.
     ENDIF.
+    SKIP.
 
     FORMAT COLOR COL_KEY.
     WRITE: / 'Repositories:', AT c_width space.
@@ -129,7 +137,7 @@ CLASS lcl_main IMPLEMENTATION.
             IMPORTING
               ei_repo    = li_repo ).
           IF li_repo IS NOT INITIAL.
-            DATA(lv_found) = abap_true.
+            lv_found = abap_true.
             FORMAT COLOR COL_NORMAL.
             WRITE: AT /5 'Repository:', li_repo->get_name( ), AT c_width space.
             SKIP.
@@ -139,7 +147,7 @@ CLASS lcl_main IMPLEMENTATION.
     ENDLOOP.
 
     IF lv_found = abap_false.
-      FORMAT COLOR COL_NORMAL.
+      FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
       SKIP.
     ENDIF.
@@ -153,7 +161,7 @@ CLASS lcl_main IMPLEMENTATION.
       ORDER BY devclass, pgmid, object, obj_name.
 
     FORMAT COLOR COL_KEY.
-    WRITE: / 'Objects:', lines( lt_tadir ), AT c_width space.
+    WRITE: / 'Objects:', AT c_count lines( lt_tadir ), AT c_width space.
     FORMAT COLOR OFF.
     SKIP.
 
@@ -163,8 +171,11 @@ CLASS lcl_main IMPLEMENTATION.
         WRITE: AT /5 ls_tadir-object, ls_tadir-obj_name, ls_tadir-devclass, AT c_width space.
         FORMAT COLOR OFF.
       ENDLOOP.
-      SKIP.
+    ELSE.
+      FORMAT COLOR COL_POSITIVE.
+      WRITE: AT /5 'None', AT c_width space.
     ENDIF.
+    SKIP.
 
   ENDMETHOD.
 
@@ -179,7 +190,7 @@ CLASS lcl_main IMPLEMENTATION.
       ORDER BY paket, concept.
 
     FORMAT COLOR COL_KEY.
-    WRITE: / 'Short Texts:', lines( lt_head ), AT c_width space.
+    WRITE: / 'Short Texts:', AT c_count lines( lt_head ), AT c_width space.
     FORMAT COLOR OFF.
     SKIP.
 
@@ -194,14 +205,17 @@ CLASS lcl_main IMPLEMENTATION.
         WRITE AT c_width space.
         FORMAT COLOR OFF.
       ENDLOOP.
-      SKIP.
+    ELSE.
+      FORMAT COLOR COL_POSITIVE.
+      WRITE: AT /5 'None', AT c_width space.
     ENDIF.
+    SKIP.
 
     SELECT * FROM sotr_headu INTO TABLE @lt_headu WHERE paket IN @s_pack[]
       ORDER BY paket, concept.
 
     FORMAT COLOR COL_KEY.
-    WRITE: / 'Long Texts:', lines( lt_headu ), AT c_width space.
+    WRITE: / 'Long Texts:', AT c_count lines( lt_headu ), AT c_width space.
     FORMAT COLOR OFF.
     SKIP.
 
@@ -216,8 +230,11 @@ CLASS lcl_main IMPLEMENTATION.
         WRITE AT c_width space.
         FORMAT COLOR OFF.
       ENDLOOP.
-      SKIP.
+    ELSE.
+      FORMAT COLOR COL_POSITIVE.
+      WRITE: AT /5 'None', AT c_width space.
     ENDIF.
+    SKIP.
 
   ENDMETHOD.
 
@@ -271,17 +288,29 @@ CLASS lcl_main IMPLEMENTATION.
     ENDIF.
   ENDMETHOD.
 
+  METHOD get_packages.
+    SELECT devclass FROM tdevc INTO TABLE @rt_devclass WHERE devclass IN @s_pack[] ORDER BY devclass.
+
+    SELECT obj_name FROM tadir APPENDING TABLE @rt_devclass
+      WHERE pgmid = 'R3TR' AND object = 'DEVC' AND obj_name IN @s_pack[] ORDER BY PRIMARY KEY.
+
+    SORT rt_devclass.
+    DELETE ADJACENT DUPLICATES FROM rt_devclass.
+  ENDMETHOD.
+
   METHOD drop_packages.
     DATA lv_transport TYPE trkorr.
-    DATA lt_devclass TYPE TABLE OF devclass.
     DATA lv_count TYPE i.
 
-    SELECT devclass FROM tdevc INTO TABLE @lt_devclass WHERE devclass IN @s_pack[] ORDER BY devclass.
+    DATA(lt_devclass) = get_packages( ).
 
-    WRITE: / 'Packages:', lines( lt_devclass ).
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'Packages:', AT c_count lines( lt_devclass ), AT c_width space.
+    FORMAT COLOR OFF.
     SKIP.
 
     LOOP AT lt_devclass INTO DATA(lv_devclass).
+      FORMAT COLOR COL_NORMAL.
       WRITE: AT /5 lv_devclass.
 
       SELECT COUNT(*) FROM tadir INTO @lv_count
@@ -298,30 +327,46 @@ CLASS lcl_main IMPLEMENTATION.
               iv_package   = lv_devclass
               iv_transport = lv_transport ).
 
+            delete_tadir(
+              iv_obj_type = 'DEVC'
+              iv_obj_name = |{ lv_devclass }| ).
+
             WRITE: 'Deleted' COLOR COL_POSITIVE.
           CATCH zcx_abapgit_exception INTO DATA(lx_ex).
             WRITE: 'Error' COLOR COL_NEGATIVE, lx_ex->get_text( ).
         ENDTRY.
+
       ELSE.
         WRITE: 'Not empty' COLOR COL_TOTAL.
       ENDIF.
+      WRITE AT c_width space.
+      FORMAT COLOR OFF.
     ENDLOOP.
+
+    IF sy-subrc <> 0.
+      FORMAT COLOR COL_POSITIVE.
+      WRITE: AT /5 'None', AT c_width space.
+    ENDIF.
+
   ENDMETHOD.
 
   METHOD drop_objects.
     DATA lv_transport TYPE trkorr.
-    DATA lt_devclass TYPE TABLE OF devclass.
-    DATA lv_devclass TYPE devclass.
     DATA lt_object TYPE TABLE OF tadir.
     DATA ls_object TYPE tadir.
 
-    SELECT devclass FROM tdevc INTO TABLE @lt_devclass WHERE devclass IN @s_pack[] ORDER BY devclass.
+    DATA(lt_devclass) = get_packages( ).
 
-    WRITE: / 'Packages:', lines( lt_devclass ).
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'Packages:', AT c_count lines( lt_devclass ), AT c_width space.
+    FORMAT COLOR OFF.
     SKIP.
 
-    LOOP AT lt_devclass INTO lv_devclass.
-      WRITE: AT /5 lv_devclass.
+    LOOP AT lt_devclass INTO DATA(lv_devclass).
+      FORMAT COLOR COL_NORMAL.
+      WRITE: AT /5 lv_devclass, AT c_width space.
+      FORMAT COLOR OFF.
+      SKIP.
 
       IF lv_devclass(1) <> '$' AND lv_transport IS INITIAL.
         lv_transport = zcl_abapgit_ui_factory=>get_popups( )->popup_transport_request(
@@ -329,11 +374,12 @@ CLASS lcl_main IMPLEMENTATION.
       ENDIF.
 
       SELECT * FROM tadir INTO TABLE @lt_object
-        WHERE pgmid = 'R3TR' AND object <> 'DEVC' AND object <> 'SOTR' AND object <> 'SOTS'
+        WHERE pgmid = 'R3TR' AND object <> 'DEVC'
           AND delflag = '' AND devclass = @lv_devclass
         ORDER BY PRIMARY KEY.
 
       LOOP AT lt_object INTO ls_object.
+        FORMAT COLOR COL_NORMAL.
         WRITE: AT /10 ls_object-object, ls_object-obj_name.
 
         TRY.
@@ -348,22 +394,41 @@ CLASS lcl_main IMPLEMENTATION.
             WRITE: 'Error' COLOR COL_NEGATIVE, lx_ex->get_text( ).
         ENDTRY.
 
+        delete_tadir(
+          iv_obj_type = ls_object-object
+          iv_obj_name = ls_object-obj_name ).
+
+        WRITE AT c_width space.
+        FORMAT COLOR OFF.
       ENDLOOP.
 
+      IF sy-subrc = 0.
+        SKIP.
+      ENDIF.
     ENDLOOP.
+
+    IF sy-subrc <> 0.
+      FORMAT COLOR COL_POSITIVE.
+      WRITE: AT /5 'None', AT c_width space.
+    ENDIF.
+
   ENDMETHOD.
 
   METHOD drop_otr.
     DATA lt_head TYPE STANDARD TABLE OF sotr_head.
     DATA lt_headu TYPE STANDARD TABLE OF sotr_headu.
-    DATA lt_paket TYPE STANDARD TABLE OF devclass.
+
+    DATA(lt_devclass) = get_packages( ).
 
     SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket IN @s_pack[] ORDER BY paket, concept.
 
-    WRITE: / 'Short Texts:', lines( lt_head ).
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'Short Texts:', AT c_count lines( lt_head ), AT c_width space.
+    FORMAT COLOR OFF.
     SKIP.
 
     LOOP AT lt_head INTO DATA(ls_head).
+      FORMAT COLOR COL_NORMAL.
       WRITE: AT /5 ls_head-concept, ls_head-paket, ls_head-crea_name, ls_head-crea_tstut.
 
       CALL FUNCTION 'BTFR_DELETE_SINGLE_TEXT'
@@ -384,15 +449,26 @@ CLASS lcl_main IMPLEMENTATION.
       ELSE.
         WRITE: 'Deleted' COLOR COL_POSITIVE.
       ENDIF.
+      WRITE AT c_width space.
+      FORMAT COLOR OFF.
     ENDLOOP.
     SKIP.
 
+    IF sy-subrc <> 0.
+      FORMAT COLOR COL_POSITIVE.
+      WRITE: AT /5 'None', AT c_width space.
+      SKIP.
+    ENDIF.
+
     SELECT * FROM sotr_headu INTO TABLE @lt_headu WHERE paket IN @s_pack ORDER BY paket, concept.
 
-    WRITE: / 'Long Texts:', lines( lt_headu ).
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'Long Texts:', AT c_count lines( lt_headu ), AT c_width space.
+    FORMAT COLOR OFF.
     SKIP.
 
     LOOP AT lt_headu INTO DATA(ls_headu).
+      FORMAT COLOR COL_NORMAL.
       WRITE: AT /5 ls_headu-concept, ls_headu-paket, ls_headu-crea_name, ls_headu-crea_tstut.
 
       CALL FUNCTION 'BTFR_DELETE_SINGLE_TEXT'
@@ -413,24 +489,30 @@ CLASS lcl_main IMPLEMENTATION.
       ELSE.
         WRITE: 'Deleted' COLOR COL_POSITIVE.
       ENDIF.
+      WRITE AT c_width space.
+      FORMAT COLOR OFF.
     ENDLOOP.
     SKIP.
 
-    " Drop TADIR
-    SELECT devclass FROM tdevc INTO TABLE @lt_paket WHERE devclass IN @s_pack ORDER BY PRIMARY KEY.
+    IF sy-subrc <> 0.
+      FORMAT COLOR COL_POSITIVE.
+      WRITE: AT /5 'None', AT c_width space.
+      SKIP.
+    ENDIF.
 
-    LOOP AT lt_paket INTO DATA(lv_paket).
-      SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket = @lv_paket ORDER BY PRIMARY KEY.
+    " Drop TADIR
+    LOOP AT lt_devclass INTO DATA(lv_devclass).
+      SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket = @lv_devclass ORDER BY PRIMARY KEY.
       IF sy-subrc = 4.
         delete_tadir(
           iv_obj_type = 'SOTR'
-          iv_obj_name = |{ lv_paket }| ).
+          iv_obj_name = |{ lv_devclass }| ).
       ENDIF.
-      SELECT * FROM sotr_headu INTO TABLE @lt_headu WHERE paket = @lv_paket ORDER BY PRIMARY KEY.
+      SELECT * FROM sotr_headu INTO TABLE @lt_headu WHERE paket = @lv_devclass ORDER BY PRIMARY KEY.
       IF sy-subrc = 4.
         delete_tadir(
           iv_obj_type = 'SOTS'
-          iv_obj_name = |{ lv_paket }| ).
+          iv_obj_name = |{ lv_devclass }| ).
       ENDIF.
     ENDLOOP.
 
@@ -538,7 +620,6 @@ CLASS lcl_main IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD delete_tadir.
-    DATA lv_msg TYPE string.
 
     CALL FUNCTION 'TR_TADIR_INTERFACE'
       EXPORTING
@@ -549,7 +630,7 @@ CLASS lcl_main IMPLEMENTATION.
         wi_test_modus         = abap_false
       EXCEPTIONS
         OTHERS                = 1 ##FM_SUBRC_OK.
-    IF sy-subrc <> 0.
+    IF sy-subrc <> 0 AND sy-msgid = 'TR' AND sy-msgno = '024'.
       " Object directory entry cannot be deleted, since the object is distributed (TR 024)
       " Force deletion of TADIR
       DELETE FROM tadir
