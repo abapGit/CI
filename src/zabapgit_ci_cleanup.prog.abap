@@ -55,6 +55,10 @@ CLASS lcl_main DEFINITION.
   PROTECTED SECTION.
   PRIVATE SECTION.
     CONSTANTS c_width TYPE i VALUE 200.
+    METHODS:
+      list_packages RAISING zcx_abapgit_exception,
+      list_objects,
+      list_otr.
 ENDCLASS.
 
 CLASS lcl_main IMPLEMENTATION.
@@ -79,13 +83,19 @@ CLASS lcl_main IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD list.
+
+    list_packages( ).
+
+    list_objects( ).
+
+    list_otr( ).
+
+  ENDMETHOD.
+
+  METHOD list_packages.
+
     DATA:
       lt_devclass TYPE STANDARD TABLE OF devclass,
-      lt_tadir    TYPE STANDARD TABLE OF tadir,
-      lt_head     TYPE STANDARD TABLE OF sotr_head,
-      lt_headu    TYPE STANDARD TABLE OF sotr_headu,
-      ls_use      TYPE sotr_use,
-      ls_useu     TYPE sotr_useu,
       li_repo     TYPE REF TO zif_abapgit_repo.
 
     SELECT devclass FROM tdevc INTO TABLE @lt_devclass WHERE devclass IN @s_pack[] ORDER BY devclass.
@@ -134,6 +144,11 @@ CLASS lcl_main IMPLEMENTATION.
       SKIP.
     ENDIF.
 
+  ENDMETHOD.
+
+  METHOD list_objects.
+    DATA lt_tadir TYPE STANDARD TABLE OF tadir.
+
     SELECT * FROM tadir INTO TABLE @lt_tadir WHERE devclass IN @s_pack[]
       ORDER BY devclass, pgmid, object, obj_name.
 
@@ -150,6 +165,15 @@ CLASS lcl_main IMPLEMENTATION.
       ENDLOOP.
       SKIP.
     ENDIF.
+
+  ENDMETHOD.
+
+  METHOD list_otr.
+    DATA:
+      lt_head  TYPE STANDARD TABLE OF sotr_head,
+      lt_headu TYPE STANDARD TABLE OF sotr_headu,
+      ls_use   TYPE sotr_use,
+      ls_useu  TYPE sotr_useu.
 
     SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket IN @s_pack[]
       ORDER BY paket, concept.
