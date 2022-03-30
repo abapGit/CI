@@ -4,21 +4,21 @@ DATA: gv_package TYPE devclass.
 
 PARAMETERS: p_uninst TYPE abap_bool RADIOBUTTON GROUP r1 DEFAULT 'X'.
 SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
-  SELECT-OPTIONS: s_pack FOR gv_package.
-  PARAMETERS: p_list  TYPE abap_bool RADIOBUTTON GROUP r2 DEFAULT 'X',
-              p_purge TYPE abap_bool RADIOBUTTON GROUP r2,
-              p_remov TYPE abap_bool RADIOBUTTON GROUP r2,
-              p_obj   TYPE abap_bool RADIOBUTTON GROUP r2,
-              p_otr   TYPE abap_bool RADIOBUTTON GROUP r2,
-              p_pack  TYPE abap_bool RADIOBUTTON GROUP r2.
+SELECT-OPTIONS: s_pack FOR gv_package.
+PARAMETERS: p_list  TYPE abap_bool RADIOBUTTON GROUP r2 DEFAULT 'X',
+            p_purge TYPE abap_bool RADIOBUTTON GROUP r2,
+            p_remov TYPE abap_bool RADIOBUTTON GROUP r2,
+            p_obj   TYPE abap_bool RADIOBUTTON GROUP r2,
+            p_otr   TYPE abap_bool RADIOBUTTON GROUP r2,
+            p_pack  TYPE abap_bool RADIOBUTTON GROUP r2.
 SELECTION-SCREEN END OF BLOCK b1.
 
 SELECTION-SCREEN SKIP.
 
 PARAMETERS: p_trrel TYPE abap_bool RADIOBUTTON GROUP r1.
 SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-002.
-  PARAMETERS: p_txt  TYPE as4text DEFAULT 'abapGit CI*',
-              p_prev TYPE abap_bool AS CHECKBOX DEFAULT abap_true.
+PARAMETERS: p_txt  TYPE as4text DEFAULT 'abapGit CI*',
+            p_prev TYPE abap_bool AS CHECKBOX DEFAULT abap_true.
 SELECTION-SCREEN END OF BLOCK b2.
 
 CLASS lcl_main DEFINITION.
@@ -629,13 +629,11 @@ CLASS lcl_main IMPLEMENTATION.
         wi_test_modus         = abap_false
       EXCEPTIONS
         OTHERS                = 1 ##FM_SUBRC_OK.
-    IF sy-subrc <> 0.
+    IF sy-subrc <> 0 AND sy-msgid = 'TR' AND sy-msgno = '024'.
       " Object directory entry cannot be deleted, since the object is distributed (TR 024)
       " Force deletion of TADIR
-      IF sy-msgid = 'TR' AND sy-msgno = '024'.
-        DELETE FROM tadir
-          WHERE pgmid = 'R3TR' AND object = @iv_obj_type AND obj_name = @iv_obj_name.
-      ENDIF.
+      DELETE FROM tadir
+        WHERE pgmid = 'R3TR' AND object = @iv_obj_type AND obj_name = @iv_obj_name.
     ENDIF.
 
   ENDMETHOD.
