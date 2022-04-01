@@ -168,7 +168,7 @@ CLASS lcl_main IMPLEMENTATION.
     IF sy-subrc = 0.
       LOOP AT lt_tadir INTO DATA(ls_tadir).
         FORMAT COLOR COL_NORMAL.
-        WRITE: AT /5 ls_tadir-object, ls_tadir-obj_name, ls_tadir-devclass, AT c_width space.
+        WRITE: AT /5 ls_tadir-object, ls_tadir-obj_name, ls_tadir-delflag, ls_tadir-devclass, AT c_width space.
         FORMAT COLOR OFF.
       ENDLOOP.
     ELSE.
@@ -197,10 +197,10 @@ CLASS lcl_main IMPLEMENTATION.
     IF sy-subrc = 0.
       LOOP AT lt_head INTO DATA(ls_head).
         FORMAT COLOR COL_NORMAL.
-        WRITE: AT /5 ls_head-concept.
+        WRITE: AT /5 ls_head-concept, ls_head-paket.
         SELECT SINGLE * FROM sotr_use INTO @ls_use WHERE concept = @ls_head-concept.
         IF sy-subrc = 0.
-          WRITE: ls_use-object, ls_use-obj_name.
+          WRITE: ls_use-object, ls_use-obj_name(70).
         ENDIF.
         WRITE AT c_width space.
         FORMAT COLOR OFF.
@@ -222,10 +222,10 @@ CLASS lcl_main IMPLEMENTATION.
     IF sy-subrc = 0.
       LOOP AT lt_headu INTO DATA(ls_headu).
         FORMAT COLOR COL_NORMAL.
-        WRITE: AT /5 ls_headu-concept.
+        WRITE: AT /5 ls_headu-concept, ls_headu-paket.
         SELECT SINGLE * FROM sotr_useu INTO @ls_useu WHERE concept = @ls_headu-concept.
         IF sy-subrc = 0.
-          WRITE: ls_useu-object, ls_useu-obj_name.
+          WRITE: ls_useu-object, ls_useu-obj_name(70).
         ENDIF.
         WRITE AT c_width space.
         FORMAT COLOR OFF.
@@ -375,29 +375,32 @@ CLASS lcl_main IMPLEMENTATION.
 
       SELECT * FROM tadir INTO TABLE @lt_object
         WHERE pgmid = 'R3TR' AND object <> 'DEVC'
-          AND delflag = '' AND devclass = @lv_devclass
+          AND devclass = @lv_devclass
         ORDER BY PRIMARY KEY.
 
       LOOP AT lt_object INTO ls_object.
         FORMAT COLOR COL_NORMAL.
-        WRITE: AT /10 ls_object-object, ls_object-obj_name.
+        WRITE: AT /10 ls_object-object, ls_object-obj_name, ls_object-delflag.
 
-        TRY.
-            delete_object(
-              iv_package   = lv_devclass
-              iv_obj_type  = ls_object-object
-              iv_obj_name  = ls_object-obj_name
-              iv_transport = lv_transport ).
+        IF ls_object-delflag IS INITIAL.
+          TRY.
+              delete_object(
+                iv_package   = lv_devclass
+                iv_obj_type  = ls_object-object
+                iv_obj_name  = ls_object-obj_name
+                iv_transport = lv_transport ).
 
-            WRITE: 'Deleted' COLOR COL_POSITIVE.
-          CATCH zcx_abapgit_exception INTO DATA(lx_ex).
-            WRITE: 'Error' COLOR COL_NEGATIVE, lx_ex->get_text( ).
-        ENDTRY.
+              WRITE: 'Deleted' COLOR COL_POSITIVE.
+            CATCH zcx_abapgit_exception INTO DATA(lx_ex).
+              WRITE: 'Error' COLOR COL_NEGATIVE, lx_ex->get_text( ).
+          ENDTRY.
 
-        delete_tadir(
-          iv_obj_type = ls_object-object
-          iv_obj_name = ls_object-obj_name ).
-
+          delete_tadir(
+            iv_obj_type = ls_object-object
+            iv_obj_name = ls_object-obj_name ).
+        ELSE.
+          WRITE: 'Flagged for deletion' COLOR COL_POSITIVE.
+        ENDIF.
         WRITE AT c_width space.
         FORMAT COLOR OFF.
       ENDLOOP.
