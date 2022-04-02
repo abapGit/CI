@@ -28,7 +28,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_SKIP IMPLEMENTATION.
+CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
 
 
   METHOD complete_skip_components.
@@ -68,10 +68,18 @@ CLASS ZCL_ABAPGIT_CI_SKIP IMPLEMENTATION.
           no_aff   = xsdbool( does_system_support_aff( ) <> abap_true )
           not_diag = xsdbool( sy-batch = abap_true )
           not_hana = xsdbool( cl_db_sys=>is_in_memory_db <> abap_true ) IN
-      ( repo_name          = |BranchTest|
+      ( repo_name          = |AIFC|
+        skip_local         = xsdbool( sy-saprl < '755' )
+        skip_transportable = xsdbool( sy-saprl < '755' )
+        reason             = |Requires release 7.55 (SAP Notes 3106807, 3117150)| )
+      ( repo_name          = |AOBJ|
         skip_local         = abap_true
         skip_transportable = abap_true
-        reason             = |Not an object type| )
+        reason             = |No files found to deserialize| )
+      ( repo_name          = |BMFR|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |No files found to deserialize| )
       ( repo_name          = |CHKC|
         skip_local         = no_aff
         skip_transportable = no_aff
@@ -88,10 +96,26 @@ CLASS ZCL_ABAPGIT_CI_SKIP IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Old testcase (diff because migration to new format)| )
+      ( repo_name          = |DEVC_main_package|
+        skip_local         = abap_true
+        skip_transportable = abap_false
+        reason             = |Cannot be installed in local package| )
+      ( repo_name          = |DEVC_struct_package|
+        skip_local         = abap_true
+        skip_transportable = abap_false
+        reason             = |Cannot be installed in local package| )
       ( repo_name          = |DOMA_append|
         skip_local         = not_diag
         skip_transportable = not_diag
         reason             = |Requires user-interaction (not available in batch)| )
+      ( repo_name          = |G4BA|
+        skip_local         = abap_false
+        skip_transportable = abap_true
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/5421| )
+      ( repo_name          = |IWMO|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |No files found to deserialize| )
       ( repo_name          = |Language_DE|
         skip_local         = xsdbool( sy-langu <> 'D' )
         skip_transportable = xsdbool( sy-langu <> 'D' )
@@ -135,7 +159,12 @@ CLASS ZCL_ABAPGIT_CI_SKIP IMPLEMENTATION.
       ( repo_name          = |SQSC|
         skip_local         = not_hana
         skip_transportable = not_hana
-        reason             = |Requires SAP HANA| ) ).
+        reason             = |Requires SAP HANA| )
+      ( repo_name          = |UENO|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/4696| )
+     ).
 
   ENDMETHOD.
 
