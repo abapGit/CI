@@ -163,8 +163,7 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
       ( repo_name          = |UENO|
         skip_local         = abap_true
         skip_transportable = abap_true
-        reason             = |Issue https://github.com/abapGit/abapGit/issues/4696| )
-     ). " end
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/4696| ) ).
 
   ENDMETHOD.
 
