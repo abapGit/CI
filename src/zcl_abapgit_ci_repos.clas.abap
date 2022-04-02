@@ -111,7 +111,8 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
 
   METHOD process_repo.
-    DATA: lv_message TYPE c LENGTH 255.
+    DATA lv_message TYPE c LENGTH 255.
+    DATA lv_errid TYPE c LENGTH 30.
 
     " You should remember that we process the repo in synchron RFC because of
     " shortdumps there doesn't crash the main process.
@@ -136,7 +137,14 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
     ENDIF.
 
     IF sy-subrc <> 0.
-      cs_ci_repo-message = |Failure in ZABAPGIT_CI_PROCESS_REPO. Subrc = { sy-subrc } { lv_message }|.
+      " Try to get error code for dump
+      " (doesn't work if description contains parameters)
+      SELECT SINGLE errid FROM snapt INTO @lv_errid
+        WHERE langu = @sy-langu AND ttype = 'K' AND seqno = '0001' AND tline = @lv_message.
+      IF sy-subrc <> 0.
+        lv_errid = 'DUMP'.
+      ENDIF.
+      cs_ci_repo-message = |Failure processing repo: { lv_errid } { lv_message }|.
       cs_ci_repo-status  = zif_abapgit_ci_definitions=>co_status-not_ok.
       RETURN.
     ENDIF.
@@ -235,13 +243,6 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD update_repository.
-
-    update_repo( iv_repo_name = iv_repo_name iv_branch = iv_branch ).
-
-  ENDMETHOD.
-
-
   METHOD update_repo.
 
     DATA: lo_repo TYPE REF TO zcl_abapgit_repo_online.
@@ -276,6 +277,13 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
       ii_log    = NEW zcl_abapgit_log( ) ).
 
     syntax_check( lo_repo->get_package( ) ).
+
+  ENDMETHOD.
+
+
+  METHOD update_repository.
+
+    update_repo( iv_repo_name = iv_repo_name iv_branch = iv_branch ).
 
   ENDMETHOD.
 ENDCLASS.
