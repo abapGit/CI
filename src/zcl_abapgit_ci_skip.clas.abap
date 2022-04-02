@@ -164,7 +164,7 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Issue https://github.com/abapGit/abapGit/issues/4696| )
-     ).
+     ). " end
 
   ENDMETHOD.
 
