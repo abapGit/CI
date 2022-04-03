@@ -167,7 +167,8 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
       ENDIF.
 
       IF sy-batch = abap_true.
-        MESSAGE |Start processing repo { <ls_ci_repo>-name }| TYPE 'I'.
+        DATA(lv_counter) = |{ sy-tabix } of { lines( rt_result_list ) }:|.
+        MESSAGE |{ lv_counter } Start processing repo { <ls_ci_repo>-name } { <ls_ci_repo>-package }| TYPE 'I'.
       ENDIF.
 
       GET TIME STAMP FIELD lv_start_timestamp.
