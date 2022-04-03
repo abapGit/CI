@@ -192,7 +192,8 @@ CLASS lcl_alv IMPLEMENTATION.
                 lo_column->set_optimized( ).
               ENDIF.
 
-              IF <ls_column_width>-column = |SKIP|.
+              IF <ls_column_width>-column = |SKIP| OR
+                 <ls_column_width>-column = |CATEGORY|.
                 lo_column->set_technical( ).
               ENDIF.
 
@@ -266,7 +267,8 @@ CLASS lcl_list IMPLEMENTATION.
           <ls_fieldcat>-key = abap_true.
         ENDIF.
 
-        IF <ls_fieldcat>-fieldname = |SKIP|.
+        IF <ls_fieldcat>-fieldname = |SKIP| OR
+           <ls_fieldcat>-fieldname = |CATEGORY|.
           <ls_fieldcat>-no_out = abap_true.
         ENDIF.
       ENDIF.

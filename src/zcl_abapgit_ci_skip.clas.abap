@@ -76,6 +76,10 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |No files found to deserialize| )
+      ( repo_name          = |AVAR|
+        skip_local         = abap_true
+        skip_transportable = abap_false
+        reason             = |Cannot be installed in local package| )
       ( repo_name          = |BMFR|
         skip_local         = abap_true
         skip_transportable = abap_true

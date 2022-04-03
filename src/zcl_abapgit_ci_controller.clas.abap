@@ -31,6 +31,10 @@ CLASS zcl_abapgit_ci_controller DEFINITION
         CHANGING
           !cs_result TYPE zif_abapgit_ci_definitions=>ty_result,
 
+      collect_categories
+        CHANGING
+          !cs_result TYPE zif_abapgit_ci_definitions=>ty_result,
+
       count_by_status
         IMPORTING
           !is_result      TYPE zif_abapgit_ci_definitions=>ty_result
@@ -42,7 +46,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_CONTROLLER IMPLEMENTATION.
+CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
 
 
   METHOD calculate_statistics.
@@ -62,6 +66,22 @@ CLASS ZCL_ABAPGIT_CI_CONTROLLER IMPLEMENTATION.
     cs_result-statistics-test_cases-total = cs_result-statistics-test_cases-successful
                                           + cs_result-statistics-test_cases-skipped
                                           + cs_result-statistics-test_cases-failed.
+
+  ENDMETHOD.
+
+
+  METHOD collect_categories.
+
+    DATA lv_category LIKE LINE OF cs_result-category_list.
+
+    CLEAR cs_result-category_list.
+
+    LOOP AT cs_result-repo_result_list INTO DATA(ls_repo_result).
+      lv_category = ls_repo_result-category.
+      COLLECT lv_category INTO cs_result-category_list.
+    ENDLOOP.
+
+    SORT cs_result-category_list.
 
   ENDMETHOD.
 
@@ -139,6 +159,8 @@ CLASS ZCL_ABAPGIT_CI_CONTROLLER IMPLEMENTATION.
                                                  iv_timestamp1 = ls_result-statistics-finish_timestamp ).
 
     calculate_statistics( CHANGING cs_result = ls_result ).
+
+    collect_categories( CHANGING cs_result = ls_result ).
 
     IF ms_options-result_git_repo_url IS NOT INITIAL.
       NEW zcl_abapgit_ci_distributor(

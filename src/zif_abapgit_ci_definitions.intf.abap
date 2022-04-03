@@ -17,6 +17,8 @@ INTERFACE zif_abapgit_ci_definitions
     tty_generic_result_list TYPE STANDARD TABLE OF zabapgit_ci_result_gen
                                  WITH NON-UNIQUE DEFAULT KEY .
   TYPES:
+    tty_category_list TYPE STANDARD TABLE OF string WITH DEFAULT KEY.
+  TYPES:
     BEGIN OF ty_result,
       ci_has_errors       TYPE abap_bool,
       BEGIN OF statistics,
@@ -30,6 +32,7 @@ INTERFACE zif_abapgit_ci_definitions
         END OF test_cases,
       END OF statistics,
       repo_result_list    TYPE tty_repo_result_list,
+      category_list       TYPE tty_category_list,
       generic_result_list TYPE tty_generic_result_list,
     END OF ty_result .
   TYPES:
@@ -38,6 +41,7 @@ INTERFACE zif_abapgit_ci_definitions
       check_transportable TYPE abap_bool,
       layer               TYPE devlayer,
       no_purge            TYPE abap_bool,
+      categories          TYPE RANGE OF string,
     END OF ty_repo_check_options .
   TYPES:
     BEGIN OF ty_options,

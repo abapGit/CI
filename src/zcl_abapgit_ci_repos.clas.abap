@@ -83,14 +83,23 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
     " Copy it_repos into rt_repos, creating an entry for local and transportable packages each
 
     DATA(lo_skip) = NEW zcl_abapgit_ci_skip( ).
+    DATA(lo_repo_cat) = NEW zcl_abapgit_ci_repo_category( ).
 
     LOOP AT it_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
+
+      DATA(lv_category) = lo_repo_cat->get_repo_category( <ls_repo>-name ).
+
+      IF NOT lv_category IN is_options-categories.
+        CONTINUE.
+      ENDIF.
+
       IF is_options-check_local = abap_true.
         INSERT CORRESPONDING #( <ls_repo> )
                INTO TABLE rt_repos
                ASSIGNING <ls_ci_repo>.
-        <ls_ci_repo>-package = CONV devclass( |$___{ to_upper( <ls_ci_repo>-name ) }| ).
+        <ls_ci_repo>-package      = CONV devclass( |$___{ to_upper( <ls_ci_repo>-name ) }| ).
         <ls_ci_repo>-do_not_purge = is_options-no_purge.
+        <ls_ci_repo>-category     = lo_repo_cat->get_category_label( lv_category ).
 
         lo_skip->complete_skip_components( CHANGING cs_repo = <ls_ci_repo> ).
       ENDIF.
@@ -99,14 +108,16 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
         INSERT CORRESPONDING #( <ls_repo> )
                INTO TABLE rt_repos
                ASSIGNING <ls_ci_repo>.
-        <ls_ci_repo>-package = CONV devclass( |Z___{ to_upper( <ls_ci_repo>-name ) }| ).
-        <ls_ci_repo>-layer = is_options-layer.
+        <ls_ci_repo>-package      = CONV devclass( |Z___{ to_upper( <ls_ci_repo>-name ) }| ).
+        <ls_ci_repo>-layer        = is_options-layer.
         <ls_ci_repo>-do_not_purge = is_options-no_purge.
+        <ls_ci_repo>-category     = lo_repo_cat->get_category_label( lv_category ).
 
         lo_skip->complete_skip_components( CHANGING cs_repo = <ls_ci_repo> ).
       ENDIF.
 
     ENDLOOP.
+
   ENDMETHOD.
 
 

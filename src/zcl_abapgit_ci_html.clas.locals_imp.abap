@@ -56,7 +56,7 @@ CLASS lcl_table_renderer IMPLEMENTATION.
       rv_html = rv_html && |<tr>\n|.
 
       LOOP AT mo_struct_descr->get_components( ) ASSIGNING FIELD-SYMBOL(<ls_component>)
-        WHERE name <> 'SKIP'.
+        WHERE name <> 'SKIP' AND name <> 'CATEGORY'.
 
         ASSIGN COMPONENT <ls_component>-name
                OF STRUCTURE <ls_line>

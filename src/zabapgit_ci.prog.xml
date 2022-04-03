@@ -193,6 +193,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>S_CATS</KEY>
+     <ENTRY>Categories</ENTRY>
+     <LENGTH>18</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>S_REPOS</KEY>
      <ENTRY>Repo names</ENTRY>
      <LENGTH>18</LENGTH>
