@@ -233,7 +233,6 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
     DATA:
       lo_wbobjtype_data TYPE REF TO if_wb_objtype_data,
       ls_type_info      TYPE seu_adt_object_type_descriptor,
-      ls_category_info  TYPE seu_adt_object_category_info,
       ls_type_conv      TYPE wbobjtype.
 
     cl_wb_registry=>get_objtype_provider( )->get_objtypes( IMPORTING p_objtype_data = lo_wbobjtype_data ).
@@ -244,13 +243,15 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
       ls_type_conv-objtype_tr = lr_wbobjtype->objecttype.
       ls_type_conv-subtype_wb = lr_wbobjtype->subtype_wb.
 
-      ls_category_info = cl_adt_type_group_util=>get_group( type = ls_type_conv ).
+      DATA(ls_category_info) = cl_adt_type_group_util=>get_group( type = ls_type_conv ).
 
       IF ls_category_info IS INITIAL.
         CONTINUE.
       ENDIF.
 
-      ls_type_info-object_type       = cl_wb_object_type=>get_global_id_from_global_type( p_global_type = ls_type_conv ).
+      DATA(lv_object_type) = cl_wb_object_type=>get_global_id_from_global_type( p_global_type = ls_type_conv ).
+
+      ls_type_info-object_type       = lv_object_type.
       ls_type_info-object_type_label = lr_wbobjtype->uiname_singular.
       ls_type_info-category          = ls_category_info-category.
       ls_type_info-category_label    = ls_category_info-category_label.

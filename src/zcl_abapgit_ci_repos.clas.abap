@@ -89,7 +89,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
       DATA(lv_category) = lo_repo_cat->get_repo_category( <ls_repo>-name ).
 
-      IF NOT lv_category IN is_options-categories.
+      IF lv_category NOT IN is_options-categories.
         CONTINUE.
       ENDIF.
 
