@@ -31,6 +31,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_FORCE</KEY>
+     <ENTRY>Force release (ignore errors)</ENTRY>
+     <LENGTH>37</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_LIST</KEY>
      <ENTRY>Show all leftovers</ENTRY>
      <LENGTH>27</LENGTH>

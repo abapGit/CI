@@ -17,8 +17,9 @@ SELECTION-SCREEN SKIP.
 
 PARAMETERS: p_trrel TYPE abap_bool RADIOBUTTON GROUP r1.
 SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-002.
-PARAMETERS: p_txt  TYPE as4text DEFAULT 'abapGit CI*',
-            p_prev TYPE abap_bool AS CHECKBOX DEFAULT abap_true.
+PARAMETERS: p_txt   TYPE as4text DEFAULT 'abapGit CI*',
+            p_prev  TYPE abap_bool AS CHECKBOX DEFAULT abap_true,
+            p_force TYPE abap_bool AS CHECKBOX DEFAULT abap_false.
 SELECTION-SCREEN END OF BLOCK b2.
 
 CLASS lcl_main DEFINITION.
@@ -51,7 +52,12 @@ CLASS lcl_main DEFINITION.
           iv_obj_name TYPE tadir-obj_name
         RAISING
           zcx_abapgit_exception,
-      release_transports RAISING zcx_abapgit_exception.
+      release_transports RAISING zcx_abapgit_exception,
+      force_release_transport
+        IMPORTING
+          iv_trkorr TYPE trkorr
+        RAISING
+          zcx_abapgit_exception.
   PROTECTED SECTION.
   PRIVATE SECTION.
     CONSTANTS c_width TYPE i VALUE 200.
@@ -698,6 +704,8 @@ CLASS lcl_main IMPLEMENTATION.
                 WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
                 INTO lv_msg_text.
         WRITE: / |Error: { lv_msg_text }|.
+
+        force_release_transport( <ls_request>-trkorr ).
       ENDIF.
     ENDLOOP.
 
@@ -727,9 +735,79 @@ CLASS lcl_main IMPLEMENTATION.
                 WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
                 INTO lv_msg_text.
         WRITE: / |Error: { lv_msg_text }|.
+
+        force_release_transport( <ls_request>-trkorr ).
       ENDIF.
     ENDLOOP.
   ENDMETHOD.
+
+  METHOD force_release_transport.
+
+    DATA:
+      lt_messages TYPE ctsgerrmsgs,
+      lv_msg_text TYPE string.
+
+    IF p_force = abap_false.
+      RETURN.
+    ENDIF.
+
+    CALL FUNCTION 'CTS_LOCK_TRKORR'
+      EXPORTING
+        iv_trkorr = iv_trkorr
+      EXCEPTIONS
+        OTHERS    = 1.
+    IF sy-subrc = 1.
+      WRITE: / |Error: Transport { iv_trkorr } can't be locked|.
+      RETURN.
+    ENDIF.
+
+    CALL FUNCTION 'TRINT_RELEASE_REQUEST'
+      EXPORTING
+        iv_trkorr                   = iv_trkorr
+        iv_dialog                   = abap_false
+        iv_success_message          = abap_false
+        iv_without_objects_check    = abap_true
+        iv_without_locking          = abap_true
+      IMPORTING
+        et_messages                 = lt_messages
+      EXCEPTIONS
+        cts_initialization_failure  = 1
+        enqueue_failed              = 2
+        no_authorization            = 3
+        invalid_request             = 4
+        request_already_released    = 5
+        repeat_too_early            = 6
+        object_lock_error           = 7
+        object_check_error          = 8
+        docu_missing                = 9
+        db_access_error             = 10
+        action_aborted_by_user      = 11
+        export_failed               = 12
+        execute_objects_check       = 13
+        release_in_bg_mode          = 14
+        release_in_bg_mode_w_objchk = 15
+        error_in_export_methods     = 16
+        object_lang_error           = 17.
+
+    DATA(lv_subrc) = sy-subrc.
+
+    CALL FUNCTION 'CTS_UNLOCK_TRKORR'
+      EXPORTING
+        iv_trkorr = iv_trkorr
+      EXCEPTIONS
+        OTHERS    = 0.
+
+    IF lv_subrc <> 0.
+      LOOP AT lt_messages INTO DATA(ls_message).
+        MESSAGE ID ls_message-msgid TYPE ls_message-msgty NUMBER ls_message-msgno
+                WITH ls_message-msgv1 ls_message-msgv2 ls_message-msgv3 ls_message-msgv4
+                INTO lv_msg_text.
+        WRITE: / |Error: { lv_msg_text }|.
+      ENDLOOP.
+    ENDIF.
+
+  ENDMETHOD.
+
 ENDCLASS.
 
 INITIALIZATION.
