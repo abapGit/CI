@@ -43,6 +43,7 @@ INTERFACE zif_abapgit_ci_definitions
     BEGIN OF ty_options,
       result_git_repo_url    TYPE string,
       save_to_history        TYPE abap_bool,
+      save_without_push      TYPE abap_bool,
       post_errors_to_slack   TYPE abap_bool,
       slack_oauth_token      TYPE string,
       exec_generic_checks    TYPE abap_bool,

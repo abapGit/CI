@@ -7,6 +7,7 @@ CLASS zcl_abapgit_ci_distributor DEFINITION
     METHODS constructor
       IMPORTING
         !iv_url     TYPE string
+        !iv_save    TYPE abap_bool DEFAULT abap_false
         !iv_history TYPE abap_bool DEFAULT abap_false
       RAISING
         zcx_abapgit_exception .
@@ -32,6 +33,7 @@ CLASS zcl_abapgit_ci_distributor DEFINITION
 
     DATA:
       mv_history TYPE abap_bool,
+      mv_save    TYPE abap_bool,
       mv_url     TYPE string.
 
     METHODS:
@@ -78,7 +80,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_DISTRIBUTOR IMPLEMENTATION.
+CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
 
 
   METHOD add_file_to_mime_repo.
@@ -122,6 +124,7 @@ CLASS ZCL_ABAPGIT_CI_DISTRIBUTOR IMPLEMENTATION.
     ENDIF.
 
     mv_url = iv_url.
+    mv_save = iv_save.
     mv_history = iv_history.
 
   ENDMETHOD.
@@ -242,6 +245,11 @@ CLASS ZCL_ABAPGIT_CI_DISTRIBUTOR IMPLEMENTATION.
       ii_log    = NEW zcl_abapgit_log( ) ).
 
     save_results_in_mime_repo( is_result ).
+
+    " Save without pushing results to repo
+    IF mv_save = abap_true.
+      RETURN.
+    ENDIF.
 
     DATA(lo_stage) = stage( lo_repo ).
 

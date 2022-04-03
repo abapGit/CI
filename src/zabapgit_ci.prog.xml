@@ -151,6 +151,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_SAVE</KEY>
+     <ENTRY>Save results without push</ENTRY>
+     <LENGTH>33</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_SYNC</KEY>
      <ENTRY>Synchronous processing</ENTRY>
      <LENGTH>30</LENGTH>
