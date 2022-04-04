@@ -69,6 +69,7 @@ CLASS lcl_main DEFINITION.
       get_packages RETURNING VALUE(rt_devclass) TYPE ty_devc_tt,
       list_packages RAISING zcx_abapgit_exception,
       list_objects,
+      list_logs,
       list_otr.
 ENDCLASS.
 
@@ -102,6 +103,8 @@ CLASS lcl_main IMPLEMENTATION.
     list_objects( ).
 
     list_otr( ).
+
+    list_logs( ).
 
   ENDMETHOD.
 
@@ -179,6 +182,32 @@ CLASS lcl_main IMPLEMENTATION.
       LOOP AT lt_tadir INTO DATA(ls_tadir).
         FORMAT COLOR COL_NORMAL.
         WRITE: AT /5 ls_tadir-object, ls_tadir-obj_name, ls_tadir-delflag, ls_tadir-devclass, AT c_width space.
+        FORMAT COLOR OFF.
+      ENDLOOP.
+    ELSE.
+      FORMAT COLOR COL_POSITIVE.
+      WRITE: AT /5 'None', AT c_width space.
+    ENDIF.
+    SKIP.
+
+  ENDMETHOD.
+
+  METHOD list_logs.
+    DATA lt_logs TYPE STANDARD TABLE OF wwwdata WITH DEFAULT KEY.
+
+    SELECT * FROM wwwdata INTO TABLE @lt_logs
+      WHERE objid LIKE @zcl_abapgit_ci_log=>co_all
+      ORDER BY PRIMARY KEY.
+
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'Logs:', AT c_count lines( lt_logs ), AT c_width space.
+    FORMAT COLOR OFF.
+    SKIP.
+
+    IF sy-subrc = 0.
+      LOOP AT lt_logs INTO DATA(ls_log).
+        FORMAT COLOR COL_NORMAL.
+        WRITE: AT /5 ls_log-objid, ls_log-text, AT c_width space.
         FORMAT COLOR OFF.
       ENDLOOP.
     ELSE.

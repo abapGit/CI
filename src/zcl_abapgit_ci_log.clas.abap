@@ -5,6 +5,11 @@ CLASS zcl_abapgit_ci_log DEFINITION
 
   PUBLIC SECTION.
 
+    CONSTANTS:
+      co_package TYPE devclass VALUE '$TMP',
+      co_prefix  TYPE string VALUE 'ZABAPGIT_CI_',
+      co_all     TYPE string VALUE 'ZABAPGIT_CI_*'.
+
     METHODS add
       IMPORTING
         !iv_log_object TYPE string
@@ -26,8 +31,6 @@ CLASS zcl_abapgit_ci_log DEFINITION
       ty_wwwparams_tt TYPE STANDARD TABLE OF wwwparams WITH DEFAULT KEY.
 
     CONSTANTS:
-      co_package TYPE devclass VALUE '$TMP',
-      co_prefix  TYPE string VALUE 'ZABAPGIT_CI_',
       BEGIN OF co_param_names,
         version  TYPE w3_name VALUE 'version',
         fileext  TYPE w3_name VALUE 'fileextension',
@@ -176,10 +179,8 @@ CLASS zcl_abapgit_ci_log IMPLEMENTATION.
       lv_obj_name TYPE tadir-obj_name,
       lt_tadir    TYPE STANDARD TABLE OF tadir WITH DEFAULT KEY.
 
-    lv_obj_name = co_prefix && '%'.
-
     SELECT * FROM tadir INTO TABLE @lt_tadir
-      WHERE pgmid = 'R3TR' AND object = 'W3MI' AND obj_name LIKE @lv_obj_name AND devclass = @co_package
+      WHERE pgmid = 'R3TR' AND object = 'W3MI' AND obj_name LIKE @co_all AND devclass = @co_package
       ORDER BY PRIMARY KEY.
 
     LOOP AT lt_tadir INTO DATA(ls_tadir).
@@ -259,11 +260,8 @@ CLASS zcl_abapgit_ci_log IMPLEMENTATION.
       lv_obj_name TYPE tadir-obj_name,
       lv_counter  TYPE n LENGTH 10.
 
-    " Format: ZABAPGIT_CI_nnnnnnnnnn
-    lv_obj_name = co_prefix && '%'.
-
     SELECT MAX( obj_name ) FROM tadir INTO @lv_obj_name
-      WHERE pgmid = 'R3TR' AND object = 'W3MI' AND obj_name LIKE @lv_obj_name AND devclass = @co_package.
+      WHERE pgmid = 'R3TR' AND object = 'W3MI' AND obj_name LIKE @co_all AND devclass = @co_package.
     IF sy-subrc = 0.
       DATA(lv_len) = strlen( co_prefix ).
       lv_counter = lv_obj_name+lv_len(*).
@@ -271,6 +269,7 @@ CLASS zcl_abapgit_ci_log IMPLEMENTATION.
 
     lv_counter = lv_counter + 1.
 
+    " Format: ZABAPGIT_CI_nnnnnnnnnn
     rv_objid = co_prefix && lv_counter.
 
   ENDMETHOD.
