@@ -62,6 +62,13 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         RAISING
           zcx_abapgit_exception,
 
+      log_diffs
+        IMPORTING
+          is_ri_repo TYPE zabapgit_ci_result
+          is_files   TYPE zif_abapgit_definitions=>ty_stage_files
+        RAISING
+          zcx_abapgit_exception,
+
       check_leftovers
         CHANGING
           cs_ri_repo TYPE zabapgit_ci_result
@@ -96,6 +103,13 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         RAISING
           zcx_abapgit_exception,
 
+      log_objects
+        IMPORTING
+          is_ri_repo TYPE zabapgit_ci_result
+          it_objects TYPE tr_objects
+        RAISING
+          zcx_abapgit_exception,
+
       release_transport
         IMPORTING
           iv_transport TYPE trkorr
@@ -106,7 +120,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
+CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
 
   METHOD check_leftovers.
@@ -172,6 +186,10 @@ CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
     ENDLOOP.
 
     ls_files = zcl_abapgit_factory=>get_stage_logic( )->get( io_repo ).
+
+    log_diffs(
+      is_ri_repo = cs_ri_repo
+      is_files   = ls_files ).
 
     LOOP AT ls_files-local ASSIGNING <ls_local_file>.
       zcx_abapgit_exception=>raise( |Local file diffs to remote: { <ls_local_file>-file-filename }| ).
@@ -278,6 +296,10 @@ CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
     ENDLOOP.
 
     IF lv_repo_object_count <> lv_transport_object_count.
+      log_objects(
+        is_ri_repo = cs_ri_repo
+        it_objects = lt_objects ).
+
       zcx_abapgit_exception=>raise( |Found { lv_transport_object_count NUMBER = USER } of | &&
                                     |{ lv_repo_object_count NUMBER = USER } in | &&
                                     |{ COND #( WHEN iv_check_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
@@ -289,6 +311,10 @@ CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
     ENDLOOP.
 
     IF lv_objects_in_tr > lv_repo_object_count.
+      log_objects(
+        is_ri_repo = cs_ri_repo
+        it_objects = lt_objects ).
+
       zcx_abapgit_exception=>raise( |{ COND #( WHEN iv_check_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
                                     |transport { iv_transport } contains too many objects (| &&
                                     |{ lv_objects_in_tr NUMBER = USER }/{ lv_repo_object_count NUMBER = USER })| ).
@@ -478,6 +504,30 @@ CLASS ZCL_ABAPGIT_CI_REPO IMPLEMENTATION.
     ENDIF.
 
     rv_transport = ls_request_header-trkorr.
+  ENDMETHOD.
+
+
+  METHOD log_diffs.
+
+    IF is_files-local IS NOT INITIAL OR is_files-remote IS NOT INITIAL.
+      DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
+
+      lo_log->add(
+        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Diff|
+        is_data       = is_files ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD log_objects.
+
+    DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
+
+    lo_log->add(
+      iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Objects in Transport|
+      it_data       = it_objects ).
+
   ENDMETHOD.
 
 
