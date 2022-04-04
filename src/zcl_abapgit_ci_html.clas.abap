@@ -34,13 +34,22 @@ CLASS zcl_abapgit_ci_html DEFINITION
         RETURNING
           VALUE(rv_html) TYPE string
         RAISING
+          zcx_abapgit_exception,
+
+      render_table_by_category
+        IMPORTING
+          it_table       TYPE zif_abapgit_ci_definitions=>ty_result-repo_result_list
+          iv_category    TYPE string
+        RETURNING
+          VALUE(rv_html) TYPE string
+        RAISING
           zcx_abapgit_exception.
 
 ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_HTML IMPLEMENTATION.
+CLASS zcl_abapgit_ci_html IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -71,10 +80,21 @@ CLASS ZCL_ABAPGIT_CI_HTML IMPLEMENTATION.
     ENDIF.
 
     IF ms_result-repo_result_list IS NOT INITIAL.
-      rv_html = rv_html
-           && |    <h2>{ zif_abapgit_ci_definitions=>co_title_repos }</h2>\n|
-           && |    { render_table( ms_result-repo_result_list ) }\n|
-           && |    <br/><br/>\n|.
+      IF ms_result-category_list IS INITIAL.
+        rv_html = rv_html
+             && |    <h2>{ zif_abapgit_ci_definitions=>co_title_repos }</h2>\n|
+             && |    { render_table( ms_result-repo_result_list ) }\n|
+             && |    <br/><br/>\n|.
+      ELSE.
+        LOOP AT ms_result-category_list INTO DATA(lv_category).
+          rv_html = rv_html
+               && |    <h2>{ zif_abapgit_ci_definitions=>co_title_repos } - { lv_category }</h2>\n|
+               && |    { render_table_by_category(
+                           it_table    = ms_result-repo_result_list
+                           iv_category = lv_category ) }\n|
+               && |    <br/><br/>\n|.
+        ENDLOOP.
+      ENDIF.
     ENDIF.
 
     rv_html = rv_html
@@ -155,6 +175,19 @@ CLASS ZCL_ABAPGIT_CI_HTML IMPLEMENTATION.
   METHOD render_table.
 
     rv_html = NEW lcl_table_renderer( it_table )->render( ).
+
+  ENDMETHOD.
+
+
+  METHOD render_table_by_category.
+
+    DATA lt_table LIKE it_table.
+
+    LOOP AT it_table ASSIGNING FIELD-SYMBOL(<ls_row>) WHERE category = iv_category.
+      APPEND <ls_row> TO lt_table.
+    ENDLOOP.
+
+    rv_html = NEW lcl_table_renderer( lt_table )->render( ).
 
   ENDMETHOD.
 ENDCLASS.

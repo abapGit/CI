@@ -2,6 +2,7 @@
 REPORT zabapgit_ci.
 
 DATA: gv_repo_name TYPE c LENGTH 60.
+DATA: gv_cat_name TYPE c LENGTH 60.
 
 SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-b01.
 SELECTION-SCREEN COMMENT 1(79) descr01.
@@ -29,6 +30,7 @@ SELECTION-SCREEN END OF BLOCK b2.
 
 SELECTION-SCREEN BEGIN OF BLOCK b5 WITH FRAME TITLE TEXT-b05.
 SELECT-OPTIONS: s_repos FOR gv_repo_name LOWER CASE.
+SELECT-OPTIONS: s_cats FOR gv_cat_name LOWER CASE.
 SELECTION-SCREEN END OF BLOCK b5.
 
 SELECTION-SCREEN BEGIN OF BLOCK b3 WITH FRAME TITLE TEXT-b03.
@@ -96,6 +98,14 @@ INITIALIZATION.
     CLEAR layer.
   ENDIF.
 
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR s_cats-low.
+
+  s_cats-low = NEW zcl_abapgit_ci_repo_category( )->f4( ).
+
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR s_cats-high.
+
+  s_cats-high = NEW zcl_abapgit_ci_repo_category( )->f4( ).
+
 AT SELECTION-SCREEN OUTPUT.
   LOOP AT SCREEN.
     IF screen-group1 = 'M1'.
@@ -148,6 +158,7 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
               check_transportable = repot
               layer               = layer
               no_purge            = no_purge
+              categories          = CORRESPONDING #( s_cats[] )
             )
             sync_processing       = p_sync
           )

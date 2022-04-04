@@ -46,6 +46,7 @@ CLASS lcl_table_renderer DEFINITION FINAL.
           VALUE(rv_value) TYPE string.
 
     DATA:
+      mt_excl_columns TYPE RANGE OF fieldname,
       mr_table        TYPE REF TO data,
       mo_table_descr  TYPE REF TO cl_abap_tabledescr,
       mo_struct_descr TYPE REF TO cl_abap_structdescr.

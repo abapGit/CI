@@ -5,6 +5,9 @@ CLASS lcl_table_renderer IMPLEMENTATION.
     mr_table = REF #( it_table ).
     mo_table_descr ?= cl_abap_tabledescr=>describe_by_data( it_table ).
     mo_struct_descr ?= mo_table_descr->get_table_line_type( ).
+    mt_excl_columns = VALUE #( ( sign = 'I' option = 'EQ' low = 'SKIP' )
+                               ( sign = 'I' option = 'EQ' low = 'CATEGORY' )
+                               ( sign = 'I' option = 'EQ' low = 'DO_NOT_PURGE' ) ).
 
   ENDMETHOD.
 
@@ -25,7 +28,7 @@ CLASS lcl_table_renderer IMPLEMENTATION.
     rv_html = rv_html && |<tr>\n|.
 
     LOOP AT mo_struct_descr->get_components( ) ASSIGNING FIELD-SYMBOL(<ls_component>)
-      WHERE name <> 'SKIP'.
+      WHERE name NOT IN mt_excl_columns.
 
       rv_html = rv_html
             && |<th class="tg-kiyi">|
@@ -56,7 +59,7 @@ CLASS lcl_table_renderer IMPLEMENTATION.
       rv_html = rv_html && |<tr>\n|.
 
       LOOP AT mo_struct_descr->get_components( ) ASSIGNING FIELD-SYMBOL(<ls_component>)
-        WHERE name <> 'SKIP'.
+        WHERE name NOT IN mt_excl_columns.
 
         ASSIGN COMPONENT <ls_component>-name
                OF STRUCTURE <ls_line>
