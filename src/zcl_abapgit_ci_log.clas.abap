@@ -8,7 +8,7 @@ CLASS zcl_abapgit_ci_log DEFINITION
     CONSTANTS:
       co_package TYPE devclass VALUE '$TMP',
       co_prefix  TYPE string VALUE 'ZABAPGIT_CI_',
-      co_all     TYPE string VALUE 'ZABAPGIT_CI_*'.
+      co_all     TYPE string VALUE 'ZABAPGIT_CI_%'.
 
     METHODS add
       IMPORTING

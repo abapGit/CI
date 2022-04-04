@@ -568,6 +568,8 @@ CLASS lcl_main IMPLEMENTATION.
     DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
 
     lo_log->drop_all( ).
+
+    list_logs( ).
   ENDMETHOD.
 
   METHOD delete_package.
