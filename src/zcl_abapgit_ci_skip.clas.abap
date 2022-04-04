@@ -108,10 +108,10 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_false
         reason             = |Cannot be installed in local package| )
-      ( repo_name          = |DOMA_append|
-        skip_local         = not_diag
-        skip_transportable = not_diag
-        reason             = |Requires user-interaction (not available in batch)| )
+      ( repo_name          = |FUGR_lxe|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/4470| )
       ( repo_name          = |G4BA|
         skip_local         = abap_false
         skip_transportable = abap_true
@@ -161,9 +161,9 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_transportable = abap_true
         reason             = |Transportable authorization objects cannot be uninstalled| )
       ( repo_name          = |SQSC|
-        skip_local         = not_hana
-        skip_transportable = not_hana
-        reason             = |Requires SAP HANA| )
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Requires SAP ERP on HANA. Issue https://github.com/abapGit-tests/SQSC/issues/1| )
       ( repo_name          = |UENO|
         skip_local         = abap_true
         skip_transportable = abap_true
