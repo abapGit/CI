@@ -357,10 +357,10 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     cs_ri_repo-clone = zif_abapgit_ci_definitions=>co_status-not_ok.
 
     TRY.
+        " Use default branch
         co_repo ?= zcl_abapgit_repo_srv=>get_instance( )->new_online(
-          iv_url         = |{ cs_ri_repo-clone_url }|
-          iv_branch_name = 'refs/heads/main'
-          iv_package     = cs_ri_repo-package ).
+          iv_url     = |{ cs_ri_repo-clone_url }|
+          iv_package = cs_ri_repo-package ).
 
         COMMIT WORK AND WAIT.
 
