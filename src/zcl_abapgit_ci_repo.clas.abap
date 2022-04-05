@@ -535,7 +535,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     cs_ri_repo-pull = zif_abapgit_ci_definitions=>co_status-not_ok.
 
-    DATA(ls_checks) = zcl_abapgit_ci_repo_check=>get( io_repo ).
+    DATA(ls_checks) = zcl_abapgit_ci_repo_check=>get(
+                        io_repo         = io_repo
+                        iv_check_exists = abap_true ).
 
     ls_checks-transport-transport = iv_transport.
 
