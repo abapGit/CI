@@ -195,6 +195,7 @@ CLASS lcl_alv IMPLEMENTATION.
               IF <ls_column_width>-column = |SKIP| OR
                  <ls_column_width>-column = |CATEGORY|.
                 lo_column->set_technical( ).
+                lo_column->set_optimized( ).
               ENDIF.
 
               IF <ls_column_width>-column = |STATUS|.

@@ -70,7 +70,8 @@ CLASS lcl_main DEFINITION.
       list_packages RAISING zcx_abapgit_exception,
       list_objects,
       list_logs,
-      list_otr.
+      list_otr,
+      list_transports.
 ENDCLASS.
 
 CLASS lcl_main IMPLEMENTATION.
@@ -106,6 +107,8 @@ CLASS lcl_main IMPLEMENTATION.
 
     list_logs( ).
 
+    list_transports( ).
+
   ENDMETHOD.
 
   METHOD list_packages.
@@ -125,9 +128,9 @@ CLASS lcl_main IMPLEMENTATION.
 
     IF sy-subrc = 0.
       LOOP AT lt_devclass INTO DATA(lv_devclass).
-        FORMAT COLOR COL_NORMAL.
+        FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
         WRITE: AT /5 lv_devclass, AT c_width space.
-        FORMAT COLOR OFF.
+        FORMAT COLOR OFF INTENSIFIED ON.
       ENDLOOP.
     ELSE.
       FORMAT COLOR COL_POSITIVE.
@@ -151,8 +154,9 @@ CLASS lcl_main IMPLEMENTATION.
               ei_repo    = li_repo ).
           IF li_repo IS NOT INITIAL.
             lv_found = abap_true.
-            FORMAT COLOR COL_NORMAL.
+            FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
             WRITE: AT /5 'Repository:', li_repo->get_name( ), AT c_width space.
+            FORMAT COLOR OFF INTENSIFIED ON.
             SKIP.
           ENDIF.
         CATCH zcx_abapgit_exception.
@@ -178,13 +182,13 @@ CLASS lcl_main IMPLEMENTATION.
     FORMAT COLOR OFF.
     SKIP.
 
-    IF sy-subrc = 0.
-      LOOP AT lt_tadir INTO DATA(ls_tadir).
-        FORMAT COLOR COL_NORMAL.
-        WRITE: AT /5 ls_tadir-object, ls_tadir-obj_name, ls_tadir-delflag, ls_tadir-devclass, AT c_width space.
-        FORMAT COLOR OFF.
-      ENDLOOP.
-    ELSE.
+    LOOP AT lt_tadir INTO DATA(ls_tadir).
+      FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
+      WRITE: AT /5 ls_tadir-object, ls_tadir-obj_name, ls_tadir-delflag, ls_tadir-devclass, AT c_width space.
+      FORMAT COLOR OFF INTENSIFIED ON.
+    ENDLOOP.
+
+    IF sy-subrc <> 0.
       FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
     ENDIF.
@@ -204,13 +208,13 @@ CLASS lcl_main IMPLEMENTATION.
     FORMAT COLOR OFF.
     SKIP.
 
-    IF sy-subrc = 0.
-      LOOP AT lt_logs INTO DATA(ls_log).
-        FORMAT COLOR COL_NORMAL.
-        WRITE: AT /5 ls_log-objid, ls_log-text, AT c_width space.
-        FORMAT COLOR OFF.
-      ENDLOOP.
-    ELSE.
+    LOOP AT lt_logs INTO DATA(ls_log).
+      FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
+      WRITE: AT /5 ls_log-objid, ls_log-text, AT c_width space.
+      FORMAT COLOR OFF INTENSIFIED ON.
+    ENDLOOP.
+
+    IF sy-subrc <> 0.
       FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
     ENDIF.
@@ -235,19 +239,19 @@ CLASS lcl_main IMPLEMENTATION.
     FORMAT COLOR OFF.
     SKIP.
 
-    IF sy-subrc = 0.
-      LOOP AT lt_head INTO DATA(ls_head).
-        FORMAT COLOR COL_NORMAL.
-        WRITE: AT /5 ls_head-concept, ls_head-paket, AT c_width space.
-        SELECT * FROM sotr_use INTO @ls_use WHERE concept = @ls_head-concept ORDER BY PRIMARY KEY.
-          WRITE: AT /10 ls_use-object, ls_use-obj_name(70), AT c_width space.
-        ENDSELECT.
-        SELECT * FROM sotr_text INTO @ls_text WHERE concept = @ls_head-concept ORDER BY PRIMARY KEY.
-          WRITE: AT /10 ls_text-langu, ls_text-lfd_num, ls_text-text(120), AT c_width space.
-        ENDSELECT.
-        FORMAT COLOR OFF.
-      ENDLOOP.
-    ELSE.
+    LOOP AT lt_head INTO DATA(ls_head).
+      FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
+      WRITE: AT /5 ls_head-concept, ls_head-paket, AT c_width space.
+      SELECT * FROM sotr_use INTO @ls_use WHERE concept = @ls_head-concept ORDER BY PRIMARY KEY.
+        WRITE: AT /10 ls_use-object, ls_use-obj_name(70), AT c_width space.
+      ENDSELECT.
+      SELECT * FROM sotr_text INTO @ls_text WHERE concept = @ls_head-concept ORDER BY PRIMARY KEY.
+        WRITE: AT /10 ls_text-langu, ls_text-lfd_num, ls_text-text(120), AT c_width space.
+      ENDSELECT.
+      FORMAT COLOR OFF INTENSIFIED ON.
+    ENDLOOP.
+
+    IF sy-subrc <> 0.
       FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
     ENDIF.
@@ -261,19 +265,58 @@ CLASS lcl_main IMPLEMENTATION.
     FORMAT COLOR OFF.
     SKIP.
 
-    IF sy-subrc = 0.
-      LOOP AT lt_headu INTO DATA(ls_headu).
-        FORMAT COLOR COL_NORMAL.
-        WRITE: AT /5 ls_headu-concept, ls_headu-paket, AT c_width space.
-        SELECT * FROM sotr_useu INTO @ls_useu WHERE concept = @ls_headu-concept ORDER BY PRIMARY KEY.
-          WRITE: AT /10 ls_useu-object, ls_useu-obj_name(70), AT c_width space.
-        ENDSELECT.
-        SELECT * FROM sotr_textu INTO @ls_textu WHERE concept = @ls_headu-concept ORDER BY PRIMARY KEY.
-          WRITE: AT /10 ls_textu-langu, ls_textu-lfd_num, ls_textu-text(120), AT c_width space.
-        ENDSELECT.
-        FORMAT COLOR OFF.
-      ENDLOOP.
-    ELSE.
+    LOOP AT lt_headu INTO DATA(ls_headu).
+      FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
+      WRITE: AT /5 ls_headu-concept, ls_headu-paket, AT c_width space.
+      SELECT * FROM sotr_useu INTO @ls_useu WHERE concept = @ls_headu-concept ORDER BY PRIMARY KEY.
+        WRITE: AT /10 ls_useu-object, ls_useu-obj_name(70), AT c_width space.
+      ENDSELECT.
+      SELECT * FROM sotr_textu INTO @ls_textu WHERE concept = @ls_headu-concept ORDER BY PRIMARY KEY.
+        WRITE: AT /10 ls_textu-langu, ls_textu-lfd_num, ls_textu-text(120), AT c_width space.
+      ENDSELECT.
+      FORMAT COLOR OFF INTENSIFIED ON.
+    ENDLOOP.
+
+    IF sy-subrc <> 0.
+      FORMAT COLOR COL_POSITIVE.
+      WRITE: AT /5 'None', AT c_width space.
+    ENDIF.
+    SKIP.
+
+  ENDMETHOD.
+
+  METHOD list_transports.
+    DATA:
+      ls_ranges   TYPE trsel_ts_ranges,
+      lt_requests TYPE trwbo_request_headers.
+
+    ls_ranges-as4text = p_txt.
+    ls_ranges-request_status = VALUE #( ( sign = 'I' option = 'EQ' low = 'D' ) ).
+    ls_ranges-task_status = VALUE #( ( sign = 'I' option = 'EQ' low = 'D' ) ).
+
+    CALL FUNCTION 'TRINT_SELECT_REQUESTS'
+      IMPORTING
+        et_requests = lt_requests
+      CHANGING
+        cs_ranges   = ls_ranges.
+
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'Transports:', AT c_count lines( lt_requests ), AT c_width space.
+    FORMAT COLOR OFF.
+    SKIP.
+
+    LOOP AT lt_requests INTO DATA(ls_request).
+      FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
+      IF ls_request-strkorr IS INITIAL.
+        WRITE: AT /5 ls_request-trkorr, ls_request-as4text, AT c_width space.
+      ELSE.
+        WRITE: AT /10 ls_request-trkorr, ls_request-as4text, AT c_width space.
+        SKIP.
+      ENDIF.
+      FORMAT COLOR OFF INTENSIFIED ON.
+    ENDLOOP.
+
+    IF sy-subrc <> 0.
       FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
     ENDIF.
@@ -353,7 +396,7 @@ CLASS lcl_main IMPLEMENTATION.
     SKIP.
 
     LOOP AT lt_devclass INTO DATA(lv_devclass).
-      FORMAT COLOR COL_NORMAL.
+      FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
       WRITE: AT /5 lv_devclass.
 
       SELECT COUNT(*) FROM tadir INTO @lv_count
@@ -406,7 +449,7 @@ CLASS lcl_main IMPLEMENTATION.
     SKIP.
 
     LOOP AT lt_devclass INTO DATA(lv_devclass).
-      FORMAT COLOR COL_NORMAL.
+      FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
       WRITE: AT /5 lv_devclass, AT c_width space.
       FORMAT COLOR OFF.
       SKIP.
@@ -422,7 +465,7 @@ CLASS lcl_main IMPLEMENTATION.
         ORDER BY PRIMARY KEY.
 
       LOOP AT lt_object INTO ls_object.
-        FORMAT COLOR COL_NORMAL.
+        FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
         WRITE: AT /10 ls_object-object, ls_object-obj_name, ls_object-delflag.
 
         IF ls_object-delflag IS INITIAL.
@@ -474,7 +517,7 @@ CLASS lcl_main IMPLEMENTATION.
     SKIP.
 
     LOOP AT lt_head INTO DATA(ls_head).
-      FORMAT COLOR COL_NORMAL.
+      FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
       WRITE: AT /5 ls_head-concept, ls_head-paket, ls_head-crea_name, ls_head-crea_tstut.
 
       CALL FUNCTION 'BTFR_DELETE_SINGLE_TEXT'
@@ -514,7 +557,7 @@ CLASS lcl_main IMPLEMENTATION.
     SKIP.
 
     LOOP AT lt_headu INTO DATA(ls_headu).
-      FORMAT COLOR COL_NORMAL.
+      FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
       WRITE: AT /5 ls_headu-concept, ls_headu-paket, ls_headu-crea_name, ls_headu-crea_tstut.
 
       CALL FUNCTION 'BTFR_DELETE_SINGLE_TEXT'
