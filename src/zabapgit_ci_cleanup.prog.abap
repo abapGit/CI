@@ -10,6 +10,7 @@ PARAMETERS: p_list  TYPE abap_bool RADIOBUTTON GROUP r2 DEFAULT 'X',
             p_remov TYPE abap_bool RADIOBUTTON GROUP r2,
             p_obj   TYPE abap_bool RADIOBUTTON GROUP r2,
             p_otr   TYPE abap_bool RADIOBUTTON GROUP r2,
+            p_log   TYPE abap_bool RADIOBUTTON GROUP r2,
             p_pack  TYPE abap_bool RADIOBUTTON GROUP r2.
 SELECTION-SCREEN END OF BLOCK b1.
 
@@ -32,6 +33,7 @@ CLASS lcl_main DEFINITION.
       drop_packages RAISING zcx_abapgit_exception,
       drop_objects RAISING zcx_abapgit_exception,
       drop_otr RAISING zcx_abapgit_exception,
+      drop_logs RAISING zcx_abapgit_exception,
       delete_package
         IMPORTING
           iv_package   TYPE devclass
@@ -67,6 +69,7 @@ CLASS lcl_main DEFINITION.
       get_packages RETURNING VALUE(rt_devclass) TYPE ty_devc_tt,
       list_packages RAISING zcx_abapgit_exception,
       list_objects,
+      list_logs,
       list_otr.
 ENDCLASS.
 
@@ -81,6 +84,8 @@ CLASS lcl_main IMPLEMENTATION.
           drop_objects( ).
         ELSEIF p_otr = abap_true.
           drop_otr( ).
+        ELSEIF p_log = abap_true.
+          drop_logs( ).
         ELSEIF p_list = abap_true.
           list( ).
         ELSE.
@@ -98,6 +103,8 @@ CLASS lcl_main IMPLEMENTATION.
     list_objects( ).
 
     list_otr( ).
+
+    list_logs( ).
 
   ENDMETHOD.
 
@@ -185,12 +192,40 @@ CLASS lcl_main IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD list_logs.
+    DATA lt_logs TYPE STANDARD TABLE OF wwwdata WITH DEFAULT KEY.
+
+    SELECT * FROM wwwdata INTO TABLE @lt_logs
+      WHERE objid LIKE @zcl_abapgit_ci_log=>co_all
+      ORDER BY PRIMARY KEY.
+
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'Logs:', AT c_count lines( lt_logs ), AT c_width space.
+    FORMAT COLOR OFF.
+    SKIP.
+
+    IF sy-subrc = 0.
+      LOOP AT lt_logs INTO DATA(ls_log).
+        FORMAT COLOR COL_NORMAL.
+        WRITE: AT /5 ls_log-objid, ls_log-text, AT c_width space.
+        FORMAT COLOR OFF.
+      ENDLOOP.
+    ELSE.
+      FORMAT COLOR COL_POSITIVE.
+      WRITE: AT /5 'None', AT c_width space.
+    ENDIF.
+    SKIP.
+
+  ENDMETHOD.
+
   METHOD list_otr.
     DATA:
       lt_head  TYPE STANDARD TABLE OF sotr_head,
       lt_headu TYPE STANDARD TABLE OF sotr_headu,
       ls_use   TYPE sotr_use,
-      ls_useu  TYPE sotr_useu.
+      ls_useu  TYPE sotr_useu,
+      ls_text  TYPE sotr_text,
+      ls_textu TYPE sotr_textu.
 
     SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket IN @s_pack[]
       ORDER BY paket, concept.
@@ -203,12 +238,13 @@ CLASS lcl_main IMPLEMENTATION.
     IF sy-subrc = 0.
       LOOP AT lt_head INTO DATA(ls_head).
         FORMAT COLOR COL_NORMAL.
-        WRITE: AT /5 ls_head-concept, ls_head-paket.
-        SELECT SINGLE * FROM sotr_use INTO @ls_use WHERE concept = @ls_head-concept.
-        IF sy-subrc = 0.
-          WRITE: ls_use-object, ls_use-obj_name(70).
-        ENDIF.
-        WRITE AT c_width space.
+        WRITE: AT /5 ls_head-concept, ls_head-paket, AT c_width space.
+        SELECT * FROM sotr_use INTO @ls_use WHERE concept = @ls_head-concept ORDER BY PRIMARY KEY.
+          WRITE: AT /10 ls_use-object, ls_use-obj_name(70), AT c_width space.
+        ENDSELECT.
+        SELECT * FROM sotr_text INTO @ls_text WHERE concept = @ls_head-concept ORDER BY PRIMARY KEY.
+          WRITE: AT /10 ls_text-langu, ls_text-lfd_num, ls_text-text(120), AT c_width space.
+        ENDSELECT.
         FORMAT COLOR OFF.
       ENDLOOP.
     ELSE.
@@ -228,12 +264,13 @@ CLASS lcl_main IMPLEMENTATION.
     IF sy-subrc = 0.
       LOOP AT lt_headu INTO DATA(ls_headu).
         FORMAT COLOR COL_NORMAL.
-        WRITE: AT /5 ls_headu-concept, ls_headu-paket.
-        SELECT SINGLE * FROM sotr_useu INTO @ls_useu WHERE concept = @ls_headu-concept.
-        IF sy-subrc = 0.
-          WRITE: ls_useu-object, ls_useu-obj_name(70).
-        ENDIF.
-        WRITE AT c_width space.
+        WRITE: AT /5 ls_headu-concept, ls_headu-paket, AT c_width space.
+        SELECT * FROM sotr_useu INTO @ls_useu WHERE concept = @ls_headu-concept ORDER BY PRIMARY KEY.
+          WRITE: AT /10 ls_useu-object, ls_useu-obj_name(70), AT c_width space.
+        ENDSELECT.
+        SELECT * FROM sotr_textu INTO @ls_textu WHERE concept = @ls_headu-concept ORDER BY PRIMARY KEY.
+          WRITE: AT /10 ls_textu-langu, ls_textu-lfd_num, ls_textu-text(120), AT c_width space.
+        ENDSELECT.
         FORMAT COLOR OFF.
       ENDLOOP.
     ELSE.
@@ -525,6 +562,14 @@ CLASS lcl_main IMPLEMENTATION.
       ENDIF.
     ENDLOOP.
 
+  ENDMETHOD.
+
+  METHOD drop_logs.
+    DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
+
+    lo_log->drop_all( ).
+
+    list_logs( ).
   ENDMETHOD.
 
   METHOD delete_package.

@@ -43,6 +43,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_LOG</KEY>
+     <ENTRY>Remove logs</ENTRY>
+     <LENGTH>19</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_OBJ</KEY>
      <ENTRY>Remove leftover objects</ENTRY>
      <LENGTH>31</LENGTH>
