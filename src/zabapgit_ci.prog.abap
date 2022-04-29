@@ -58,6 +58,11 @@ PARAMETERS layer TYPE devlayer MODIF ID m1.
 SELECTION-SCREEN END OF LINE.
 SELECTION-SCREEN BEGIN OF LINE.
 SELECTION-SCREEN POSITION 4.
+PARAMETERS createp TYPE abap_bool AS CHECKBOX DEFAULT abap_false MODIF ID m1.
+SELECTION-SCREEN COMMENT 9(30) FOR FIELD createp MODIF ID m1.
+SELECTION-SCREEN END OF LINE.
+SELECTION-SCREEN BEGIN OF LINE.
+SELECTION-SCREEN POSITION 4.
 PARAMETERS no_purge TYPE abap_bool AS CHECKBOX DEFAULT abap_false MODIF ID m1.
 SELECTION-SCREEN COMMENT 9(30) FOR FIELD no_purge MODIF ID m1.
 SELECTION-SCREEN END OF LINE.
@@ -158,6 +163,7 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
               check_local         = repol
               check_transportable = repot
               layer               = layer
+              create_package      = createp
               no_purge            = no_purge
               categories          = CORRESPONDING #( s_cats[] )
             )

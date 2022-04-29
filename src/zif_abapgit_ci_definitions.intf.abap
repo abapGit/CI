@@ -40,6 +40,7 @@ INTERFACE zif_abapgit_ci_definitions
       check_local         TYPE abap_bool,
       check_transportable TYPE abap_bool,
       layer               TYPE devlayer,
+      create_package      TYPE abap_bool,
       no_purge            TYPE abap_bool,
       logging             TYPE abap_bool,
       categories          TYPE RANGE OF string,
