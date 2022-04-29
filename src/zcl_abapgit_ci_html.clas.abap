@@ -18,6 +18,12 @@ CLASS zcl_abapgit_ci_html DEFINITION
       ms_result TYPE zif_abapgit_ci_definitions=>ty_result.
 
     METHODS:
+      get_id
+        IMPORTING
+          iv_value     TYPE string
+        RETURNING
+          VALUE(rv_id) TYPE string,
+
       render_style
         RETURNING
           VALUE(rv_html) TYPE string,
@@ -59,12 +65,24 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_id.
+
+    rv_id = replace(
+      val  = condense( to_lower( iv_value ) )
+      sub  = ` `
+      with = `_`
+      occ  = 0 ).
+
+  ENDMETHOD.
+
+
   METHOD render.
 
     rv_html = |<!DOCTYPE html>\n|
            && |<html>\n|
            && |  <head>\n|
            && |    { render_style( ) }\n|
+           && |  <link rel="shortcut icon" type="image/x-icon" href="favicon.png" />\n|
            && |  <title>{ zif_abapgit_ci_definitions=>co_title }</title>\n|
            && |  </head>\n|
            && |  <body>\n|
@@ -80,19 +98,32 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
     ENDIF.
 
     IF ms_result-repo_result_list IS NOT INITIAL.
+      rv_html = rv_html
+           && |    <h2>{ zif_abapgit_ci_definitions=>co_title_repos }</h2>\n|.
       IF ms_result-category_list IS INITIAL.
         rv_html = rv_html
-             && |    <h2>{ zif_abapgit_ci_definitions=>co_title_repos }</h2>\n|
              && |    { render_table( ms_result-repo_result_list ) }\n|
              && |    <br/><br/>\n|.
       ELSE.
+        rv_html = rv_html
+             && |      Categories: |.
         LOOP AT ms_result-category_list INTO DATA(lv_category).
+          rv_html = rv_html && |<a href="#{ get_id( lv_category ) }">{ lv_category }</a>|.
+          IF sy-tabix <> lines( ms_result-category_list ).
+            rv_html = rv_html && | \| \n|.
+          ELSE.
+            rv_html = rv_html && |\n|.
+          ENDIF.
+        ENDLOOP.
+        rv_html = rv_html
+             && |      <br/><br/>\n|.
+        LOOP AT ms_result-category_list INTO lv_category.
           rv_html = rv_html
-               && |    <h2>{ zif_abapgit_ci_definitions=>co_title_repos } - { lv_category }</h2>\n|
-               && |    { render_table_by_category(
-                           it_table    = ms_result-repo_result_list
-                           iv_category = lv_category ) }\n|
-               && |    <br/><br/>\n|.
+               && |      <h3 id="{ get_id( lv_category ) }">{ lv_category }</h3>\n|
+               && |      { render_table_by_category(
+                             it_table    = ms_result-repo_result_list
+                             iv_category = lv_category ) }\n|
+               && |      <br/><br/>\n|.
         ENDLOOP.
       ENDIF.
     ENDIF.
@@ -151,7 +182,7 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
 
     rv_html = |<style type="text/css">\n|
            && |body \{ font-family:Arial, sans-serif; font-size:14px;\}\n|
-           && |.tg  \{border-collapse:collapse;border-spacing:0;\}\n|
+           && |.tg  \{border-collapse:collapse;border-spacing:0;width:100%;\}\n|
            && |.tg td\{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;|
            && |border-width:1px;overflow:hidden;word-break:normal;border-color:black;\}\n|
            && |.tg th\{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;|
@@ -166,7 +197,12 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
            && |.undefined \{ background-color: lightgray; \}\n|
            && |.skipped \{ background-color: #e7b416; \}\n|
            && |.key \{ background-color: lightblue; \}\n|
-           && |.total \{ font-weight:bold; \}\n|
+           && |.repo_name \{ width:170px; \}\n|
+           && |.repo_pack \{ width:225px; \}\n|
+           && |.total \{ font-weight:bold;width:70px; \}\n|
+           && |.layer \{ width:70px; \}\n|
+           && |.duration \{ width:70px;text-align: right; \}\n|
+           && |.url \{ width:50px; \}\n|
            && |</style>\n|.
 
   ENDMETHOD.

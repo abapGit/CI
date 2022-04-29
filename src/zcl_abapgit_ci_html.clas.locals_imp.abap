@@ -6,8 +6,10 @@ CLASS lcl_table_renderer IMPLEMENTATION.
     mo_table_descr ?= cl_abap_tabledescr=>describe_by_data( it_table ).
     mo_struct_descr ?= mo_table_descr->get_table_line_type( ).
     mt_excl_columns = VALUE #( ( sign = 'I' option = 'EQ' low = 'SKIP' )
+                               ( sign = 'I' option = 'EQ' low = 'CREATE_PACKAGE' )
+                               ( sign = 'I' option = 'EQ' low = 'DO_NOT_PURGE' )
                                ( sign = 'I' option = 'EQ' low = 'CATEGORY' )
-                               ( sign = 'I' option = 'EQ' low = 'DO_NOT_PURGE' ) ).
+                               ( sign = 'I' option = 'EQ' low = 'LOGGING' ) ).
 
   ENDMETHOD.
 
@@ -67,7 +69,7 @@ CLASS lcl_table_renderer IMPLEMENTATION.
         ASSERT sy-subrc = 0.
 
         IF <ls_component>-name CS |URL|.
-          rv_html = rv_html && |<td class="tg-xldj">|
+          rv_html = rv_html && |<td class="tg-xldj url">|
                             && |<a href="{ <lv_field> }">Repo</a></td>\n|.
         ELSEIF <ls_component>-type->get_ddic_header( )-refname CS |STATUS|.
           rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_status( <lv_field> ) }|
@@ -93,11 +95,16 @@ CLASS lcl_table_renderer IMPLEMENTATION.
 
   METHOD get_css_class_for_keys.
 
-    IF iv_name = |NAME| OR iv_name = |PACKAGE| OR iv_name = |DESCRIPTION|.
-      rv_css_class = 'key'.
-    ELSEIF iv_name = |STATUS|.
-      rv_css_class = 'total'.
-    ENDIF.
+    CASE iv_name.
+      WHEN 'NAME'.
+        rv_css_class = 'key repo_name'.
+      WHEN 'PACKAGE'.
+        rv_css_class = 'key repo_pack'.
+      WHEN 'DESCRIPTION'.
+        rv_css_class = 'key'.
+      WHEN 'STATUS'.
+        rv_css_class = 'total'.
+    ENDCASE.
 
   ENDMETHOD.
 
