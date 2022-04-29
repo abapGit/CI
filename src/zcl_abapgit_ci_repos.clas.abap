@@ -99,6 +99,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
                ASSIGNING <ls_ci_repo>.
         <ls_ci_repo>-package      = CONV devclass( |$___{ to_upper( <ls_ci_repo>-name ) }| ).
         <ls_ci_repo>-do_not_purge = is_options-no_purge.
+        <ls_ci_repo>-logging      = is_options-logging.
         <ls_ci_repo>-category     = lo_repo_cat->get_category_label( lv_category ).
 
         lo_skip->complete_skip_components( CHANGING cs_repo = <ls_ci_repo> ).
@@ -111,6 +112,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
         <ls_ci_repo>-package      = CONV devclass( |Z___{ to_upper( <ls_ci_repo>-name ) }| ).
         <ls_ci_repo>-layer        = is_options-layer.
         <ls_ci_repo>-do_not_purge = is_options-no_purge.
+        <ls_ci_repo>-logging      = is_options-logging.
         <ls_ci_repo>-category     = lo_repo_cat->get_category_label( lv_category ).
 
         lo_skip->complete_skip_components( CHANGING cs_repo = <ls_ci_repo> ).
@@ -155,7 +157,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
       IF sy-subrc <> 0.
         lv_errid = 'DUMP'.
       ENDIF.
-      cs_ci_repo-message = |Failure processing repo: { lv_errid } { lv_message }|.
+      cs_ci_repo-message = |Error processing repo: { lv_errid } { lv_message }|.
       cs_ci_repo-status  = zif_abapgit_ci_definitions=>co_status-not_ok.
       RETURN.
     ENDIF.

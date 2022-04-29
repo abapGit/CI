@@ -41,6 +41,7 @@ INTERFACE zif_abapgit_ci_definitions
       check_transportable TYPE abap_bool,
       layer               TYPE devlayer,
       no_purge            TYPE abap_bool,
+      logging             TYPE abap_bool,
       categories          TYPE RANGE OF string,
     END OF ty_repo_check_options .
   TYPES:
@@ -54,6 +55,7 @@ INTERFACE zif_abapgit_ci_definitions
       exec_repository_checks TYPE abap_bool,
       repo_check_options     TYPE ty_repo_check_options,
       sync_processing        TYPE abap_bool,
+      logging                TYPE abap_bool,
     END OF ty_options .
 
   CONSTANTS co_title TYPE string VALUE 'abapGit CI Results' ##NO_TEXT.

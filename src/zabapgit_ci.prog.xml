@@ -151,6 +151,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_LOG</KEY>
+     <ENTRY>Log diffs, objects, messages</ENTRY>
+     <LENGTH>36</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_SAVE</KEY>
      <ENTRY>Save results without push</ENTRY>
      <LENGTH>33</LENGTH>

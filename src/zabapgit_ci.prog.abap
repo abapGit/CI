@@ -65,7 +65,8 @@ SELECTION-SCREEN END OF BLOCK b4.
 
 SELECTION-SCREEN BEGIN OF BLOCK b6 WITH FRAME TITLE TEXT-b06.
 PARAMETERS:
-  p_sync TYPE abap_bool AS CHECKBOX.
+  p_sync TYPE abap_bool AS CHECKBOX,
+  p_log  TYPE abap_bool AS CHECKBOX.
 SELECTION-SCREEN END OF BLOCK b6.
 
 INITIALIZATION.
@@ -161,6 +162,7 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
               categories          = CORRESPONDING #( s_cats[] )
             )
             sync_processing       = p_sync
+            logging               = p_log
           )
         )->run( ).
 

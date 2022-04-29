@@ -1,18 +1,20 @@
 CLASS zcl_abapgit_ci_repo DEFINITION
   PUBLIC
-  CREATE PUBLIC .
+  CREATE PUBLIC.
 
   PUBLIC SECTION.
 
-    METHODS constructor .
+    METHODS constructor.
+
     METHODS run
       CHANGING
         !cs_ri_repo TYPE zabapgit_ci_result
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception.
 
   PROTECTED SECTION.
   PRIVATE SECTION.
+
     METHODS:
       create_package
         IMPORTING
@@ -48,9 +50,23 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         RAISING
           zcx_abapgit_exception,
 
+      log_messages
+        IMPORTING
+          is_ri_repo  TYPE zabapgit_ci_result
+          it_messages TYPE zif_abapgit_log=>ty_log_outs
+        RAISING
+          zcx_abapgit_exception,
+
       syntax_check
         CHANGING
           cs_ri_repo TYPE zabapgit_ci_result
+        RAISING
+          zcx_abapgit_exception,
+
+      log_syntax_errors
+        IMPORTING
+          is_ri_repo TYPE zabapgit_ci_result
+          it_list    TYPE scit_alvlist
         RAISING
           zcx_abapgit_exception,
 
@@ -509,24 +525,83 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD log_diffs.
 
-    IF is_files-local IS NOT INITIAL OR is_files-remote IS NOT INITIAL.
-      DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
+    DATA lv_log TYPE abap_bool.
 
-      lo_log->add(
-        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Diff|
-        is_data       = is_files ).
+    IF is_ri_repo-logging = abap_false OR is_files IS INITIAL.
+      RETURN.
     ENDIF.
+
+    DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
+
+    IF is_files-local IS NOT INITIAL.
+      lo_log->add(
+        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Diff Local|
+        ig_data       = is_files-local ).
+      lv_log = abap_true.
+    ENDIF.
+
+    IF is_files-remote IS NOT INITIAL.
+      LOOP AT is_files-remote INTO DATA(ls_remote).
+        lo_log->add(
+          iv_log_object = |Diff Remote File|
+          ig_data       = ls_remote-filename ).
+      ENDLOOP.
+      lo_log->add(
+        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Diff Remote|
+        ig_data       = is_files-remote ).
+      lv_log = abap_true.
+    ENDIF.
+
+    IF lv_log = abap_true.
+      lo_log->add(
+        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Diff Status|
+        ig_data       = is_files-status ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD log_messages.
+
+    IF is_ri_repo-logging = abap_false OR it_messages IS INITIAL.
+      RETURN.
+    ENDIF.
+
+    DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
+
+    lo_log->add(
+      iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Log Messages|
+      ig_data       = it_messages ).
 
   ENDMETHOD.
 
 
   METHOD log_objects.
 
+    IF is_ri_repo-logging = abap_false OR it_objects IS INITIAL.
+      RETURN.
+    ENDIF.
+
     DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
 
     lo_log->add(
       iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Objects in Transport|
-      it_data       = it_objects ).
+      ig_data       = it_objects ).
+
+  ENDMETHOD.
+
+
+  METHOD log_syntax_errors.
+
+    IF is_ri_repo-logging = abap_false OR it_list IS INITIAL.
+      RETURN.
+    ENDIF.
+
+    DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
+
+    lo_log->add(
+      iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Syntax Errors|
+      ig_data       = it_list ).
 
   ENDMETHOD.
 
@@ -541,11 +616,17 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     ls_checks-transport-transport = iv_transport.
 
+    DATA(li_log) = io_repo->create_new_log( 'Pull Log' ).
+
     io_repo->deserialize(
       is_checks = ls_checks
-      ii_log    = NEW zcl_abapgit_log( ) ).
+      ii_log    = li_log ).
 
     io_repo->refresh( iv_drop_cache = abap_true ).
+
+    log_messages(
+      is_ri_repo  = cs_ri_repo
+      it_messages = li_log->get_messages( ) ).
 
     cs_ri_repo-pull = zif_abapgit_ci_definitions=>co_status-ok.
 
@@ -565,12 +646,25 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
         ls_checks-transport-transport = iv_transport.
 
-        zcl_abapgit_repo_srv=>get_instance( )->purge( ii_repo   = io_repo
-                                                      is_checks = ls_checks ).
+        DATA(li_log) = zcl_abapgit_repo_srv=>get_instance( )->purge( ii_repo   = io_repo
+                                                                     is_checks = ls_checks ).
 
         COMMIT WORK AND WAIT.
-      CATCH zcx_abapgit_cancel INTO DATA(error).
-        zcx_abapgit_exception=>raise( error->get_text( ) ).
+      CATCH zcx_abapgit_cancel INTO DATA(lx_error).
+        zcx_abapgit_exception=>raise( lx_error->get_text( ) ).
+      CATCH zcx_abapgit_exception INTO DATA(lx_exc).
+        log_messages(
+          is_ri_repo  = cs_ri_repo
+          it_messages = li_log->get_messages( ) ).
+
+        DATA(lv_exc) = lx_exc->get_text( ).
+        IF lv_exc CP '*Check*log*'.
+          READ TABLE li_log->get_messages( ) INTO DATA(ls_log) INDEX 1.
+          IF sy-subrc = 0.
+            lv_exc = |Uninstall error: { ls_log-text }|.
+          ENDIF.
+        ENDIF.
+        zcx_abapgit_exception=>raise( lv_exc ).
     ENDTRY.
 
     cs_ri_repo-purge = zif_abapgit_ci_definitions=>co_status-ok.
@@ -768,6 +862,10 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
                        WITH KEY kind = 'E'.
     IF sy-subrc = 0.
       cs_ri_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-not_ok.
+
+      log_syntax_errors(
+        is_ri_repo = cs_ri_repo
+        it_list    = lt_list ).
     ELSE.
       cs_ri_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-ok.
     ENDIF.
