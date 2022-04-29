@@ -96,6 +96,10 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = no_aff
         skip_transportable = no_aff
         reason             = |Requires support for ABAP File Format (AFF)| )
+      ( repo_name          = |CLAS_wf|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/5449| )
       ( repo_name          = |DDLX_old|
         skip_local         = abap_true
         skip_transportable = abap_true
@@ -112,6 +116,10 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Issue https://github.com/abapGit/abapGit/issues/4470| )
+      ( repo_name          = |FUGR_maint_view_var|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/5451| )
       ( repo_name          = |G4BA|
         skip_local         = abap_false
         skip_transportable = abap_true
