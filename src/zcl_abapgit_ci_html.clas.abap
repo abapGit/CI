@@ -109,7 +109,7 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
              && |      Categories: |.
         LOOP AT ms_result-category_list INTO DATA(lv_category).
           rv_html = rv_html && |<a href="#{ get_id( lv_category ) }">{ lv_category }</a>|.
-          IF sy-tabix <> lines( ms_result-category_list ).
+          IF lines( ms_result-category_list ) <> sy-tabix.
             rv_html = rv_html && | \| \n|.
           ELSE.
             rv_html = rv_html && |\n|.
