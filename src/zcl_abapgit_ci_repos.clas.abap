@@ -102,6 +102,10 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
         <ls_ci_repo>-logging      = is_options-logging.
         <ls_ci_repo>-category     = lo_repo_cat->get_category_label( lv_category ).
 
+        IF is_options-create_package = abap_false.
+          <ls_ci_repo>-create_package = zif_abapgit_ci_definitions=>co_status-skipped.
+        ENDIF.
+
         lo_skip->complete_skip_components( CHANGING cs_repo = <ls_ci_repo> ).
       ENDIF.
 
@@ -114,6 +118,10 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
         <ls_ci_repo>-do_not_purge = is_options-no_purge.
         <ls_ci_repo>-logging      = is_options-logging.
         <ls_ci_repo>-category     = lo_repo_cat->get_category_label( lv_category ).
+
+        IF is_options-create_package = abap_false.
+          <ls_ci_repo>-create_package = zif_abapgit_ci_definitions=>co_status-skipped.
+        ENDIF.
 
         lo_skip->complete_skip_components( CHANGING cs_repo = <ls_ci_repo> ).
       ENDIF.

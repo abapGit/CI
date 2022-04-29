@@ -772,8 +772,12 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
                                        iv_deletion  = abap_false ).
     ENDIF.
 
-    create_package( EXPORTING iv_transport = COND #( WHEN lv_transportable = abap_true THEN lv_transport )
-                    CHANGING  cs_ri_repo   = cs_ri_repo ).
+    IF cs_ri_repo-create_package = zif_abapgit_ci_definitions=>co_status-skipped.
+      cs_ri_repo-create_package = zif_abapgit_ci_definitions=>co_status-undefined.
+    ELSE.
+      create_package( EXPORTING iv_transport = COND #( WHEN lv_transportable = abap_true THEN lv_transport )
+                      CHANGING  cs_ri_repo   = cs_ri_repo ).
+    ENDIF.
 
     TRY.
         clone( CHANGING cs_ri_repo = cs_ri_repo
