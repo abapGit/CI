@@ -13,8 +13,7 @@ CLASS zcl_abapgit_ci_log DEFINITION
     METHODS add
       IMPORTING
         !iv_log_object TYPE string
-        !is_data       TYPE any OPTIONAL
-        !it_data       TYPE ANY TABLE OPTIONAL
+        !ig_data       TYPE any OPTIONAL
       RETURNING
         VALUE(rv_key)  TYPE string
       RAISING
@@ -90,11 +89,7 @@ CLASS zcl_abapgit_ci_log IMPLEMENTATION.
                      chname   = sy-uname
                      devclass = co_package ).
 
-    IF is_data IS INITIAL.
-      lv_xstring = zcl_abapgit_convert=>string_to_xstring_utf8( stringify( it_data ) ).
-    ELSE.
-      lv_xstring = zcl_abapgit_convert=>string_to_xstring_utf8( stringify( is_data ) ).
-    ENDIF.
+    lv_xstring = zcl_abapgit_convert=>string_to_xstring_utf8( stringify( ig_data ) ).
 
     CALL FUNCTION 'SCMS_XSTRING_TO_BINARY'
       EXPORTING
