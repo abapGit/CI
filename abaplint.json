@@ -140,7 +140,14 @@
     "global_class": true,
     "identical_form_names": true,
     "if_in_if": true,
-    "indentation": true,
+    "indentation": {
+       "ignoreExceptions": true,
+       "alignTryCatch": false,
+       "selectionScreenBlockIndentation": true,
+       "globalClassSkipFirst": false,
+       "ignoreGlobalClassDefinition": false,
+       "ignoreGlobalInterface": false
+    }
     "inline_data_old_versions": true,
     "line_length": true,
     "line_only_punc": {
