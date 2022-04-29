@@ -527,7 +527,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     DATA lv_log TYPE abap_bool.
 
-    CHECK is_ri_repo-logging = abap_true AND is_files IS NOT INITIAL.
+    IF is_ri_repo-logging = abap_false OR is_files IS INITIAL.
+      RETURN.
+    ENDIF.
 
     DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
 
@@ -561,7 +563,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD log_messages.
 
-    CHECK is_ri_repo-logging = abap_true AND it_messages IS NOT INITIAL.
+    IF is_ri_repo-logging = abap_false OR it_messages IS INITIAL.
+      RETURN.
+    ENDIF.
 
     DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
 
@@ -574,7 +578,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD log_objects.
 
-    CHECK is_ri_repo-logging = abap_true AND it_objects IS NOT INITIAL.
+    IF is_ri_repo-logging = abap_false OR it_objects IS INITIAL.
+      RETURN.
+    ENDIF.
 
     DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
 
@@ -587,7 +593,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD log_syntax_errors.
 
-    CHECK is_ri_repo-logging = abap_true AND it_list IS NOT INITIAL.
+    IF is_ri_repo-logging = abap_false OR it_list IS INITIAL.
+      RETURN.
+    ENDIF.
 
     DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
 
