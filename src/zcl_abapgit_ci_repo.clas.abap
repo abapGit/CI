@@ -228,6 +228,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
           lv_transport_object_count TYPE i,
           lv_objects_in_tr          TYPE i,
           lv_first_not_found        TYPE string,
+          lv_first_too_much         TYPE string,
           lt_converted_r3tr_objects TYPE tr_objects.
 
     IF iv_check_deletion = abap_false.
@@ -265,6 +266,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     " Ignore entries for SOTR/SOTS
     DELETE lt_objects WHERE pgmid = 'LIMU' AND object = 'ADIR' AND obj_name CP 'R3TRSOT*'.
 
+    " TODO: LIMUs are suspicious, should raise error but currently unknown how many test cases would be impacted
+
     " Convert LIMU to R3TR
     CALL FUNCTION 'TRINT_COMPLETE_REQUEST'
       EXPORTING
@@ -292,7 +295,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     DELETE lt_objects WHERE pgmid  = 'R3TR'
                         AND object = 'DEVC'.
 
-    LOOP AT io_repo->get_files_local( ) ASSIGNING FIELD-SYMBOL(<ls_file>) WHERE item-obj_type IS NOT INITIAL.
+    DATA(lt_files_local) = io_repo->get_files_local( ).
+
+    LOOP AT lt_files_local ASSIGNING FIELD-SYMBOL(<ls_file>) WHERE item-obj_type IS NOT INITIAL.
       IF <ls_file>-item-obj_type = 'DEVC'.
         " Packages cannot be deleted in the same transport as its contents. abapGit does not delete transportable
         " packages on uninstall. Therefore these might still exist from the last run and might not be contained
@@ -308,7 +313,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
                                   objfunc  = COND #( WHEN iv_check_deletion = abap_true THEN 'D' ELSE space ) ] ).
         lv_transport_object_count = lv_transport_object_count + 1.
       ELSEIF lv_first_not_found IS INITIAL.
-        lv_first_not_found = | (first missing: { <ls_file>-item-obj_type }-{ <ls_file>-item-obj_name })|.
+        lv_first_not_found = | First missing: { <ls_file>-item-obj_type }-{ <ls_file>-item-obj_name }|.
       ENDIF.
     ENDLOOP.
 
@@ -317,14 +322,20 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
         is_ri_repo = cs_ri_repo
         it_objects = lt_objects ).
 
-      zcx_abapgit_exception=>raise( |Found { lv_transport_object_count NUMBER = USER } of | &&
-                                    |{ lv_repo_object_count NUMBER = USER } in | &&
-                                    |{ COND #( WHEN iv_check_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
-                                    |transport { iv_transport }{ lv_first_not_found }| ).
+      zcx_abapgit_exception=>raise( |{ COND #( WHEN iv_check_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
+                                    |transport { iv_transport }: Incorrect object count | &&
+                                    |{ lv_transport_object_count NUMBER = USER }/| &&
+                                    |{ lv_repo_object_count NUMBER = USER })| &&
+                                    |\n{ lv_first_not_found }| ).
     ENDIF.
 
-    LOOP AT lt_objects TRANSPORTING NO FIELDS WHERE object <> 'DEVC'.
+    LOOP AT lt_objects ASSIGNING FIELD-SYMBOL(<ls_object>) WHERE object <> 'DEVC'.
       lv_objects_in_tr = lv_objects_in_tr + 1.
+
+      IF NOT line_exists( lt_files_local[ item-obj_type = <ls_object>-object
+                                          item-obj_name = <ls_object>-obj_name ] ) AND lv_first_too_much IS INITIAL.
+        lv_first_too_much = | First extra: { <ls_object>-object }-{ <ls_object>-obj_name }|.
+      ENDIF.
     ENDLOOP.
 
     IF lv_objects_in_tr > lv_repo_object_count.
@@ -333,8 +344,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
         it_objects = lt_objects ).
 
       zcx_abapgit_exception=>raise( |{ COND #( WHEN iv_check_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
-                                    |transport { iv_transport } contains too many objects (| &&
-                                    |{ lv_objects_in_tr NUMBER = USER }/{ lv_repo_object_count NUMBER = USER })| ).
+                                    |transport { iv_transport }: Too many objects (| &&
+                                    |{ lv_objects_in_tr NUMBER = USER }/{ lv_repo_object_count NUMBER = USER })| &&
+                                    |\n{ lv_first_too_much }| ).
     ENDIF.
 
     IF iv_check_deletion = abap_false.
