@@ -201,6 +201,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     ENDLOOP.
 
+    io_repo->reset_status( ).
     ls_files = zcl_abapgit_factory=>get_stage_logic( )->get( io_repo ).
 
     log_diffs(
