@@ -47,6 +47,10 @@ CLASS zcl_abapgit_ci_repo_category DEFINITION
   PRIVATE SECTION.
 
     CONSTANTS:
+      c_category_gateway_bse  TYPE string VALUE 'rap_services',
+      c_category_auth         TYPE string VALUE 'apsiam',
+      c_category_bw           TYPE string VALUE 'bw',
+      c_category_bw_label     TYPE string VALUE 'Business Warehouse',
       c_category_others       TYPE string VALUE 'zzz_other_zzz',
       c_category_others_label TYPE string VALUE 'Others'.
 
@@ -67,7 +71,6 @@ CLASS zcl_abapgit_ci_repo_category DEFINITION
     CLASS-METHODS get_wb_types
       RETURNING
         VALUE(rt_result) TYPE seu_adt_repository_type_list.
-
 ENDCLASS.
 
 
@@ -77,7 +80,7 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
 
   METHOD build_categories.
 
-    " Build list of categories (with "Others" last)
+    " Build list of categories
 
     DATA ls_category TYPE ty_category.
 
@@ -93,8 +96,14 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
 
     ENDLOOP.
 
+    " Add "Business Warehouse"
+    ls_category-category       = c_category_bw.
+    ls_category-category_label = c_category_bw_label.
+    INSERT ls_category INTO TABLE rt_result.
+
     SORT rt_result BY category_label.
 
+    " Add "Other" to the end
     ls_category-category       = c_category_others.
     ls_category-category_label = c_category_others_label.
     INSERT ls_category INTO TABLE rt_result.
@@ -209,17 +218,36 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
 
   METHOD get_repo_category.
 
+    DATA lv_tlogo TYPE rstlogo.
+
     IF strlen( iv_repo_name ) < 4.
       rv_result = c_category_others.
     ELSE.
+      " First four letters of repo name represent the major test object (repo might include others)
       DATA(lv_object_type) = iv_repo_name(4).
 
+      " Find category of test object
       READ TABLE gt_object_categrories REFERENCE INTO DATA(lr_object_category)
         WITH TABLE KEY object_type = lv_object_type.
       IF sy-subrc = 0.
         rv_result = lr_object_category->category.
       ELSE.
-        rv_result = c_category_others.
+        " Assign category for BW objects
+        SELECT SINGLE tlogo INTO @lv_tlogo FROM rstlogoprop
+          WHERE tlogo = @lv_object_type OR tlogo_d = @lv_object_type.
+        IF sy-subrc = 0.
+          rv_result = c_category_bw.
+        ELSE.
+          " Assign some more cases, rest goes to "other"
+          CASE lv_object_type.
+            WHEN 'IWPR' OR 'IWVB'.
+              rv_result = c_category_gateway_bse.
+            WHEN 'SUCU' OR 'SUSC'.
+              rv_result = c_category_auth.
+            WHEN OTHERS.
+              rv_result = c_category_others.
+          ENDCASE.
+        ENDIF.
       ENDIF.
     ENDIF.
 
