@@ -113,9 +113,7 @@ CLASS lcl_main IMPLEMENTATION.
 
   METHOD list_packages.
 
-    DATA:
-      lt_devclass TYPE STANDARD TABLE OF devclass,
-      li_repo     TYPE REF TO zif_abapgit_repo.
+    DATA lt_devclass TYPE STANDARD TABLE OF devclass.
 
     DATA(lv_found) = abap_false.
 
@@ -145,17 +143,12 @@ CLASS lcl_main IMPLEMENTATION.
 
     DATA(li_repo_srv) = zcl_abapgit_repo_srv=>get_instance( ).
 
-    LOOP AT lt_devclass INTO lv_devclass.
+    LOOP AT li_repo_srv->list( ) INTO DATA(li_repo).
       TRY.
-          li_repo_srv->get_repo_from_package(
-            EXPORTING
-              iv_package = lv_devclass
-            IMPORTING
-              ei_repo    = li_repo ).
-          IF li_repo IS NOT INITIAL.
+          IF li_repo->get_package( ) IN s_pack.
             lv_found = abap_true.
             FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
-            WRITE: AT /5 'Repository:', li_repo->get_name( ), AT c_width space.
+            WRITE: AT /5 'Repository:', li_repo->get_name( ), li_repo->get_package( ), AT c_width space.
             FORMAT COLOR OFF INTENSIFIED ON.
             SKIP.
           ENDIF.
@@ -347,14 +340,20 @@ CLASS lcl_main IMPLEMENTATION.
         ls_checks-transport-transport = lv_transport.
       ENDIF.
 
-      CASE abap_true.
-        WHEN p_purge.
-          WRITE: / |Purge { lo_repo->get_name( ) } in { lo_repo->get_package( ) }|.
-          li_repo_srv->purge( ii_repo = lo_repo is_checks = ls_checks ).
-        WHEN p_remov.
-          WRITE: / |Delete { lo_repo->get_name( ) } in { lo_repo->get_package( ) }|.
-          li_repo_srv->delete( lo_repo ).
-      ENDCASE.
+      TRY.
+          CASE abap_true.
+            WHEN p_purge.
+              WRITE: / |Purge { lo_repo->get_name( ) } in { lo_repo->get_package( ) }|.
+              li_repo_srv->purge( ii_repo = lo_repo is_checks = ls_checks ).
+              WRITE: / 'Purged' COLOR COL_POSITIVE.
+            WHEN p_remov.
+              WRITE: / |Delete { lo_repo->get_name( ) } in { lo_repo->get_package( ) }|.
+              li_repo_srv->delete( lo_repo ).
+              WRITE: / 'Deleted' COLOR COL_POSITIVE.
+          ENDCASE.
+        CATCH zcx_abapgit_exception INTO DATA(lx_ex).
+          WRITE: / 'Error' COLOR COL_NEGATIVE, lx_ex->get_text( ).
+      ENDTRY.
     ENDLOOP.
   ENDMETHOD.
 
@@ -787,11 +786,13 @@ CLASS lcl_main IMPLEMENTATION.
           action_aborted_by_user     = 11
           export_failed              = 12
           OTHERS                     = 13.
-      IF sy-subrc <> 0.
+      IF sy-subrc = 0.
+        WRITE: AT 40 'Released' COLOR COL_POSITIVE.
+      ELSE.
         MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
                 WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
                 INTO lv_msg_text.
-        WRITE: / |Error: { lv_msg_text }|.
+        WRITE: / 'Error:' COLOR COL_NEGATIVE, lv_msg_text.
 
         force_release_transport( <ls_request>-trkorr ).
       ENDIF.
@@ -818,11 +819,13 @@ CLASS lcl_main IMPLEMENTATION.
           action_aborted_by_user     = 11
           export_failed              = 12
           OTHERS                     = 13.
-      IF sy-subrc <> 0.
+      IF sy-subrc = 0.
+        WRITE: AT 40 'Released' COLOR COL_POSITIVE.
+      ELSE.
         MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
                 WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4
                 INTO lv_msg_text.
-        WRITE: / |Error: { lv_msg_text }|.
+        WRITE: / 'Error:' COLOR COL_NEGATIVE, lv_msg_text.
 
         force_release_transport( <ls_request>-trkorr ).
       ENDIF.
@@ -845,7 +848,7 @@ CLASS lcl_main IMPLEMENTATION.
       EXCEPTIONS
         OTHERS    = 1.
     IF sy-subrc = 1.
-      WRITE: / |Error: Transport { iv_trkorr } can't be locked|.
+      WRITE: / 'Error:' COLOR COL_NEGATIVE, |Transport { iv_trkorr } can't be locked|.
       RETURN.
     ENDIF.
 
@@ -890,7 +893,7 @@ CLASS lcl_main IMPLEMENTATION.
         MESSAGE ID ls_message-msgid TYPE ls_message-msgty NUMBER ls_message-msgno
                 WITH ls_message-msgv1 ls_message-msgv2 ls_message-msgv3 ls_message-msgv4
                 INTO lv_msg_text.
-        WRITE: / |Error: { lv_msg_text }|.
+        WRITE: / 'Error:' COLOR COL_NEGATIVE, lv_msg_text.
       ENDLOOP.
     ENDIF.
 
