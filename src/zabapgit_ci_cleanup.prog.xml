@@ -31,6 +31,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_FORC</KEY>
+     <ENTRY>Force deletion (ignore errors)</ENTRY>
+     <LENGTH>38</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_FORCE</KEY>
      <ENTRY>Force release (ignore errors)</ENTRY>
      <LENGTH>37</LENGTH>

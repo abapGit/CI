@@ -11,7 +11,8 @@ SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
               p_obj   TYPE abap_bool RADIOBUTTON GROUP r2,
               p_otr   TYPE abap_bool RADIOBUTTON GROUP r2,
               p_log   TYPE abap_bool RADIOBUTTON GROUP r2,
-              p_pack  TYPE abap_bool RADIOBUTTON GROUP r2.
+              p_pack  TYPE abap_bool RADIOBUTTON GROUP r2,
+              p_forc  TYPE abap_bool AS CHECKBOX DEFAULT abap_false.
 SELECTION-SCREEN END OF BLOCK b1.
 
 SELECTION-SCREEN SKIP.
@@ -485,6 +486,12 @@ CLASS lcl_main IMPLEMENTATION.
             iv_obj_name = ls_object-obj_name ).
         ELSE.
           WRITE: 'Flagged for deletion' COLOR COL_POSITIVE.
+
+          IF p_forc = abap_true.
+            delete_tadir(
+            iv_obj_type = ls_object-object
+            iv_obj_name = ls_object-obj_name ).
+          ENDIF.
         ENDIF.
         WRITE AT c_width space.
         FORMAT COLOR OFF.
@@ -534,6 +541,13 @@ CLASS lcl_main IMPLEMENTATION.
           OTHERS                = 7.
       IF sy-subrc <> 0.
         WRITE: 'Error' COLOR COL_NEGATIVE.
+        IF p_forc = abap_true.
+          DELETE FROM sotr_head WHERE concept = ls_head-concept.
+          DELETE FROM sotr_text WHERE concept = ls_head-concept.
+          DELETE FROM sotr_use  WHERE concept = ls_head-concept.
+          DELETE FROM sotr_alia WHERE concept = ls_head-concept.
+          WRITE: 'Force Deleted' COLOR COL_POSITIVE.
+        ENDIF.
       ELSE.
         WRITE: 'Deleted' COLOR COL_POSITIVE.
       ENDIF.
@@ -574,6 +588,13 @@ CLASS lcl_main IMPLEMENTATION.
           OTHERS                = 7.
       IF sy-subrc <> 0.
         WRITE: 'Error' COLOR COL_NEGATIVE.
+        IF p_forc = abap_true.
+          DELETE FROM sotr_headu WHERE concept = ls_headu-concept.
+          DELETE FROM sotr_textu WHERE concept = ls_headu-concept.
+          DELETE FROM sotr_useu  WHERE concept = ls_headu-concept.
+          DELETE FROM sotr_aliau WHERE concept = ls_headu-concept.
+          WRITE: 'Force Deleted' COLOR COL_POSITIVE.
+        ENDIF.
       ELSE.
         WRITE: 'Deleted' COLOR COL_POSITIVE.
       ENDIF.
@@ -709,10 +730,6 @@ CLASS lcl_main IMPLEMENTATION.
     li_obj->delete( iv_package   = iv_package
                     iv_transport = iv_transport ).
 
-    delete_tadir(
-      iv_obj_type = ls_item-obj_type
-      iv_obj_name = ls_item-obj_name ).
-
   ENDMETHOD.
 
   METHOD delete_tadir.
@@ -726,7 +743,7 @@ CLASS lcl_main IMPLEMENTATION.
         wi_test_modus         = abap_false
       EXCEPTIONS
         OTHERS                = 1 ##FM_SUBRC_OK.
-    IF sy-subrc <> 0 AND sy-msgid = 'TR' AND sy-msgno = '024'.
+    IF sy-subrc <> 0 OR p_forc = abap_true.
       " Object directory entry cannot be deleted, since the object is distributed (TR 024)
       " Force deletion of TADIR
       DELETE FROM tadir
