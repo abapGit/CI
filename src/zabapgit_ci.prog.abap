@@ -165,6 +165,7 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
               layer               = layer
               create_package      = createp
               no_purge            = no_purge
+              logging             = p_log
               categories          = CORRESPONDING #( s_cats[] )
             )
             sync_processing       = p_sync
