@@ -48,7 +48,14 @@ CLASS zcl_abapgit_ci_repo_category DEFINITION
 
     CONSTANTS:
       c_category_gateway_bse  TYPE string VALUE 'rap_services',
+      c_category_ddic         TYPE string VALUE 'dictionary',
       c_category_auth         TYPE string VALUE 'apsiam',
+      c_category_aff          TYPE string VALUE 'aff',
+      c_category_aff_label    TYPE string VALUE 'ABAP File Format',
+      c_category_cust         TYPE string VALUE 'customizing',
+      c_category_cust_label   TYPE string VALUE 'Customizing',
+      c_category_hier         TYPE string VALUE 'hier_storage',
+      c_category_hier_label   TYPE string VALUE 'Hierarchy Storage',
       c_category_bw           TYPE string VALUE 'bw',
       c_category_bw_label     TYPE string VALUE 'Business Warehouse',
       c_category_others       TYPE string VALUE 'zzz_other_zzz',
@@ -95,6 +102,11 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
       ENDIF.
 
     ENDLOOP.
+
+    " Add "ABAP File Format"
+    ls_category-category       = c_category_aff.
+    ls_category-category_label = c_category_aff_label.
+    INSERT ls_category INTO TABLE rt_result.
 
     " Add "Business Warehouse"
     ls_category-category       = c_category_bw.
@@ -240,6 +252,14 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
         ELSE.
           " Assign some more cases, rest goes to "other"
           CASE lv_object_type.
+            WHEN 'DDIC'.
+              rv_result = c_category_ddic.
+            WHEN 'CUS0' OR 'CUS1' OR 'CUS2' OR 'SCP1'.
+              rv_result = c_category_cust.
+            WHEN 'CHKC' OR 'CHKO' OR 'CHKV'.
+              rv_result = c_category_aff.
+            WHEN 'SHI3' OR 'SHI5' OR 'SHI8'.
+              rv_result = c_category_hier.
             WHEN 'IWPR' OR 'IWVB'.
               rv_result = c_category_gateway_bse.
             WHEN 'SUCU' OR 'SUSC'.
