@@ -324,7 +324,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
       zcx_abapgit_exception=>raise( |{ COND #( WHEN iv_check_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
                                     |transport { iv_transport }: Incorrect object count | &&
-                                    |{ lv_transport_object_count NUMBER = USER }/| &&
+                                    |({ lv_transport_object_count NUMBER = USER } instead of | &&
                                     |{ lv_repo_object_count NUMBER = USER })| &&
                                     |\n{ lv_first_not_found }| ).
     ENDIF.
@@ -345,7 +345,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
       zcx_abapgit_exception=>raise( |{ COND #( WHEN iv_check_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
                                     |transport { iv_transport }: Too many objects (| &&
-                                    |{ lv_objects_in_tr NUMBER = USER }/{ lv_repo_object_count NUMBER = USER })| &&
+                                    |({ lv_objects_in_tr NUMBER = USER } instead of | &&
+                                    |{ lv_repo_object_count NUMBER = USER })| &&
                                     |\n{ lv_first_too_much }| ).
     ENDIF.
 

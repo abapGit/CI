@@ -33,7 +33,7 @@ CLASS lcl_table_renderer DEFINITION FINAL.
         RETURNING
           VALUE(rv_css_class) TYPE string,
 
-      replace_url_with_link
+      get_message_text
         IMPORTING
           iv_field        TYPE any
         RETURNING
