@@ -489,8 +489,8 @@ CLASS lcl_main IMPLEMENTATION.
 
           IF p_forc = abap_true.
             delete_tadir(
-            iv_obj_type = ls_object-object
-            iv_obj_name = ls_object-obj_name ).
+              iv_obj_type = ls_object-object
+              iv_obj_name = ls_object-obj_name ).
           ENDIF.
         ENDIF.
         WRITE AT c_width space.
@@ -542,10 +542,10 @@ CLASS lcl_main IMPLEMENTATION.
       IF sy-subrc <> 0.
         WRITE: 'Error' COLOR COL_NEGATIVE.
         IF p_forc = abap_true.
-          DELETE FROM sotr_head WHERE concept = ls_head-concept.
-          DELETE FROM sotr_text WHERE concept = ls_head-concept.
-          DELETE FROM sotr_use  WHERE concept = ls_head-concept.
-          DELETE FROM sotr_alia WHERE concept = ls_head-concept.
+          DELETE FROM sotr_head WHERE concept = @ls_head-concept.
+          DELETE FROM sotr_text WHERE concept = @ls_head-concept.
+          DELETE FROM sotr_use  WHERE concept = @ls_head-concept.
+          DELETE FROM sotr_alia WHERE concept = @ls_head-concept.
           WRITE: 'Force Deleted' COLOR COL_POSITIVE.
         ENDIF.
       ELSE.
@@ -589,10 +589,10 @@ CLASS lcl_main IMPLEMENTATION.
       IF sy-subrc <> 0.
         WRITE: 'Error' COLOR COL_NEGATIVE.
         IF p_forc = abap_true.
-          DELETE FROM sotr_headu WHERE concept = ls_headu-concept.
-          DELETE FROM sotr_textu WHERE concept = ls_headu-concept.
-          DELETE FROM sotr_useu  WHERE concept = ls_headu-concept.
-          DELETE FROM sotr_aliau WHERE concept = ls_headu-concept.
+          DELETE FROM sotr_headu WHERE concept = @ls_headu-concept.
+          DELETE FROM sotr_textu WHERE concept = @ls_headu-concept.
+          DELETE FROM sotr_useu  WHERE concept = @ls_headu-concept.
+          DELETE FROM sotr_aliau WHERE concept = @ls_headu-concept.
           WRITE: 'Force Deleted' COLOR COL_POSITIVE.
         ENDIF.
       ELSE.
