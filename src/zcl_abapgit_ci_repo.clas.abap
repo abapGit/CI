@@ -518,6 +518,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     DATA(lv_text) = |abapGit CI { COND #( WHEN iv_deletion = abap_false THEN 'CREATE' ELSE 'DELETE' ) } | &&
                     |{ iv_repo_name } in { iv_package }|. " Might be too long but does not really matter
 
+    " Reset standard request (to avoid confusion)
+    zcl_abapgit_default_transport=>get_instance( )->reset( ).
+
     CALL FUNCTION 'TR_INSERT_REQUEST_WITH_TASKS'
       EXPORTING
         iv_type           = 'K'
@@ -771,6 +774,10 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
         lv_wait_time = lv_wait_time + 1.
       ENDIF.
     ENDDO.
+
+    " Reset standard request (to avoid confusion)
+    zcl_abapgit_default_transport=>get_instance( )->reset( ).
+
   ENDMETHOD.
 
 
