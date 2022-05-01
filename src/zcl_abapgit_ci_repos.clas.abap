@@ -165,7 +165,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
       IF sy-subrc <> 0.
         lv_errid = 'DUMP'.
       ENDIF.
-      cs_ci_repo-message = |Error processing repo: { lv_errid } { lv_message }|.
+      cs_ci_repo-message = |Error processing repo: { lv_errid }\n{ lv_message }|.
       cs_ci_repo-status  = zif_abapgit_ci_definitions=>co_status-not_ok.
       RETURN.
     ENDIF.

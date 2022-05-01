@@ -77,7 +77,7 @@ CLASS lcl_table_renderer IMPLEMENTATION.
                             && |{ get_value_for_status( <lv_field> ) }</td>\n|.
         ELSEIF <ls_component>-name = |MESSAGE|.
           rv_html = rv_html && |<td class="tg-xldj">|
-                            && |{ replace_url_with_link( <lv_field> ) }</td>\n|.
+                            && |{ get_message_text( <lv_field> ) }</td>\n|.
         ELSE.
           rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_keys( <ls_component>-name ) }">|
                             && |{ <lv_field> }</td>\n|.
@@ -131,11 +131,16 @@ CLASS lcl_table_renderer IMPLEMENTATION.
 
   ENDMETHOD.
 
-  METHOD replace_url_with_link.
+  METHOD get_message_text.
 
     rv_value = replace( val   = iv_field
                         regex = '(http.*/)(\d*)'
                         with  = '<a href="$1$2">#$2</a>'
+                        occ   = 0 ).
+
+    rv_value = replace( val   = rv_value
+                        regex = '\n'
+                        with  = '<br/>'
                         occ   = 0 ).
 
   ENDMETHOD.

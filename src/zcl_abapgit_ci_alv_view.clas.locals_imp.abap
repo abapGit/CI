@@ -181,8 +181,7 @@ CLASS lcl_alv IMPLEMENTATION.
 
           TRY.
               DATA(lo_column) = CAST cl_salv_column_table(
-                                       mo_alv->get_columns(
-                                            )->get_column( <ls_column_width>-column ) ).
+                                       mo_alv->get_columns( )->get_column( <ls_column_width>-column ) ).
               lo_column->set_output_length( <ls_column_width>-width ).
 
               IF <ls_column_width>-column = |NAME| OR
