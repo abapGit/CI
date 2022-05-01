@@ -28,7 +28,7 @@
     "db_operation_in_loop": false,
     "max_one_method_parameter_per_line": true,
     "modify_only_own_db_tables": {
-      "ownTables": "^[tadir|y|z]"
+      "ownTables": "^[tadir|y|z|sotr_.*]"
     },
     "no_yoda_conditions": true,
     "prefer_raise_exception_new": true,
