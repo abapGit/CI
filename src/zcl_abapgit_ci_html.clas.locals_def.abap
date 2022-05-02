@@ -21,7 +21,7 @@ CLASS lcl_table_renderer DEFINITION FINAL.
         RETURNING
           VALUE(rv_html) TYPE string,
 
-      get_css_class_for_keys
+      get_css_class_for_field
         IMPORTING
           iv_name             TYPE csequence
         RETURNING
