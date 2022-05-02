@@ -73,13 +73,13 @@ CLASS lcl_table_renderer IMPLEMENTATION.
                             && |<a href="{ <lv_field> }">Repo</a></td>\n|.
         ELSEIF <ls_component>-type->get_ddic_header( )-refname CS |STATUS|.
           rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_status( <lv_field> ) }|
-                            && | { get_css_class_for_keys( <ls_component>-name ) }">|
+                            && | { get_css_class_for_field( <ls_component>-name ) }">|
                             && |{ get_value_for_status( <lv_field> ) }</td>\n|.
         ELSEIF <ls_component>-name = |MESSAGE|.
           rv_html = rv_html && |<td class="tg-xldj">|
                             && |{ get_message_text( <lv_field> ) }</td>\n|.
         ELSE.
-          rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_keys( <ls_component>-name ) }">|
+          rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_field( <ls_component>-name ) }">|
                             && |{ <lv_field> }</td>\n|.
         ENDIF.
 
@@ -93,7 +93,7 @@ CLASS lcl_table_renderer IMPLEMENTATION.
 
   ENDMETHOD.
 
-  METHOD get_css_class_for_keys.
+  METHOD get_css_class_for_field.
 
     CASE iv_name.
       WHEN 'NAME'.
@@ -104,6 +104,10 @@ CLASS lcl_table_renderer IMPLEMENTATION.
         rv_css_class = 'key'.
       WHEN 'STATUS'.
         rv_css_class = 'total'.
+      WHEN 'LAYER'.
+        rv_css_class = 'layer'.
+      WHEN 'DURATION'.
+        rv_css_class = 'duration'.
     ENDCASE.
 
   ENDMETHOD.

@@ -180,30 +180,98 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
 
   METHOD render_style.
 
-    rv_html = |<style type="text/css">\n|
-           && |body \{ font-family:Arial, sans-serif; font-size:14px;\}\n|
-           && |.tg  \{border-collapse:collapse;border-spacing:0;width:100%;\}\n|
-           && |.tg td\{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;|
-           && |border-width:1px;overflow:hidden;word-break:normal;border-color:black;\}\n|
-           && |.tg th\{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;|
-           && |border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;|
-           && |background-color:darkgray;\}\n|
-           && |.tg .tg-kiyi\{font-weight:bold;border-color:inherit;text-align:left;\}\n|
-           && |.tg .tg-xldj\{border-color:inherit;text-align:left;\}\n|
-           && |td.status \{ width:70px; \}\n|
-           && |.box \{ border-style:solid;border-width:1px;border-radius:3px;padding:3px;margin-right:5px; \}\n|
-           && |.ok \{ background-color: #2dc937; \}\n|
-           && |.not_ok \{ background-color: #cc3232; \}\n|
-           && |.undefined \{ background-color: lightgray; \}\n|
-           && |.skipped \{ background-color: #e7b416; \}\n|
-           && |.key \{ background-color: lightblue; \}\n|
-           && |.repo_name \{ width:170px; \}\n|
-           && |.repo_pack \{ width:225px; \}\n|
-           && |.total \{ font-weight:bold;width:70px; \}\n|
-           && |.layer \{ width:70px; \}\n|
-           && |.duration \{ width:70px;text-align: right; \}\n|
-           && |.url \{ width:50px; \}\n|
-           && |</style>\n|.
+    rv_html = `<style type="text/css">`
+      && `body {`
+      && `  font-family: Arial,sans-serif;`
+      && `  font-size: 14px;`
+      && `}`
+      && `.tg {`
+      && `  border-collapse: collapse;`
+      && `  border-spacing: 0;`
+      && `  width: 100%;`
+      && `}`
+      && `.tg td {`
+      && `  font-family: Arial,sans-serif;`
+      && `  font-size: 14px;`
+      && `  padding: 10px 5px;`
+      && `  border-style: solid;`
+      && `  border-width: 1px;`
+      && `  overflow: hidden;`
+      && `  word-break: normal;`
+      && `  border-color: black;`
+      && `}`
+      && `.tg th {`
+      && `  font-family: Arial,sans-serif;`
+      && `  font-size: 14px;`
+      && `  font-weight: normal;`
+      && `  padding: 10px 5px;`
+      && `  border-style: solid;`
+      && `  border-width: 1px;`
+      && `  overflow: hidden;`
+      && `  word-break: normal;`
+      && `  border-color: black;`
+      && `  background-color: darkgray;`
+      && `}`
+      && `.tg .tg-kiyi {`
+      && `  font-weight: bold;`
+      && `  border-color: inherit;`
+      && `  text-align: left;`
+      && `}`
+      && `.tg .tg-xldj {`
+      && `  border-color: inherit;`
+      && `  text-align: left;`
+      && `}`
+      && `td.status {`
+      && `  width: 70px;`
+      && `}`
+      && `.box {`
+      && `  border-style: solid;`
+      && `  border-width: 1px;`
+      && `  border-radius: 3px;`
+      && `  padding: 3px;`
+      && `  margin-right: 5px;`
+      && `}`
+      && `.ok {`
+      && `  background-color: #2dc937;`
+      && `}`
+      && `.not_ok {`
+      && `  background-color: #cc3232;`
+      && `}`
+      && `.undefined {`
+      && `  background-color: lightgray;`
+      && `}`
+      && `.skipped {`
+      && `  background-color: #e7b416;`
+      && `}`
+      && `.key {`
+      && `  background-color: lightblue;`
+      && `}`
+      && `.repo_name {`
+      && `  width: 170px;`
+      && `}`
+      && `.repo_pack {`
+      && `  width: 225px;`
+      && `}`
+      && `.total {`
+      && `  font-weight: bold;`
+      && `  width: 70px;`
+      && `}`
+      && `.layer {`
+      && `  width: 70px;`
+      && `}`
+      && `.duration {`
+      && `  width: 70px;`
+      && `  text-align: right;`
+      && `}`
+      && `.url {`
+      && `  width: 50px;`
+      && `}`
+      && `</style>`.
+
+    REPLACE ALL OCCURRENCES OF `>` IN rv_html WITH |>\n|.
+    REPLACE ALL OCCURRENCES OF `{` IN rv_html WITH |\{\n|.
+    REPLACE ALL OCCURRENCES OF `}` IN rv_html WITH |\}\n|.
+    REPLACE ALL OCCURRENCES OF `;` IN rv_html WITH |;\n|.
 
   ENDMETHOD.
 
