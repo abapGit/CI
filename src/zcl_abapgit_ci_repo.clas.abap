@@ -50,23 +50,9 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         RAISING
           zcx_abapgit_exception,
 
-      log_messages
-        IMPORTING
-          is_ri_repo  TYPE zabapgit_ci_result
-          it_messages TYPE zif_abapgit_log=>ty_log_outs
-        RAISING
-          zcx_abapgit_exception,
-
       syntax_check
         CHANGING
           cs_ri_repo TYPE zabapgit_ci_result
-        RAISING
-          zcx_abapgit_exception,
-
-      log_syntax_errors
-        IMPORTING
-          is_ri_repo TYPE zabapgit_ci_result
-          it_list    TYPE scit_alvlist
         RAISING
           zcx_abapgit_exception,
 
@@ -75,13 +61,6 @@ CLASS zcl_abapgit_ci_repo DEFINITION
           io_repo    TYPE REF TO zcl_abapgit_repo_online
         CHANGING
           cs_ri_repo TYPE zabapgit_ci_result
-        RAISING
-          zcx_abapgit_exception,
-
-      log_diffs
-        IMPORTING
-          is_ri_repo TYPE zabapgit_ci_result
-          is_files   TYPE zif_abapgit_definitions=>ty_stage_files
         RAISING
           zcx_abapgit_exception,
 
@@ -119,6 +98,26 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         RAISING
           zcx_abapgit_exception,
 
+      release_transport
+        IMPORTING
+          iv_transport TYPE trkorr
+        RAISING
+          zcx_abapgit_exception,
+
+      log_diffs
+        IMPORTING
+          is_ri_repo TYPE zabapgit_ci_result
+          is_files   TYPE zif_abapgit_definitions=>ty_stage_files
+        RAISING
+          zcx_abapgit_exception,
+
+      log_messages
+        IMPORTING
+          is_ri_repo         TYPE zabapgit_ci_result
+          VALUE(it_messages) TYPE zif_abapgit_log=>ty_log_outs
+        RAISING
+          zcx_abapgit_exception,
+
       log_objects
         IMPORTING
           is_ri_repo TYPE zabapgit_ci_result
@@ -126,9 +125,10 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         RAISING
           zcx_abapgit_exception,
 
-      release_transport
+      log_syntax_errors
         IMPORTING
-          iv_transport TYPE trkorr
+          is_ri_repo TYPE zabapgit_ci_result
+          it_list    TYPE scit_alvlist
         RAISING
           zcx_abapgit_exception.
 
@@ -222,6 +222,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
 
   METHOD check_transport_request.
+
     DATA: ls_request                TYPE trwbo_request,
           lt_objects                TYPE tr_objects,
           lv_repo_object_count      TYPE i,
@@ -344,7 +345,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
         it_objects = lt_objects ).
 
       zcx_abapgit_exception=>raise( |{ COND #( WHEN iv_check_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
-                                    |transport { iv_transport }: Too many objects (| &&
+                                    |transport { iv_transport }: Too many objects | &&
                                     |({ lv_objects_in_tr NUMBER = USER } instead of | &&
                                     |{ lv_repo_object_count NUMBER = USER })| &&
                                     |\n{ lv_first_too_much }| ).
@@ -355,6 +356,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ELSE.
       cs_ri_repo-check_delete_transport = zif_abapgit_ci_definitions=>co_status-ok.
     ENDIF.
+
   ENDMETHOD.
 
 
@@ -513,6 +515,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
 
   METHOD create_transport.
+
     DATA: ls_request_header TYPE trwbo_request_header.
 
     DATA(lv_text) = |abapGit CI { COND #( WHEN iv_deletion = abap_false THEN 'CREATE' ELSE 'DELETE' ) } | &&
@@ -537,6 +540,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ENDIF.
 
     rv_transport = ls_request_header-trkorr.
+
   ENDMETHOD.
 
 
@@ -583,6 +587,10 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     IF is_ri_repo-logging = abap_false OR it_messages IS INITIAL.
       RETURN.
     ENDIF.
+
+    LOOP AT it_messages ASSIGNING FIELD-SYMBOL(<ls_message>).
+      CLEAR <ls_message>-exception.
+    ENDLOOP.
 
     DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
 
@@ -652,6 +660,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD purge.
 
+    DATA lt_messages TYPE zif_abapgit_log=>ty_log_outs.
+
     IF io_repo IS NOT BOUND OR cs_ri_repo-do_not_purge = abap_true.
       RETURN.
     ENDIF.
@@ -670,13 +680,17 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       CATCH zcx_abapgit_cancel INTO DATA(lx_error).
         zcx_abapgit_exception=>raise( lx_error->get_text( ) ).
       CATCH zcx_abapgit_exception INTO DATA(lx_exc).
+        IF li_log IS BOUND.
+          lt_messages = li_log->get_messages( ).
+        ENDIF.
+
         log_messages(
           is_ri_repo  = cs_ri_repo
-          it_messages = li_log->get_messages( ) ).
+          it_messages = lt_messages ).
 
         DATA(lv_exc) = lx_exc->get_text( ).
         IF lv_exc CP '*Check*log*'.
-          READ TABLE li_log->get_messages( ) INTO DATA(ls_log) INDEX 1.
+          READ TABLE lt_messages INTO DATA(ls_log) INDEX 1.
           IF sy-subrc = 0.
             lv_exc = |Uninstall error: { ls_log-text }|.
           ENDIF.
@@ -694,6 +708,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
 
   METHOD release_transport.
+
     DATA: lt_requests TYPE trwbo_request_headers.
 
     CALL FUNCTION 'TR_READ_REQUEST_WITH_TASKS'
@@ -782,6 +797,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
 
   METHOD run.
+
     DATA: lo_repo      TYPE REF TO zcl_abapgit_repo_online,
           lv_transport TYPE trkorr.
 
