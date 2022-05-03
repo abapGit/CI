@@ -743,9 +743,7 @@ CLASS lcl_main IMPLEMENTATION.
         wi_test_modus         = abap_false
       EXCEPTIONS
         OTHERS                = 1 ##FM_SUBRC_OK.
-    IF sy-subrc <> 0 OR p_forc = abap_true.
-      " Object directory entry cannot be deleted, since the object is distributed (TR 024)
-      " Force deletion of TADIR
+    IF sy-subrc <> 0 AND p_forc = abap_true.
       DELETE FROM tadir
         WHERE pgmid = 'R3TR' AND object = @iv_obj_type AND obj_name = @iv_obj_name.
     ENDIF.
