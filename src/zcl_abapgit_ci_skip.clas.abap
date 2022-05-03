@@ -120,10 +120,6 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Issue https://github.com/abapGit/abapGit/issues/5451| )
-      ( repo_name          = |G4BA|
-        skip_local         = abap_false
-        skip_transportable = abap_true
-        reason             = |Issue https://github.com/abapGit/abapGit/issues/5421| )
       ( repo_name          = |IWMO|
         skip_local         = abap_true
         skip_transportable = abap_true
@@ -154,12 +150,12 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         reason             = |Requires user-interaction (not available in batch)| )
       ( repo_name          = |SOTS|
         skip_local         = abap_true
-        skip_transportable = abap_false
-        reason             = |Cannot be installed in local package| )
+        skip_transportable = abap_true
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/4480| )
       ( repo_name          = |SPRX_server_proxy|
         skip_local         = abap_true
         skip_transportable = abap_true
-        reason             = |Issue https://github.com/abapGit/abapGit/issues/87| )
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/4140| )
       ( repo_name          = |SUSC_and_SUSO|
         skip_local         = abap_false
         skip_transportable = abap_true
@@ -171,11 +167,7 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
       ( repo_name          = |SQSC|
         skip_local         = abap_true
         skip_transportable = abap_true
-        reason             = |Requires SAP ERP on HANA. Issue https://github.com/abapGit-tests/SQSC/issues/1| )
-      ( repo_name          = |UENO|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |Issue https://github.com/abapGit/abapGit/issues/4696| ) ).
+        reason             = |Requires SAP ERP on HANA. Issue https://github.com/abapGit-tests/SQSC/issues/1| ) ).
 
   ENDMETHOD.
 
