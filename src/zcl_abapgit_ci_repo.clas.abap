@@ -113,8 +113,9 @@ CLASS zcl_abapgit_ci_repo DEFINITION
 
       log_messages
         IMPORTING
-          is_ri_repo         TYPE zabapgit_ci_result
-          VALUE(it_messages) TYPE zif_abapgit_log=>ty_log_outs
+          is_ri_repo TYPE zabapgit_ci_result
+          ii_log     TYPE REF TO zif_abapgit_log
+          iv_prefix  TYPE string OPTIONAL
         RAISING
           zcx_abapgit_exception,
 
@@ -131,7 +132,6 @@ CLASS zcl_abapgit_ci_repo DEFINITION
           it_list    TYPE scit_alvlist
         RAISING
           zcx_abapgit_exception.
-
 ENDCLASS.
 
 
@@ -314,7 +314,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
                                   objfunc  = COND #( WHEN iv_check_deletion = abap_true THEN 'D' ELSE space ) ] ).
         lv_transport_object_count = lv_transport_object_count + 1.
       ELSEIF lv_first_not_found IS INITIAL.
-        lv_first_not_found = | First missing: { <ls_file>-item-obj_type }-{ <ls_file>-item-obj_name }|.
+        lv_first_not_found = | First missing: { <ls_file>-item-obj_type } { <ls_file>-item-obj_name }|.
       ENDIF.
     ENDLOOP.
 
@@ -335,7 +335,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
       IF NOT line_exists( lt_files_local[ item-obj_type = <ls_object>-object
                                           item-obj_name = <ls_object>-obj_name ] ) AND lv_first_too_much IS INITIAL.
-        lv_first_too_much = | First extra: { <ls_object>-object }-{ <ls_object>-obj_name }|.
+        lv_first_too_much = | First extra: { <ls_object>-object } { <ls_object>-obj_name }|.
       ENDIF.
     ENDLOOP.
 
@@ -562,11 +562,6 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ENDIF.
 
     IF is_files-remote IS NOT INITIAL.
-      LOOP AT is_files-remote INTO DATA(ls_remote).
-        lo_log->add(
-          iv_log_object = |Diff Remote File|
-          ig_data       = ls_remote-filename ).
-      ENDLOOP.
       lo_log->add(
         iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Diff Remote|
         ig_data       = is_files-remote ).
@@ -584,19 +579,40 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD log_messages.
 
-    IF is_ri_repo-logging = abap_false OR it_messages IS INITIAL.
+    DATA lv_errors TYPE abap_bool.
+
+    IF ii_log IS BOUND.
+      DATA(lt_messages) = ii_log->get_messages( ).
+    ENDIF.
+
+    IF is_ri_repo-logging = abap_false OR lt_messages IS INITIAL.
       RETURN.
     ENDIF.
 
-    LOOP AT it_messages ASSIGNING FIELD-SYMBOL(<ls_message>).
+    LOOP AT lt_messages ASSIGNING FIELD-SYMBOL(<ls_message>).
       CLEAR <ls_message>-exception.
+      IF <ls_message>-type CA 'AEX' AND lv_errors = abap_false.
+        DATA(ls_message) = <ls_message>.
+        lv_errors = abap_true.
+      ENDIF.
     ENDLOOP.
+
+    IF lv_errors = abap_false.
+      RETURN.
+    ENDIF.
 
     DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
 
     lo_log->add(
       iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Log Messages|
-      ig_data       = it_messages ).
+      ig_data       = lt_messages ).
+
+    DATA(lv_exc) = |{ iv_prefix } error: { ls_message-text }|.
+    IF ls_message-obj_name IS NOT INITIAL.
+      lv_exc = lv_exc && |\nObject: { ls_message-obj_type } { ls_message-obj_name }|.
+    ENDIF.
+
+    zcx_abapgit_exception=>raise( lv_exc ).
 
   ENDMETHOD.
 
@@ -650,8 +666,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     io_repo->refresh( iv_drop_cache = abap_true ).
 
     log_messages(
-      is_ri_repo  = cs_ri_repo
-      it_messages = li_log->get_messages( ) ).
+      is_ri_repo = cs_ri_repo
+      ii_log     = li_log
+      iv_prefix  = 'Install' ).
 
     cs_ri_repo-pull = zif_abapgit_ci_definitions=>co_status-ok.
 
@@ -659,8 +676,6 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
 
   METHOD purge.
-
-    DATA lt_messages TYPE zif_abapgit_log=>ty_log_outs.
 
     IF io_repo IS NOT BOUND OR cs_ri_repo-do_not_purge = abap_true.
       RETURN.
@@ -680,22 +695,12 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       CATCH zcx_abapgit_cancel INTO DATA(lx_error).
         zcx_abapgit_exception=>raise( lx_error->get_text( ) ).
       CATCH zcx_abapgit_exception INTO DATA(lx_exc).
-        IF li_log IS BOUND.
-          lt_messages = li_log->get_messages( ).
-        ENDIF.
-
         log_messages(
-          is_ri_repo  = cs_ri_repo
-          it_messages = lt_messages ).
+          is_ri_repo = cs_ri_repo
+          ii_log     = li_log
+          iv_prefix  = 'Uninstall' ).
 
-        DATA(lv_exc) = lx_exc->get_text( ).
-        IF lv_exc CP '*Check*log*'.
-          READ TABLE lt_messages INTO DATA(ls_log) INDEX 1.
-          IF sy-subrc = 0.
-            lv_exc = |Uninstall error: { ls_log-text }|.
-          ENDIF.
-        ENDIF.
-        zcx_abapgit_exception=>raise( lv_exc ).
+        zcx_abapgit_exception=>raise( lx_exc->get_text( ) ).
     ENDTRY.
 
     cs_ri_repo-purge = zif_abapgit_ci_definitions=>co_status-ok.
