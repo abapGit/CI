@@ -10,6 +10,7 @@ CLASS ltcl_tests DEFINITION FOR TESTING RISK LEVEL HARMLESS
       test_category FOR TESTING,
       test_objects FOR TESTING,
       test_others FOR TESTING,
+      test_aff FOR TESTING,
       test_bw FOR TESTING.
 
 ENDCLASS.
@@ -37,6 +38,10 @@ CLASS ltcl_tests IMPLEMENTATION.
       exp = 'Dictionary' ).
 
     cl_abap_unit_assert=>assert_equals(
+      act = mo_cut->get_category_label( 'customizing' )
+      exp = 'Customizing' ).
+
+    cl_abap_unit_assert=>assert_equals(
       act = mo_cut->get_category_label( 'zzz_other_zzz' )
       exp = 'Others' ).
 
@@ -60,6 +65,10 @@ CLASS ltcl_tests IMPLEMENTATION.
       act = mo_cut->get_repo_category( 'TTYP_with_CLAS_ref' )
       exp = 'dictionary' ).
 
+    cl_abap_unit_assert=>assert_equals(
+      act = mo_cut->get_repo_category( 'DDIC_ref' )
+      exp = 'dictionary' ).
+
   ENDMETHOD.
 
   METHOD test_others.
@@ -67,6 +76,14 @@ CLASS ltcl_tests IMPLEMENTATION.
     cl_abap_unit_assert=>assert_equals(
       act = mo_cut->get_repo_category( 'SICF' )
       exp = 'zzz_other_zzz' ).
+
+  ENDMETHOD.
+
+  METHOD test_aff.
+
+    cl_abap_unit_assert=>assert_equals(
+      act = mo_cut->get_repo_category( 'CHKC' )
+      exp = 'aff' ).
 
   ENDMETHOD.
 

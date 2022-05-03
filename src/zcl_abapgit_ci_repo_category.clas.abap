@@ -113,6 +113,16 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
     ls_category-category_label = c_category_bw_label.
     INSERT ls_category INTO TABLE rt_result.
 
+    " Add "Customizing"
+    ls_category-category       = c_category_cust.
+    ls_category-category_label = c_category_cust_label.
+    INSERT ls_category INTO TABLE rt_result.
+
+    " Add "Hierarchy Storage"
+    ls_category-category       = c_category_hier.
+    ls_category-category_label = c_category_hier_label.
+    INSERT ls_category INTO TABLE rt_result.
+
     SORT rt_result BY category_label.
 
     " Add "Other" to the end
@@ -234,41 +244,45 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
 
     IF strlen( iv_repo_name ) < 4.
       rv_result = c_category_others.
-    ELSE.
-      " First four letters of repo name represent the major test object (repo might include others)
-      DATA(lv_object_type) = iv_repo_name(4).
+      RETURN.
+    ENDIF.
 
-      " Find category of test object
-      READ TABLE gt_object_categrories REFERENCE INTO DATA(lr_object_category)
-        WITH TABLE KEY object_type = lv_object_type.
+
+    " First four letters of repo name represent the major test object (repo might include others)
+    DATA(lv_object_type) = iv_repo_name(4).
+
+    " Find category of test object
+    READ TABLE gt_object_categrories REFERENCE INTO DATA(lr_object_category)
+      WITH TABLE KEY object_type = lv_object_type.
+    IF sy-subrc = 0.
+      rv_result = lr_object_category->category.
+    ELSE.
+      " Assign category for BW objects
+      SELECT SINGLE tlogo INTO @lv_tlogo FROM rstlogoprop
+        WHERE tlogo = @lv_object_type OR tlogo_d = @lv_object_type.
       IF sy-subrc = 0.
-        rv_result = lr_object_category->category.
-      ELSE.
-        " Assign category for BW objects
-        SELECT SINGLE tlogo INTO @lv_tlogo FROM rstlogoprop
-          WHERE tlogo = @lv_object_type OR tlogo_d = @lv_object_type.
-        IF sy-subrc = 0.
-          rv_result = c_category_bw.
-        ELSE.
-          " Assign some more cases, rest goes to "other"
-          CASE lv_object_type.
-            WHEN 'DDIC'.
-              rv_result = c_category_ddic.
-            WHEN 'CUS0' OR 'CUS1' OR 'CUS2' OR 'SCP1'.
-              rv_result = c_category_cust.
-            WHEN 'CHKC' OR 'CHKO' OR 'CHKV'.
-              rv_result = c_category_aff.
-            WHEN 'SHI3' OR 'SHI5' OR 'SHI8'.
-              rv_result = c_category_hier.
-            WHEN 'IWPR' OR 'IWVB'.
-              rv_result = c_category_gateway_bse.
-            WHEN 'SUCU' OR 'SUSC'.
-              rv_result = c_category_auth.
-            WHEN OTHERS.
-              rv_result = c_category_others.
-          ENDCASE.
-        ENDIF.
+        rv_result = c_category_bw.
       ENDIF.
+    ENDIF.
+
+    IF rv_result IS INITIAL OR rv_result = c_category_others.
+      " Assign some more cases, rest goes to "other"
+      CASE lv_object_type.
+        WHEN 'DDIC'.
+          rv_result = c_category_ddic.
+        WHEN 'CUS0' OR 'CUS1' OR 'CUS2' OR 'SCP1'.
+          rv_result = c_category_cust.
+        WHEN 'CHKC' OR 'CHKO' OR 'CHKV'.
+          rv_result = c_category_aff.
+        WHEN 'SHI3' OR 'SHI5' OR 'SHI8'.
+          rv_result = c_category_hier.
+        WHEN 'IWPR' OR 'IWVB'.
+          rv_result = c_category_gateway_bse.
+        WHEN 'SUCU' OR 'SUSC'.
+          rv_result = c_category_auth.
+        WHEN OTHERS.
+          rv_result = c_category_others.
+      ENDCASE.
     ENDIF.
 
   ENDMETHOD.
