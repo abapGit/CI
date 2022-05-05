@@ -52,9 +52,13 @@ CLASS zcl_abapgit_ci_repo_check IMPLEMENTATION.
 
       CHECK lv_is_xml = abap_true OR lv_is_json = abap_true. " only object definitions
 
-      CHECK ls_item-obj_type <> 'DEVC' OR ls_item-obj_name <> iv_devclass. " skip the root package
+      " skip the root package and namespaces
+      CHECK ls_item-obj_type <> 'DEVC' OR ls_item-obj_name <> iv_devclass.
+      CHECK ls_item-obj_type <> 'NSPC'.
 
       IF zcl_abapgit_objects=>exists( ls_item ) = abap_true.
+        " Note: If the zcl_abapgit_object_<type>~exists fails with exception, the check returns true!
+        " So check if the implementation of `exists` is correct
         zcx_abapgit_exception=>raise( |Object { ls_item-obj_type } { ls_item-obj_name } already exists| ).
       ENDIF.
 

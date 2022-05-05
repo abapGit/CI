@@ -45,6 +45,7 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         IMPORTING
           io_repo      TYPE REF TO zcl_abapgit_repo_online
           iv_transport TYPE trkorr OPTIONAL
+          iv_cleanup   TYPE abap_bool DEFAULT abap_false
         CHANGING
           cs_ri_repo   TYPE zabapgit_ci_result
         RAISING
@@ -88,19 +89,32 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         RAISING
           zcx_abapgit_exception,
 
-      check_transport_request
+      check_transport
         IMPORTING
-          io_repo           TYPE REF TO zcl_abapgit_repo_online
-          iv_transport      TYPE trkorr
-          iv_check_deletion TYPE abap_bool
+          io_repo      TYPE REF TO zcl_abapgit_repo_online
+          iv_transport TYPE trkorr
+          iv_deletion  TYPE abap_bool
         CHANGING
-          cs_ri_repo        TYPE zabapgit_ci_result
+          cs_ri_repo   TYPE zabapgit_ci_result
         RAISING
           zcx_abapgit_exception,
 
       release_transport
         IMPORTING
           iv_transport TYPE trkorr
+        RAISING
+          zcx_abapgit_exception,
+
+      check_item
+        IMPORTING
+          is_item         TYPE zif_abapgit_definitions=>ty_item
+          iv_deletion     TYPE abap_bool
+        RETURNING
+          VALUE(rv_check) TYPE abap_bool,
+
+      adjust_item
+        CHANGING
+          cs_item TYPE zif_abapgit_definitions=>ty_item
         RAISING
           zcx_abapgit_exception,
 
@@ -139,6 +153,47 @@ ENDCLASS.
 CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
 
+  METHOD adjust_item.
+
+    IF cs_item-obj_type = 'SICF'.
+      " Object name of ICF services are encoded using hash of URL and need to be decoded for comparison with TADIR
+      cs_item-obj_name = zcl_abapgit_object_sicf=>read_tadir_sicf( cs_item-obj_name )-obj_name.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD check_item.
+
+    DATA lv_category TYPE seoclassdf-category.
+
+    rv_check = abap_true.
+
+    " In some cases, object directory (tadir) and transport entries (e07x) do not match.
+    " If this is the case, we skip such objects
+    IF is_item-obj_type = 'DEVC'.
+      " Packages cannot be deleted in the same transport as its contents. abapGit does not delete transportable
+      " packages on uninstall. Therefore these might still exist from the last run and might not be contained
+      " in this transport.
+      rv_check = abap_false.
+    ELSEIF is_item-obj_type = 'SICF' AND iv_deletion = abap_true.
+      " Object name of ICF services can not be decoded after deletion since this needs the TADIR entry
+      rv_check = abap_false.
+    ELSEIF is_item-obj_type = 'TDAT' AND is_item-obj_name = 'EDISEGMENT'.
+      " IDOC and IEXT create additional TDAT entries
+      rv_check = abap_false.
+    ELSEIF is_item-obj_type = 'INTF'.
+      " WDYN generate an interface
+      SELECT SINGLE category FROM seoclassdf INTO @lv_category
+        WHERE clsname = @is_item-obj_name.              "#EC CI_GENBUFF
+      IF sy-subrc = 0 AND lv_category = seoc_category_webdynpro_class.
+        rv_check = abap_false.
+      ENDIF.
+    ENDIF.
+
+  ENDMETHOD.
+
+
   METHOD check_leftovers.
 
     DATA lv_count TYPE i.
@@ -171,6 +226,13 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     SELECT COUNT(*) FROM sotr_headu INTO @lv_count WHERE paket = @cs_ri_repo-package.
     IF lv_count > 0.
       zcx_abapgit_exception=>raise( |Leftover long texts: { lv_count }| ).
+    ENDIF.
+
+    " Check if package is still registered in abapGit
+    DATA(lt_repos) = zcl_abapgit_persist_factory=>get_repo( )->list( ).
+    READ TABLE lt_repos TRANSPORTING NO FIELDS WITH KEY package = cs_ri_repo-package.
+    IF sy-subrc = 0.
+      zcx_abapgit_exception=>raise( |Package still registered in abapGit| ).
     ENDIF.
 
     cs_ri_repo-check_leftovers = zif_abapgit_ci_definitions=>co_status-ok.
@@ -221,7 +283,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD check_transport_request.
+  METHOD check_transport.
 
     DATA: ls_request                TYPE trwbo_request,
           lt_objects                TYPE tr_objects,
@@ -232,7 +294,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
           lv_first_too_much         TYPE string,
           lt_converted_r3tr_objects TYPE tr_objects.
 
-    IF iv_check_deletion = abap_false.
+    IF iv_deletion = abap_false.
       cs_ri_repo-check_create_transport = zif_abapgit_ci_definitions=>co_status-not_ok.
     ELSE.
       cs_ri_repo-check_delete_transport = zif_abapgit_ci_definitions=>co_status-not_ok.
@@ -299,22 +361,22 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     DATA(lt_files_local) = io_repo->get_files_local( ).
 
     LOOP AT lt_files_local ASSIGNING FIELD-SYMBOL(<ls_file>) WHERE item-obj_type IS NOT INITIAL.
-      IF <ls_file>-item-obj_type = 'DEVC'.
-        " Packages cannot be deleted in the same transport as its contents. abapGit does not delete transportable
-        " packages on uninstall. Therefore these might still exist from the last run and might not be contained
-        " in this transport. -> ignore for now
+      IF check_item( is_item     = <ls_file>-item
+                     iv_deletion = iv_deletion ) = abap_false.
         CONTINUE.
       ENDIF.
+
+      adjust_item( CHANGING cs_item = <ls_file>-item ).
 
       lv_repo_object_count = lv_repo_object_count + 1.
 
       IF line_exists( lt_objects[ pgmid    = 'R3TR'
                                   object   = <ls_file>-item-obj_type
                                   obj_name = <ls_file>-item-obj_name
-                                  objfunc  = COND #( WHEN iv_check_deletion = abap_true THEN 'D' ELSE space ) ] ).
+                                  objfunc  = COND #( WHEN iv_deletion = abap_true THEN 'D' ELSE space ) ] ).
         lv_transport_object_count = lv_transport_object_count + 1.
       ELSEIF lv_first_not_found IS INITIAL.
-        lv_first_not_found = | First missing: { <ls_file>-item-obj_type } { <ls_file>-item-obj_name }|.
+        lv_first_not_found = |First missing: { <ls_file>-item-obj_type } { <ls_file>-item-obj_name }|.
       ENDIF.
     ENDLOOP.
 
@@ -323,10 +385,10 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
         is_ri_repo = cs_ri_repo
         it_objects = lt_objects ).
 
-      zcx_abapgit_exception=>raise( |{ COND #( WHEN iv_check_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
+      zcx_abapgit_exception=>raise( |{ COND #( WHEN iv_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
                                     |transport { iv_transport }: Incorrect object count | &&
                                     |({ lv_transport_object_count NUMBER = USER } instead of | &&
-                                    |{ lv_repo_object_count NUMBER = USER })| &&
+                                    |{ lv_repo_object_count NUMBER = USER }) | &&
                                     |\n{ lv_first_not_found }| ).
     ENDIF.
 
@@ -335,7 +397,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
       IF NOT line_exists( lt_files_local[ item-obj_type = <ls_object>-object
                                           item-obj_name = <ls_object>-obj_name ] ) AND lv_first_too_much IS INITIAL.
-        lv_first_too_much = | First extra: { <ls_object>-object } { <ls_object>-obj_name }|.
+        lv_first_too_much = |First extra: { <ls_object>-object } { <ls_object>-obj_name }|.
       ENDIF.
     ENDLOOP.
 
@@ -344,14 +406,14 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
         is_ri_repo = cs_ri_repo
         it_objects = lt_objects ).
 
-      zcx_abapgit_exception=>raise( |{ COND #( WHEN iv_check_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
+      zcx_abapgit_exception=>raise( |{ COND #( WHEN iv_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
                                     |transport { iv_transport }: Too many objects | &&
                                     |({ lv_objects_in_tr NUMBER = USER } instead of | &&
-                                    |{ lv_repo_object_count NUMBER = USER })| &&
+                                    |{ lv_repo_object_count NUMBER = USER }) | &&
                                     |\n{ lv_first_too_much }| ).
     ENDIF.
 
-    IF iv_check_deletion = abap_false.
+    IF iv_deletion = abap_false.
       cs_ri_repo-check_create_transport = zif_abapgit_ci_definitions=>co_status-ok.
     ELSE.
       cs_ri_repo-check_delete_transport = zif_abapgit_ci_definitions=>co_status-ok.
@@ -609,7 +671,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     DATA(lv_exc) = |{ iv_prefix } error: { ls_message-text }|.
     IF ls_message-obj_name IS NOT INITIAL.
-      lv_exc = lv_exc && |\nObject: { ls_message-obj_type } { ls_message-obj_name }|.
+      lv_exc = lv_exc && | \nObject: { ls_message-obj_type } { ls_message-obj_name }|.
     ENDIF.
 
     zcx_abapgit_exception=>raise( lv_exc ).
@@ -677,6 +739,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD purge.
 
+    DATA lv_error TYPE string.
+
     IF io_repo IS NOT BOUND OR cs_ri_repo-do_not_purge = abap_true.
       RETURN.
     ENDIF.
@@ -692,22 +756,30 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
                                                                      is_checks = ls_checks ).
 
         COMMIT WORK AND WAIT.
-      CATCH zcx_abapgit_cancel INTO DATA(lx_error).
-        zcx_abapgit_exception=>raise( lx_error->get_text( ) ).
-      CATCH zcx_abapgit_exception INTO DATA(lx_exc).
+      CATCH zcx_abapgit_cancel INTO DATA(lx_cancel).
+        lv_error = lx_cancel->get_text( ).
+      CATCH zcx_abapgit_exception INTO DATA(lx_exception).
         log_messages(
           is_ri_repo = cs_ri_repo
           ii_log     = li_log
           iv_prefix  = 'Uninstall' ).
 
-        zcx_abapgit_exception=>raise( lx_exc->get_text( ) ).
+        lv_error = lx_exception->get_text( ).
     ENDTRY.
-
-    cs_ri_repo-purge = zif_abapgit_ci_definitions=>co_status-ok.
 
     CALL FUNCTION 'DEQUEUE_ALL'
       EXPORTING
         _synchron = abap_true.
+
+    IF lv_error IS NOT INITIAL.
+      IF iv_cleanup = abap_true.
+        RETURN.
+      ELSE.
+        zcx_abapgit_exception=>raise( lv_error ).
+      ENDIF.
+    ENDIF.
+
+    cs_ri_repo-purge = zif_abapgit_ci_definitions=>co_status-ok.
 
   ENDMETHOD.
 
@@ -817,7 +889,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     IF cs_ri_repo-create_package = zif_abapgit_ci_definitions=>co_status-skipped.
       cs_ri_repo-create_package = zif_abapgit_ci_definitions=>co_status-undefined.
     ELSE.
-      create_package( EXPORTING iv_transport = COND #( WHEN lv_transportable = abap_true THEN lv_transport )
+      create_package( EXPORTING iv_transport = lv_transport
                       CHANGING  cs_ri_repo   = cs_ri_repo ).
     ENDIF.
 
@@ -825,9 +897,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
         clone( CHANGING cs_ri_repo = cs_ri_repo
                         co_repo    = lo_repo ).
 
-        pull( EXPORTING io_repo    = lo_repo
-                        iv_transport = COND #( WHEN lv_transportable = abap_true THEN lv_transport )
-              CHANGING  cs_ri_repo = cs_ri_repo ).
+        pull( EXPORTING io_repo      = lo_repo
+                        iv_transport = lv_transport
+              CHANGING  cs_ri_repo   = cs_ri_repo ).
 
         syntax_check( CHANGING cs_ri_repo = cs_ri_repo ).
 
@@ -836,10 +908,10 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
         IF lv_transportable = abap_true.
           release_transport( lv_transport ).
-          check_transport_request( EXPORTING io_repo           = lo_repo
-                                             iv_transport      = lv_transport
-                                             iv_check_deletion = abap_false
-                                   CHANGING  cs_ri_repo        = cs_ri_repo ).
+          check_transport( EXPORTING io_repo      = lo_repo
+                                     iv_transport = lv_transport
+                                     iv_deletion  = abap_false
+                           CHANGING  cs_ri_repo   = cs_ri_repo ).
         ENDIF.
 
       CATCH zcx_abapgit_cancel INTO DATA(lx_cancel).
@@ -854,16 +926,18 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
                                            iv_package   = cs_ri_repo-package
                                            iv_deletion  = abap_true ).
         ENDIF.
+
+        " uninstall repo but don't raise exceptions
         purge( EXPORTING io_repo      = lo_repo
-                         iv_transport = COND #( WHEN lv_transportable = abap_true THEN lv_transport )
+                         iv_transport = lv_transport
+                         iv_cleanup   = abap_true
                CHANGING  cs_ri_repo   = cs_ri_repo ).
 
         IF lv_transportable = abap_true.
           release_transport( lv_transport ).
         ENDIF.
 
-        zcx_abapgit_exception=>raise( iv_text     = lx_error->get_text( )
-                                      ix_previous = lx_error ).
+        zcx_abapgit_exception=>raise_with_text( lx_error ).
 
     ENDTRY.
 
@@ -880,18 +954,21 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ENDIF.
 
     purge( EXPORTING io_repo      = lo_repo
-                     iv_transport = COND #( WHEN lv_transportable = abap_true THEN lv_transport )
+                     iv_transport = lv_transport
            CHANGING  cs_ri_repo   = cs_ri_repo ).
 
     IF lv_transportable = abap_true.
       release_transport( lv_transport ).
-      check_transport_request( EXPORTING io_repo           = lo_repo
-                                         iv_transport      = lv_transport
-                                         iv_check_deletion = abap_true
-                               CHANGING  cs_ri_repo        = cs_ri_repo ).
+      check_transport( EXPORTING io_repo      = lo_repo
+                                 iv_transport = lv_transport
+                                 iv_deletion  = abap_true
+                       CHANGING  cs_ri_repo   = cs_ri_repo ).
     ENDIF.
 
     check_leftovers( CHANGING cs_ri_repo = cs_ri_repo ).
+
+    " Done. Release any locks
+    COMMIT WORK AND WAIT.
 
   ENDMETHOD.
 
@@ -904,9 +981,10 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     DATA(lt_list) = li_syntax_check->run( 'SYNTAX_CHECK' ).
 
-    READ TABLE lt_list TRANSPORTING NO FIELDS
-                       WITH KEY kind = 'E'.
+    READ TABLE lt_list INTO DATA(ls_list) WITH KEY kind = 'E'.
     IF sy-subrc = 0.
+      cs_ri_repo-message = |Syntax error: { ls_list-param1 } | &&
+                           |\nObject: { ls_list-objtype } { ls_list-objname }|.
       cs_ri_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-not_ok.
 
       log_syntax_errors(
