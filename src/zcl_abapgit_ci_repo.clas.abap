@@ -155,17 +155,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD adjust_item.
 
-    DATA ls_tadir TYPE zif_abapgit_definitions=>ty_tadir.
-
     IF cs_item-obj_type = 'SICF'.
       " Object name of ICF services are encoded using hash of URL and need to be decoded for comparison with TADIR
-      CALL METHOD zcl_abapgit_object_sicf=>read_tadir_sicf
-        EXPORTING
-          iv_obj_name = cs_item-obj_name
-        RECEIVING
-          rs_tadir    = ls_tadir.
-
-      cs_item-obj_name = ls_tadir-obj_name.
+      cs_item-obj_name = zcl_abapgit_object_sicf=>read_tadir_sicf( cs_item-obj_name )-obj_name.
     ENDIF.
 
   ENDMETHOD.
