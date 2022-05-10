@@ -1,10 +1,10 @@
 *&---------------------------------------------------------------------*
 *& Report zabapgit_ci_update_abapgit
 *&---------------------------------------------------------------------*
-*&
+*& Update abapGit developer version to latest version from GitHub
+*& See https://github.com/abapGit/CI
 *&---------------------------------------------------------------------*
 REPORT zabapgit_ci_update_abapgit.
-
 
 PARAMETERS:
   slack TYPE abap_bool AS CHECKBOX,

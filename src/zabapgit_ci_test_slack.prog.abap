@@ -1,7 +1,8 @@
 *&---------------------------------------------------------------------*
 *& Report zabapgit_ci_test_slack
 *&---------------------------------------------------------------------*
-*&
+*& Post a message to abapGit CI Slack channel
+*& See https://github.com/abapGit/CI
 *&---------------------------------------------------------------------*
 REPORT zabapgit_ci_test_slack.
 

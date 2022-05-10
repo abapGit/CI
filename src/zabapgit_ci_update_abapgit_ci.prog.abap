@@ -1,7 +1,8 @@
 *&---------------------------------------------------------------------*
 *& Report zabapgit_ci_update_abapgit_ci
 *&---------------------------------------------------------------------*
-*&
+*& Update abapGit CI to latest version from GitHub
+*& See https://github.com/abapGit/CI
 *&---------------------------------------------------------------------*
 REPORT zabapgit_ci_update_abapgit_ci.
 
