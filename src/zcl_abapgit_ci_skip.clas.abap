@@ -100,6 +100,10 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Issue https://github.com/abapGit/abapGit/issues/5449| )
+      ( repo_name          = |CUS0|
+        skip_local         = abap_false
+        skip_transportable = not_diag
+        reason             = |Requires user-interaction (not available in batch)| )
       ( repo_name          = |DDLS_cyclic|
         skip_local         = abap_true
         skip_transportable = abap_true
@@ -123,7 +127,7 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
       ( repo_name          = |ECATT|
         skip_local         = abap_true
         skip_transportable = abap_true
-        reason             = |Issue https://github.com/abapGit/abapGit/issues/2272| )
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/2722| )
       ( repo_name          = |FUGR_lxe|
         skip_local         = abap_true
         skip_transportable = abap_true
@@ -187,7 +191,11 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
       ( repo_name          = |SQSC|
         skip_local         = abap_true
         skip_transportable = abap_true
-        reason             = |Requires SAP ERP on HANA. Issue https://github.com/abapGit-tests/SQSC/issues/1| ) ).
+        reason             = |Requires SAP ERP on HANA. Issue https://github.com/abapGit-tests/SQSC/issues/1| )
+      ( repo_name          = |SXCI|
+        skip_local         = not_diag
+        skip_transportable = not_diag
+        reason             = |Requires user-interaction (not available in batch)| ) ).
 
   ENDMETHOD.
 
