@@ -126,6 +126,8 @@ CLASS lcl_gui DEFINITION.
       RAISING
         zcx_abapgit_exception.
 
+  PRIVATE SECTION.
+
     DATA mi_html_viewer TYPE REF TO zif_abapgit_html_viewer.
 
 ENDCLASS.
@@ -198,11 +200,8 @@ CLASS lcl_gui IMPLEMENTATION.
     TRY.
         IF iv_action = 'go-back'.
           back( ).
-        ELSE.
-          BREAK-POINT.
         ENDIF.
-      CATCH cx_root.
-        BREAK-POINT.
+      CATCH cx_root ##NO_HANDLER.
     ENDTRY.
 
   ENDMETHOD.
