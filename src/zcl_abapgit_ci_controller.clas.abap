@@ -67,6 +67,14 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
                                           + cs_result-statistics-test_cases-skipped
                                           + cs_result-statistics-test_cases-failed.
 
+    IF sy-batch = abap_true.
+      DATA(lv_msg) = |Total: { cs_result-statistics-test_cases-total } |
+                  && |\|{ icon_led_green }Passed: { cs_result-statistics-test_cases-successful } |
+                  && |\|{ icon_led_yellow }Skipped: { cs_result-statistics-test_cases-skipped } |
+                  && |\|{ icon_led_red }Failed: { cs_result-statistics-test_cases-failed }|.
+      MESSAGE lv_msg TYPE 'I'.
+    ENDIF.
+
   ENDMETHOD.
 
 

@@ -176,6 +176,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
   METHOD process_repos.
 
     DATA:
+      lv_result           TYPE string,
       lv_start_timestamp  TYPE timestampl,
       lv_finish_timestamp TYPE timestampl.
 
@@ -228,8 +229,19 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
         iv_timestamp0 = lv_start_timestamp
         iv_timestamp1 = lv_finish_timestamp ).
 
+      CASE <ls_ci_repo>-status.
+        WHEN zif_abapgit_ci_definitions=>co_status-not_ok.
+          lv_result = |{ icon_led_red } Result: Fail|.
+        WHEN zif_abapgit_ci_definitions=>co_status-ok.
+          lv_result = |{ icon_led_green } Result: Pass|.
+        WHEN zif_abapgit_ci_definitions=>co_status-skipped.
+          lv_result = |{ icon_led_yellow } Result: Skip|.
+        WHEN OTHERS.
+          lv_result = |{ icon_led_yellow } Result: Unknown|.
+      ENDCASE.
+
       IF sy-batch = abap_true.
-        MESSAGE |Runtime: { <ls_ci_repo>-duration } seconds| TYPE 'I'.
+        MESSAGE |{ lv_result }, Runtime: { <ls_ci_repo>-duration } seconds| TYPE 'I'.
       ENDIF.
 
     ENDLOOP.
