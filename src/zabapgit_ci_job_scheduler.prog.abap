@@ -1,7 +1,8 @@
 *&---------------------------------------------------------------------*
-*& Report zabapgit_ci_submit_job_queue
+*& Report zabapgit_ci_job_scheduler
 *&---------------------------------------------------------------------*
-*&
+*& Schedule abapGit CI processes
+*& See https://github.com/abapGit/CI
 *&---------------------------------------------------------------------*
 REPORT zabapgit_ci_job_scheduler.
 
