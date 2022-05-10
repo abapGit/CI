@@ -1,4 +1,9 @@
-* https://github.com/abapGit/CI
+*&---------------------------------------------------------------------*
+*& Report zabapgit_ci
+*&---------------------------------------------------------------------*
+*& abapGit CI Runner
+*& See https://github.com/abapGit/CI
+*&---------------------------------------------------------------------*
 REPORT zabapgit_ci.
 
 DATA: gv_repo_name TYPE c LENGTH 60.
