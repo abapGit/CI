@@ -23,6 +23,10 @@ CLASS zcl_abapgit_ci_log DEFINITION
       RAISING
         zcx_abapgit_exception.
 
+    METHODS callstack
+      RAISING
+        zcx_abapgit_exception.
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -164,6 +168,21 @@ CLASS zcl_abapgit_ci_log IMPLEMENTATION.
     IF sy-subrc <> 0.
       zcx_abapgit_exception=>raise( 'Cannot update TADIR for W3MI' ).
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD callstack.
+
+    DATA lt_callstack TYPE abap_callstack.
+
+    CALL FUNCTION 'SYSTEM_CALLSTACK'
+      IMPORTING
+        callstack = lt_callstack.
+
+    add(
+      iv_log_object = |Callstack|
+      ig_data       = lt_callstack ).
 
   ENDMETHOD.
 
