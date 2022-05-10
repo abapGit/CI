@@ -73,6 +73,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_POPUP</KEY>
+     <ENTRY>Prompt for transport</ENTRY>
+     <LENGTH>28</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_PREV</KEY>
      <ENTRY>Preview transports</ENTRY>
      <LENGTH>26</LENGTH>

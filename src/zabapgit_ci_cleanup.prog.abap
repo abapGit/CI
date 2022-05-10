@@ -1,8 +1,16 @@
+*&---------------------------------------------------------------------*
+*& Report zabapgit_ci_cleanup
+*&---------------------------------------------------------------------*
+*& Various clean-up tools to use after abapGit CI run
+*& See https://github.com/abapGit/CI
+*&---------------------------------------------------------------------*
 REPORT zabapgit_ci_cleanup LINE-SIZE 255.
 
 DATA: gv_package TYPE devclass.
 
+SELECTION-SCREEN SKIP.
 PARAMETERS: p_uninst TYPE abap_bool RADIOBUTTON GROUP r1 DEFAULT 'X'.
+SELECTION-SCREEN SKIP.
 SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
   SELECT-OPTIONS: s_pack FOR gv_package.
   PARAMETERS: p_list  TYPE abap_bool RADIOBUTTON GROUP r2 DEFAULT 'X',
@@ -12,12 +20,15 @@ SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
               p_otr   TYPE abap_bool RADIOBUTTON GROUP r2,
               p_log   TYPE abap_bool RADIOBUTTON GROUP r2,
               p_pack  TYPE abap_bool RADIOBUTTON GROUP r2,
+              p_popup TYPE abap_bool AS CHECKBOX DEFAULT abap_false,
               p_forc  TYPE abap_bool AS CHECKBOX DEFAULT abap_false.
 SELECTION-SCREEN END OF BLOCK b1.
 
 SELECTION-SCREEN SKIP.
 
+SELECTION-SCREEN SKIP.
 PARAMETERS: p_trrel TYPE abap_bool RADIOBUTTON GROUP r1.
+SELECTION-SCREEN SKIP.
 SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-002.
   PARAMETERS: p_txt   TYPE as4text DEFAULT 'abapGit CI*',
               p_prev  TYPE abap_bool AS CHECKBOX DEFAULT abap_true,
@@ -53,6 +64,13 @@ CLASS lcl_main DEFINITION.
         IMPORTING
           iv_obj_type TYPE tadir-object
           iv_obj_name TYPE tadir-obj_name
+        RAISING
+          zcx_abapgit_exception,
+      create_transport
+        IMPORTING
+          iv_text             TYPE string
+        RETURNING
+          VALUE(rv_transport) TYPE trkorr
         RAISING
           zcx_abapgit_exception,
       release_transports RAISING zcx_abapgit_exception,
@@ -178,7 +196,8 @@ CLASS lcl_main IMPLEMENTATION.
 
     LOOP AT lt_tadir INTO DATA(ls_tadir).
       FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
-      WRITE: AT /5 ls_tadir-object, ls_tadir-obj_name, ls_tadir-delflag, ls_tadir-devclass, AT c_width space.
+      WRITE: AT /5 ls_tadir-object, ls_tadir-obj_name,
+        ls_tadir-delflag COLOR COL_TOTAL, ls_tadir-devclass, AT c_width space.
       FORMAT COLOR OFF INTENSIFIED ON.
     ENDLOOP.
 
@@ -405,8 +424,7 @@ CLASS lcl_main IMPLEMENTATION.
       IF lv_count = 0.
         TRY.
             IF lv_devclass(1) <> '$' AND lv_transport IS INITIAL.
-              lv_transport = zcl_abapgit_ui_factory=>get_popups( )->popup_transport_request(
-                VALUE #( request = 'K' task = 'S' ) ).
+              lv_transport = create_transport( 'Clean-up Packages' ).
             ENDIF.
 
             delete_package(
@@ -455,8 +473,7 @@ CLASS lcl_main IMPLEMENTATION.
       SKIP.
 
       IF lv_devclass(1) <> '$' AND lv_transport IS INITIAL.
-        lv_transport = zcl_abapgit_ui_factory=>get_popups( )->popup_transport_request(
-          VALUE #( request = 'K' task = 'S' ) ).
+        lv_transport = create_transport( 'Clean-up Objects' ).
       ENDIF.
 
       SELECT * FROM tadir INTO TABLE @lt_object
@@ -746,6 +763,40 @@ CLASS lcl_main IMPLEMENTATION.
     IF sy-subrc <> 0 AND p_forc = abap_true.
       DELETE FROM tadir
         WHERE pgmid = 'R3TR' AND object = @iv_obj_type AND obj_name = @iv_obj_name.
+    ENDIF.
+
+  ENDMETHOD.
+
+  METHOD create_transport.
+
+    DATA ls_request_header TYPE trwbo_request_header.
+
+    " Reset standard request (to avoid confusion)
+    zcl_abapgit_default_transport=>get_instance( )->reset( ).
+
+    " Get transport via popup or create one automatically
+    IF p_popup = abap_true.
+      rv_transport = zcl_abapgit_ui_factory=>get_popups( )->popup_transport_request(
+        VALUE #( request = 'K' task = 'S' ) ).
+    ELSE.
+      DATA(lv_text) = |abapGit CI { iv_text }|.
+
+      CALL FUNCTION 'TR_INSERT_REQUEST_WITH_TASKS'
+        EXPORTING
+          iv_type           = 'K'
+          iv_text           = CONV as4text( lv_text )
+          it_users          = VALUE scts_users( ( user = cl_abap_syst=>get_user_name( ) type = 'S' ) )
+        IMPORTING
+          es_request_header = ls_request_header
+        EXCEPTIONS
+          insert_failed     = 1
+          enqueue_failed    = 2
+          OTHERS            = 3.
+      IF sy-subrc <> 0.
+        zcx_abapgit_exception=>raise_t100( ).
+      ENDIF.
+
+      rv_transport = ls_request_header-trkorr.
     ENDIF.
 
   ENDMETHOD.
