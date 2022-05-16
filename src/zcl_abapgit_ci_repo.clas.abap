@@ -139,6 +139,12 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         RAISING
           zcx_abapgit_exception,
 
+      cleanup_transport
+        IMPORTING
+          iv_transport TYPE trkorr
+        RAISING
+          zcx_abapgit_exception,
+
       check_item
         IMPORTING
           is_item         TYPE zif_abapgit_definitions=>ty_item
@@ -174,9 +180,11 @@ CLASS zcl_abapgit_ci_repo DEFINITION
 
       log_messages
         IMPORTING
-          is_ri_repo TYPE zabapgit_ci_result
-          ii_log     TYPE REF TO zif_abapgit_log
-          iv_prefix  TYPE string OPTIONAL
+          is_ri_repo      TYPE zabapgit_ci_result
+          ii_log          TYPE REF TO zif_abapgit_log
+          iv_prefix       TYPE string OPTIONAL
+        RETURNING
+          VALUE(rv_error) TYPE string
         RAISING
           zcx_abapgit_exception,
 
@@ -534,6 +542,96 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD cleanup_transport.
+
+    DATA lt_requests TYPE trwbo_request_headers.
+
+    IF iv_transport IS INITIAL.
+      RETURN.
+    ENDIF.
+
+    CALL FUNCTION 'TR_READ_REQUEST_WITH_TASKS'
+      EXPORTING
+        iv_trkorr          = iv_transport
+      IMPORTING
+        et_request_headers = lt_requests
+      EXCEPTIONS
+        invalid_input      = 1
+        OTHERS             = 2.
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
+    ENDIF.
+
+    " First delete all empty tasks
+    LOOP AT lt_requests ASSIGNING FIELD-SYMBOL(<ls_task>) WHERE trkorr <> iv_transport AND trstatus <> 'R'.
+      SELECT COUNT(*) FROM e071 INTO @DATA(lv_count) WHERE trkorr = @<ls_task>-trkorr.
+      IF lv_count = 0.
+        CALL FUNCTION 'TR_DELETE_COMM'
+          EXPORTING
+            wi_dialog                     = abap_false
+            wi_trkorr                     = <ls_task>-trkorr
+          EXCEPTIONS
+            file_access_error             = 1
+            order_already_released        = 2
+            order_contains_c_member       = 3
+            order_contains_locked_entries = 4
+            order_is_refered              = 5
+            repair_order                  = 6
+            user_not_owner                = 7
+            delete_was_cancelled          = 8
+            ordernumber_empty             = 9
+            tr_enqueue_failed             = 10
+            objects_free_but_still_locks  = 11
+            order_lock_failed             = 12
+            no_authorization              = 13
+            wrong_client                  = 14
+            project_still_referenced      = 15
+            successors_already_released   = 16
+            OTHERS                        = 17.
+        IF sy-subrc <> 0.
+          zcx_abapgit_exception=>raise_t100( ).
+        ENDIF.
+      ELSE.
+        DATA(lv_objects_found) = abap_true.
+      ENDIF.
+    ENDLOOP.
+
+
+    " Then delete empty transport request
+    IF lv_objects_found = abap_false.
+      SELECT COUNT(*) FROM e071 INTO @lv_count WHERE trkorr = @iv_transport.
+      IF lv_count = 0.
+        CALL FUNCTION 'TR_DELETE_COMM'
+          EXPORTING
+            wi_dialog                     = abap_false
+            wi_trkorr                     = iv_transport
+          EXCEPTIONS
+            file_access_error             = 1
+            order_already_released        = 2
+            order_contains_c_member       = 3
+            order_contains_locked_entries = 4
+            order_is_refered              = 5
+            repair_order                  = 6
+            user_not_owner                = 7
+            delete_was_cancelled          = 8
+            ordernumber_empty             = 9
+            tr_enqueue_failed             = 10
+            objects_free_but_still_locks  = 11
+            order_lock_failed             = 12
+            no_authorization              = 13
+            wrong_client                  = 14
+            project_still_referenced      = 15
+            successors_already_released   = 16
+            OTHERS                        = 17.
+        IF sy-subrc <> 0.
+          zcx_abapgit_exception=>raise_t100( ).
+        ENDIF.
+      ENDIF.
+    ENDIF.
+
+  ENDMETHOD.
+
+
   METHOD clone.
 
     cs_ri_repo-clone = zif_abapgit_ci_definitions=>co_status-not_ok.
@@ -680,6 +778,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     " Reset standard request (to avoid confusion)
     zcl_abapgit_default_transport=>get_instance( )->reset( ).
 
+    " Create new request for this repository and package
     CALL FUNCTION 'TR_INSERT_REQUEST_WITH_TASKS'
       EXPORTING
         iv_type           = 'K'
@@ -773,15 +872,12 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       DATA(lt_messages) = ii_log->get_messages( ).
     ENDIF.
 
-    IF is_ri_repo-logging = abap_false OR lt_messages IS INITIAL.
-      RETURN.
-    ENDIF.
-
     LOOP AT lt_messages ASSIGNING FIELD-SYMBOL(<ls_message>).
       CLEAR <ls_message>-exception.
       IF <ls_message>-type CA 'AEX' AND lv_errors = abap_false.
         DATA(ls_message) = <ls_message>.
         lv_errors = abap_true.
+        EXIT.
       ENDIF.
     ENDLOOP.
 
@@ -789,18 +885,18 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
+    IF is_ri_repo-logging = abap_true.
+      DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
 
-    lo_log->add(
-      iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Log Messages|
-      ig_data       = lt_messages ).
-
-    DATA(lv_exc) = |{ iv_prefix } error: { ls_message-text }|.
-    IF ls_message-obj_name IS NOT INITIAL.
-      lv_exc = lv_exc && | \nObject: { ls_message-obj_type } { ls_message-obj_name }|.
+      lo_log->add(
+        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Log Messages|
+        ig_data       = lt_messages ).
     ENDIF.
 
-    zcx_abapgit_exception=>raise( lv_exc ).
+    rv_error = |{ iv_prefix } error: { ls_message-text }|.
+    IF ls_message-obj_name IS NOT INITIAL.
+      rv_error = rv_error && | \nObject: { ls_message-obj_type } { ls_message-obj_name }|.
+    ENDIF.
 
   ENDMETHOD.
 
@@ -914,19 +1010,21 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
         ls_checks-transport-transport = iv_transport.
 
-        DATA(li_log) = zcl_abapgit_repo_srv=>get_instance( )->purge( ii_repo   = io_repo
-                                                                     is_checks = ls_checks ).
+        zcl_abapgit_repo_srv=>get_instance( )->purge( ii_repo   = io_repo
+                                                      is_checks = ls_checks ).
 
         COMMIT WORK AND WAIT.
       CATCH zcx_abapgit_cancel INTO DATA(lx_cancel).
         lv_error = lx_cancel->get_text( ).
       CATCH zcx_abapgit_exception INTO DATA(lx_exception).
-        log_messages(
+        lv_error = log_messages(
           is_ri_repo = cs_ri_repo
-          ii_log     = li_log
+          ii_log     = io_repo->get_log( )
           iv_prefix  = 'Uninstall' ).
 
-        lv_error = lx_exception->get_text( ).
+        IF lv_error IS INITIAL.
+          lv_error = lx_exception->get_text( ).
+        ENDIF.
     ENDTRY.
 
     CALL FUNCTION 'DEQUEUE_ALL'
@@ -1170,6 +1268,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ENDTRY.
 
     check_leftovers( CHANGING cs_ri_repo = cs_ri_repo ).
+
+    cleanup_transport( lv_transport ).
 
     " Done. Release any locks
     COMMIT WORK AND WAIT.
