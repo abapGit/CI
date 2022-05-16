@@ -6,7 +6,11 @@
 *&---------------------------------------------------------------------*
 REPORT zabapgit_ci_cleanup LINE-SIZE 255.
 
-DATA: gv_package TYPE devclass.
+DATA:
+  gx_ex        TYPE REF TO zcx_abapgit_exception,
+  gv_package   TYPE devclass,
+  gv_transport TYPE trkorr,
+  gs_item      TYPE zif_abapgit_definitions=>ty_item.
 
 SELECTION-SCREEN SKIP.
 PARAMETERS: p_uninst TYPE abap_bool RADIOBUTTON GROUP r1 DEFAULT 'X'.
@@ -85,7 +89,19 @@ CLASS lcl_main DEFINITION.
     CONSTANTS c_count TYPE i VALUE 20.
     TYPES: ty_devc_tt TYPE STANDARD TABLE OF devclass WITH DEFAULT KEY.
     METHODS:
-      get_packages RETURNING VALUE(rt_devclass) TYPE ty_devc_tt,
+      get_packages
+        RETURNING
+          VALUE(rt_devclass) TYPE ty_devc_tt,
+      drop_otr_short
+        IMPORTING
+          is_head TYPE sotr_head
+        RAISING
+          zcx_abapgit_exception,
+      drop_otr_long
+        IMPORTING
+          is_headu TYPE sotr_headu
+        RAISING
+          zcx_abapgit_exception,
       list_packages RAISING zcx_abapgit_exception,
       list_objects,
       list_logs,
@@ -132,11 +148,9 @@ CLASS lcl_main IMPLEMENTATION.
 
   METHOD list_packages.
 
-    DATA lt_devclass TYPE STANDARD TABLE OF devclass.
-
     DATA(lv_found) = abap_false.
 
-    SELECT devclass FROM tdevc INTO TABLE @lt_devclass WHERE devclass IN @s_pack[] ORDER BY devclass.
+    SELECT devclass FROM tdevc INTO TABLE @DATA(lt_devclass) WHERE devclass IN @s_pack[] ORDER BY devclass.
 
     FORMAT COLOR COL_KEY.
     WRITE: / 'Packages:', AT c_count lines( lt_devclass ), AT c_width space.
@@ -146,7 +160,9 @@ CLASS lcl_main IMPLEMENTATION.
     IF sy-subrc = 0.
       LOOP AT lt_devclass INTO DATA(lv_devclass).
         FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
-        WRITE: AT /5 lv_devclass, AT c_width space.
+        WRITE: AT /5 lv_devclass HOTSPOT, AT c_width space.
+        gv_package = lv_devclass.
+        HIDE gv_package.
         FORMAT COLOR OFF INTENSIFIED ON.
       ENDLOOP.
     ELSE.
@@ -184,9 +200,8 @@ CLASS lcl_main IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD list_objects.
-    DATA lt_tadir TYPE STANDARD TABLE OF tadir.
 
-    SELECT * FROM tadir INTO TABLE @lt_tadir WHERE devclass IN @s_pack[]
+    SELECT * FROM tadir INTO TABLE @DATA(lt_tadir) WHERE devclass IN @s_pack[]
       ORDER BY devclass, pgmid, object, obj_name.
 
     FORMAT COLOR COL_KEY.
@@ -196,8 +211,11 @@ CLASS lcl_main IMPLEMENTATION.
 
     LOOP AT lt_tadir INTO DATA(ls_tadir).
       FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
-      WRITE: AT /5 ls_tadir-object, ls_tadir-obj_name,
+      WRITE: AT /5 ls_tadir-object, ls_tadir-obj_name HOTSPOT,
         ls_tadir-delflag COLOR COL_TOTAL, ls_tadir-devclass, AT c_width space.
+      gs_item-obj_type = ls_tadir-object.
+      gs_item-obj_name = ls_tadir-obj_name.
+      HIDE gs_item.
       FORMAT COLOR OFF INTENSIFIED ON.
     ENDLOOP.
 
@@ -210,9 +228,8 @@ CLASS lcl_main IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD list_logs.
-    DATA lt_logs TYPE STANDARD TABLE OF wwwdata WITH DEFAULT KEY.
 
-    SELECT * FROM wwwdata INTO TABLE @lt_logs
+    SELECT * FROM wwwdata INTO TABLE @DATA(lt_logs)
       WHERE objid LIKE @zcl_abapgit_ci_log=>co_all
       ORDER BY PRIMARY KEY.
 
@@ -236,15 +253,8 @@ CLASS lcl_main IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD list_otr.
-    DATA:
-      lt_head  TYPE STANDARD TABLE OF sotr_head,
-      lt_headu TYPE STANDARD TABLE OF sotr_headu,
-      ls_use   TYPE sotr_use,
-      ls_useu  TYPE sotr_useu,
-      ls_text  TYPE sotr_text,
-      ls_textu TYPE sotr_textu.
 
-    SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket IN @s_pack[]
+    SELECT * FROM sotr_head INTO TABLE @DATA(lt_head) WHERE paket IN @s_pack[]
       ORDER BY paket, concept.
 
     FORMAT COLOR COL_KEY.
@@ -255,10 +265,13 @@ CLASS lcl_main IMPLEMENTATION.
     LOOP AT lt_head INTO DATA(ls_head).
       FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
       WRITE: AT /5 ls_head-concept, ls_head-paket, AT c_width space.
-      SELECT * FROM sotr_use INTO @ls_use WHERE concept = @ls_head-concept ORDER BY PRIMARY KEY.
-        WRITE: AT /10 ls_use-object, ls_use-obj_name(70), AT c_width space.
+      SELECT * FROM sotr_use INTO @DATA(ls_use) WHERE concept = @ls_head-concept ORDER BY PRIMARY KEY.
+        WRITE: AT /10 ls_use-object, ls_use-obj_name(70) HOTSPOT, AT c_width space.
+        gs_item-obj_type = ls_use-object.
+        gs_item-obj_name = ls_use-obj_name.
+        HIDE gs_item.
       ENDSELECT.
-      SELECT * FROM sotr_text INTO @ls_text WHERE concept = @ls_head-concept ORDER BY PRIMARY KEY.
+      SELECT * FROM sotr_text INTO @DATA(ls_text) WHERE concept = @ls_head-concept ORDER BY PRIMARY KEY.
         WRITE: AT /10 ls_text-langu, ls_text-lfd_num, ls_text-text(120), AT c_width space.
       ENDSELECT.
       FORMAT COLOR OFF INTENSIFIED ON.
@@ -270,7 +283,7 @@ CLASS lcl_main IMPLEMENTATION.
     ENDIF.
     SKIP.
 
-    SELECT * FROM sotr_headu INTO TABLE @lt_headu WHERE paket IN @s_pack[]
+    SELECT * FROM sotr_headu INTO TABLE @DATA(lt_headu) WHERE paket IN @s_pack[]
       ORDER BY paket, concept.
 
     FORMAT COLOR COL_KEY.
@@ -281,12 +294,39 @@ CLASS lcl_main IMPLEMENTATION.
     LOOP AT lt_headu INTO DATA(ls_headu).
       FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
       WRITE: AT /5 ls_headu-concept, ls_headu-paket, AT c_width space.
-      SELECT * FROM sotr_useu INTO @ls_useu WHERE concept = @ls_headu-concept ORDER BY PRIMARY KEY.
-        WRITE: AT /10 ls_useu-object, ls_useu-obj_name(70), AT c_width space.
+      SELECT * FROM sotr_useu INTO @DATA(ls_useu) WHERE concept = @ls_headu-concept ORDER BY PRIMARY KEY.
+        WRITE: AT /10 ls_useu-object, ls_useu-obj_name(70) HOTSPOT, AT c_width space.
+        gs_item-obj_type = ls_useu-object.
+        gs_item-obj_name = ls_useu-obj_name.
+        HIDE gs_item.
       ENDSELECT.
-      SELECT * FROM sotr_textu INTO @ls_textu WHERE concept = @ls_headu-concept ORDER BY PRIMARY KEY.
+      SELECT * FROM sotr_textu INTO @DATA(ls_textu) WHERE concept = @ls_headu-concept ORDER BY PRIMARY KEY.
         WRITE: AT /10 ls_textu-langu, ls_textu-lfd_num, ls_textu-text(120), AT c_width space.
       ENDSELECT.
+      FORMAT COLOR OFF INTENSIFIED ON.
+    ENDLOOP.
+
+    IF sy-subrc <> 0.
+      FORMAT COLOR COL_POSITIVE.
+      WRITE: AT /5 'None', AT c_width space.
+    ENDIF.
+    SKIP.
+
+    SELECT * FROM tadir INTO TABLE @DATA(lt_tadir) WHERE devclass IN @s_pack[] AND object = 'SOTR'
+      ORDER BY PRIMARY KEY.
+
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'SOTR Objects:', AT c_count lines( lt_tadir ), AT c_width space.
+    FORMAT COLOR OFF.
+    SKIP.
+
+    LOOP AT lt_tadir INTO DATA(ls_tadir).
+      FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
+      WRITE: AT /5 ls_tadir-object, ls_tadir-obj_name,
+        ls_tadir-delflag COLOR COL_TOTAL, ls_tadir-devclass, AT c_width space.
+      gs_item-obj_type = ls_tadir-object.
+      gs_item-obj_name = ls_tadir-obj_name.
+      HIDE gs_item.
       FORMAT COLOR OFF INTENSIFIED ON.
     ENDLOOP.
 
@@ -321,7 +361,9 @@ CLASS lcl_main IMPLEMENTATION.
     LOOP AT lt_requests INTO DATA(ls_request).
       FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
       IF ls_request-strkorr IS INITIAL.
-        WRITE: AT /5 ls_request-trkorr, ls_request-as4text, AT c_width space.
+        WRITE: AT /5 ls_request-trkorr HOTSPOT, ls_request-as4text, AT c_width space.
+        gv_transport = ls_request-trkorr.
+        HIDE gv_transport.
       ELSE.
         WRITE: AT /10 ls_request-trkorr, ls_request-as4text, AT c_width space.
         SKIP.
@@ -354,8 +396,7 @@ CLASS lcl_main IMPLEMENTATION.
 
       IF ls_checks-transport-required = abap_true.
         IF lv_transport IS INITIAL.
-          lv_transport = zcl_abapgit_ui_factory=>get_popups( )->popup_transport_request(
-            VALUE #( request = 'K' task = 'S' ) ).
+          lv_transport = create_transport( 'Clean-up Repositories' ).
         ENDIF.
         ls_checks-transport-transport = lv_transport.
       ENDIF.
@@ -378,19 +419,19 @@ CLASS lcl_main IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD check_packages.
-    DATA lv_count TYPE i.
 
     IF s_pack[] IS INITIAL.
       zcx_abapgit_exception=>raise( 'No selection for packages found' ).
     ENDIF.
 
-    SELECT COUNT(*) FROM tadir INTO @lv_count
+    SELECT COUNT(*) FROM tadir INTO @DATA(lv_count)
       WHERE pgmid = 'R3TR' AND object = 'DEVC' AND obj_name IN @s_pack[]
       AND ( srcsystem = 'SAP' OR author = 'SAP' ).
 
     IF lv_count > 0.
       zcx_abapgit_exception=>raise( 'Selection contains standard SAP packages' ).
     ENDIF.
+
   ENDMETHOD.
 
   METHOD get_packages.
@@ -405,7 +446,6 @@ CLASS lcl_main IMPLEMENTATION.
 
   METHOD drop_packages.
     DATA lv_transport TYPE trkorr.
-    DATA lv_count TYPE i.
 
     DATA(lt_devclass) = get_packages( ).
 
@@ -418,7 +458,7 @@ CLASS lcl_main IMPLEMENTATION.
       FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
       WRITE: AT /5 lv_devclass.
 
-      SELECT COUNT(*) FROM tadir INTO @lv_count
+      SELECT COUNT(*) FROM tadir INTO @DATA(lv_count)
         WHERE pgmid = 'R3TR' AND object <> 'DEVC' AND object <> 'SOTR' AND object <> 'SOTS' AND devclass = @lv_devclass.
 
       IF lv_count = 0.
@@ -456,8 +496,6 @@ CLASS lcl_main IMPLEMENTATION.
 
   METHOD drop_objects.
     DATA lv_transport TYPE trkorr.
-    DATA lt_object TYPE TABLE OF tadir.
-    DATA ls_object TYPE tadir.
 
     DATA(lt_devclass) = get_packages( ).
 
@@ -476,12 +514,12 @@ CLASS lcl_main IMPLEMENTATION.
         lv_transport = create_transport( 'Clean-up Objects' ).
       ENDIF.
 
-      SELECT * FROM tadir INTO TABLE @lt_object
+      SELECT * FROM tadir INTO TABLE @DATA(lt_object)
         WHERE pgmid = 'R3TR' AND object <> 'DEVC'
           AND devclass = @lv_devclass
         ORDER BY PRIMARY KEY.
 
-      LOOP AT lt_object INTO ls_object.
+      LOOP AT lt_object INTO DATA(ls_object).
         FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
         WRITE: AT /10 ls_object-object, ls_object-obj_name, ls_object-delflag.
 
@@ -527,12 +565,8 @@ CLASS lcl_main IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD drop_otr.
-    DATA lt_head TYPE STANDARD TABLE OF sotr_head.
-    DATA lt_headu TYPE STANDARD TABLE OF sotr_headu.
 
-    DATA(lt_devclass) = get_packages( ).
-
-    SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket IN @s_pack[] ORDER BY paket, concept.
+    SELECT * FROM sotr_head INTO TABLE @DATA(lt_head) WHERE paket IN @s_pack[] ORDER BY paket, concept.
 
     FORMAT COLOR COL_KEY.
     WRITE: / 'Short Texts:', AT c_count lines( lt_head ), AT c_width space.
@@ -540,36 +574,7 @@ CLASS lcl_main IMPLEMENTATION.
     SKIP.
 
     LOOP AT lt_head INTO DATA(ls_head).
-      FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
-      WRITE: AT /5 ls_head-concept, ls_head-paket, ls_head-crea_name, ls_head-crea_tstut.
-
-      CALL FUNCTION 'BTFR_DELETE_SINGLE_TEXT'
-        EXPORTING
-          concept               = ls_head-concept
-          flag_string           = abap_false
-          flag_correction_entry = abap_false
-        EXCEPTIONS
-          text_not_found        = 1
-          invalid_package       = 2
-          text_not_changeable   = 3
-          text_enqueued         = 4
-          no_correction         = 5
-          parameter_error       = 6
-          OTHERS                = 7.
-      IF sy-subrc <> 0.
-        WRITE: 'Error' COLOR COL_NEGATIVE.
-        IF p_forc = abap_true.
-          DELETE FROM sotr_head WHERE concept = @ls_head-concept.
-          DELETE FROM sotr_text WHERE concept = @ls_head-concept.
-          DELETE FROM sotr_use  WHERE concept = @ls_head-concept.
-          DELETE FROM sotr_alia WHERE concept = @ls_head-concept.
-          WRITE: 'Force Deleted' COLOR COL_POSITIVE.
-        ENDIF.
-      ELSE.
-        WRITE: 'Deleted' COLOR COL_POSITIVE.
-      ENDIF.
-      WRITE AT c_width space.
-      FORMAT COLOR OFF.
+      drop_otr_short( ls_head ).
     ENDLOOP.
     SKIP.
 
@@ -579,7 +584,7 @@ CLASS lcl_main IMPLEMENTATION.
       SKIP.
     ENDIF.
 
-    SELECT * FROM sotr_headu INTO TABLE @lt_headu WHERE paket IN @s_pack ORDER BY paket, concept.
+    SELECT * FROM sotr_headu INTO TABLE @DATA(lt_headu) WHERE paket IN @s_pack ORDER BY paket, concept.
 
     FORMAT COLOR COL_KEY.
     WRITE: / 'Long Texts:', AT c_count lines( lt_headu ), AT c_width space.
@@ -587,36 +592,7 @@ CLASS lcl_main IMPLEMENTATION.
     SKIP.
 
     LOOP AT lt_headu INTO DATA(ls_headu).
-      FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
-      WRITE: AT /5 ls_headu-concept, ls_headu-paket, ls_headu-crea_name, ls_headu-crea_tstut.
-
-      CALL FUNCTION 'BTFR_DELETE_SINGLE_TEXT'
-        EXPORTING
-          concept               = ls_headu-concept
-          flag_string           = abap_true
-          flag_correction_entry = abap_false
-        EXCEPTIONS
-          text_not_found        = 1
-          invalid_package       = 2
-          text_not_changeable   = 3
-          text_enqueued         = 4
-          no_correction         = 5
-          parameter_error       = 6
-          OTHERS                = 7.
-      IF sy-subrc <> 0.
-        WRITE: 'Error' COLOR COL_NEGATIVE.
-        IF p_forc = abap_true.
-          DELETE FROM sotr_headu WHERE concept = @ls_headu-concept.
-          DELETE FROM sotr_textu WHERE concept = @ls_headu-concept.
-          DELETE FROM sotr_useu  WHERE concept = @ls_headu-concept.
-          DELETE FROM sotr_aliau WHERE concept = @ls_headu-concept.
-          WRITE: 'Force Deleted' COLOR COL_POSITIVE.
-        ENDIF.
-      ELSE.
-        WRITE: 'Deleted' COLOR COL_POSITIVE.
-      ENDIF.
-      WRITE AT c_width space.
-      FORMAT COLOR OFF.
+      drop_otr_long( ls_headu ).
     ENDLOOP.
     SKIP.
 
@@ -627,21 +603,109 @@ CLASS lcl_main IMPLEMENTATION.
     ENDIF.
 
     " Drop TADIR
-    LOOP AT lt_devclass INTO DATA(lv_devclass).
-      SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket = @lv_devclass ORDER BY PRIMARY KEY.
-      IF sy-subrc = 4.
-        delete_tadir(
-          iv_obj_type = 'SOTR'
-          iv_obj_name = |{ lv_devclass }| ).
+    SELECT * FROM tadir INTO TABLE @DATA(lt_tadir) WHERE devclass IN @s_pack[] AND object = 'SOTR'
+      ORDER BY PRIMARY KEY.
+
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'SOTR Objects:', AT c_count lines( lt_tadir ), AT c_width space.
+    FORMAT COLOR OFF.
+    SKIP.
+
+    LOOP AT lt_tadir INTO DATA(ls_tadir).
+      FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
+      WRITE: AT /5 ls_tadir-object, ls_tadir-obj_name,
+        ls_tadir-delflag COLOR COL_TOTAL, ls_tadir-devclass, AT c_width space.
+
+      SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket = @ls_tadir-devclass ORDER BY PRIMARY KEY.
+      IF sy-subrc <> 0.
+        SELECT * FROM sotr_headu INTO TABLE @lt_headu WHERE paket = @ls_tadir-devclass ORDER BY PRIMARY KEY.
+        IF sy-subrc <> 0.
+          delete_tadir(
+            iv_obj_type = ls_tadir-object
+            iv_obj_name = ls_tadir-obj_name ).
+        ELSE.
+          WRITE: 'Error' COLOR COL_NEGATIVE, 'SOTR_HEADU not empty'.
+        ENDIF.
+      ELSE.
+        WRITE: 'Error' COLOR COL_NEGATIVE, 'SOTR_HEAD not empty'.
       ENDIF.
-      SELECT * FROM sotr_headu INTO TABLE @lt_headu WHERE paket = @lv_devclass ORDER BY PRIMARY KEY.
-      IF sy-subrc = 4.
-        delete_tadir(
-          iv_obj_type = 'SOTS'
-          iv_obj_name = |{ lv_devclass }| ).
-      ENDIF.
+
+      WRITE AT c_width space.
+      FORMAT COLOR OFF.
     ENDLOOP.
 
+    IF sy-subrc <> 0.
+      FORMAT COLOR COL_POSITIVE.
+      WRITE: AT /5 'None', AT c_width space.
+    ENDIF.
+    SKIP.
+
+  ENDMETHOD.
+
+  METHOD drop_otr_long.
+    FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
+    WRITE: AT /5 is_headu-concept, is_headu-paket, is_headu-crea_name, is_headu-crea_tstut.
+
+    CALL FUNCTION 'BTFR_DELETE_SINGLE_TEXT'
+      EXPORTING
+        concept               = is_headu-concept
+        flag_string           = abap_true
+        flag_correction_entry = abap_false
+      EXCEPTIONS
+        text_not_found        = 1
+        invalid_package       = 2
+        text_not_changeable   = 3
+        text_enqueued         = 4
+        no_correction         = 5
+        parameter_error       = 6
+        OTHERS                = 7.
+    IF sy-subrc <> 0.
+      WRITE: 'Error' COLOR COL_NEGATIVE.
+      IF p_forc = abap_true.
+        DELETE FROM sotr_headu WHERE concept = @is_headu-concept.
+        DELETE FROM sotr_textu WHERE concept = @is_headu-concept.
+        DELETE FROM sotr_useu  WHERE concept = @is_headu-concept.
+        DELETE FROM sotr_aliau WHERE concept = @is_headu-concept.
+        WRITE: 'Force Deleted' COLOR COL_POSITIVE.
+      ENDIF.
+    ELSE.
+      WRITE: 'Deleted' COLOR COL_POSITIVE.
+    ENDIF.
+    WRITE AT c_width space.
+    FORMAT COLOR OFF.
+  ENDMETHOD.
+
+  METHOD drop_otr_short.
+    FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
+    WRITE: AT /5 is_head-concept, is_head-paket, is_head-crea_name, is_head-crea_tstut.
+
+    CALL FUNCTION 'BTFR_DELETE_SINGLE_TEXT'
+      EXPORTING
+        concept               = is_head-concept
+        flag_string           = abap_false
+        flag_correction_entry = abap_false
+      EXCEPTIONS
+        text_not_found        = 1
+        invalid_package       = 2
+        text_not_changeable   = 3
+        text_enqueued         = 4
+        no_correction         = 5
+        parameter_error       = 6
+        OTHERS                = 7.
+    IF sy-subrc <> 0.
+      WRITE: 'Error' COLOR COL_NEGATIVE.
+      IF p_forc = abap_true.
+        DELETE FROM sotr_head WHERE concept = @is_head-concept.
+        DELETE FROM sotr_text WHERE concept = @is_head-concept.
+        DELETE FROM sotr_use  WHERE concept = @is_head-concept.
+        DELETE FROM sotr_alia WHERE concept = @is_head-concept.
+        WRITE: 'Force Deleted' COLOR COL_POSITIVE.
+      ENDIF.
+    ELSE.
+      WRITE: 'Deleted' COLOR COL_POSITIVE.
+    ENDIF.
+    WRITE AT c_width space.
+    FORMAT COLOR OFF.
   ENDMETHOD.
 
   METHOD drop_logs.
@@ -726,8 +790,6 @@ CLASS lcl_main IMPLEMENTATION.
 
   METHOD delete_object.
     DATA ls_item TYPE zif_abapgit_definitions=>ty_item.
-    DATA lv_class_name TYPE seoclsname.
-    DATA lx_error TYPE REF TO zcx_abapgit_exception.
     DATA li_obj TYPE REF TO zif_abapgit_object.
 
     ls_item-obj_type = iv_obj_type.
@@ -737,7 +799,7 @@ CLASS lcl_main IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    lv_class_name = 'ZCL_ABAPGIT_OBJECT_' && iv_obj_type.
+    DATA(lv_class_name) = 'ZCL_ABAPGIT_OBJECT_' && iv_obj_type.
 
     CREATE OBJECT li_obj TYPE (lv_class_name)
       EXPORTING
@@ -753,14 +815,38 @@ CLASS lcl_main IMPLEMENTATION.
 
     CALL FUNCTION 'TR_TADIR_INTERFACE'
       EXPORTING
-        wi_delete_tadir_entry = abap_true
-        wi_tadir_pgmid        = 'R3TR'
-        wi_tadir_object       = iv_obj_type
-        wi_tadir_obj_name     = iv_obj_name
-        wi_test_modus         = abap_false
+        wi_delete_tadir_entry          = abap_true
+        wi_tadir_pgmid                 = 'R3TR'
+        wi_tadir_object                = iv_obj_type
+        wi_tadir_obj_name              = iv_obj_name
+        wi_test_modus                  = abap_false
       EXCEPTIONS
-        OTHERS                = 1 ##FM_SUBRC_OK.
-    IF sy-subrc <> 0 AND p_forc = abap_true.
+        tadir_entry_not_existing       = 1
+        tadir_entry_ill_type           = 2
+        no_systemname                  = 3
+        no_systemtype                  = 4
+        original_system_conflict       = 5
+        object_reserved_for_devclass   = 6
+        object_exists_global           = 7
+        object_exists_local            = 8
+        object_is_distributed          = 9
+        obj_specification_not_unique   = 10
+        no_authorization_to_delete     = 11
+        devclass_not_existing          = 12
+        simultanious_set_remove_repair = 13
+        order_missing                  = 14
+        no_modification_of_head_syst   = 15
+        pgmid_object_not_allowed       = 16
+        masterlanguage_not_specified   = 17
+        devclass_not_specified         = 18
+        specify_owner_unique           = 19
+        loc_priv_objs_no_repair        = 20
+        gtadir_not_reached             = 21
+        object_locked_for_order        = 22
+        change_of_class_not_allowed    = 23
+        no_change_from_sap_to_tmp      = 24
+        OTHERS                         = 25.
+    IF ( sy-subrc <> 0 AND p_forc = abap_true ) OR sy-subrc = 9.
       DELETE FROM tadir
         WHERE pgmid = 'R3TR' AND object = @iv_obj_type AND obj_name = @iv_obj_name.
     ENDIF.
@@ -805,7 +891,6 @@ CLASS lcl_main IMPLEMENTATION.
     DATA: ls_ranges   TYPE trsel_ts_ranges,
           lt_requests TYPE trwbo_request_headers,
           lv_msg_text TYPE string.
-    FIELD-SYMBOLS: <ls_request> TYPE trwbo_request_header.
 
     ls_ranges-as4text = p_txt.
     ls_ranges-request_status = VALUE #( ( sign = 'I' option = 'EQ' low = 'D' ) ).
@@ -831,7 +916,7 @@ CLASS lcl_main IMPLEMENTATION.
       ENDIF.
     ENDIF.
 
-    LOOP AT lt_requests ASSIGNING <ls_request> WHERE trfunction = 'S' AND trstatus <> 'R'.
+    LOOP AT lt_requests ASSIGNING FIELD-SYMBOL(<ls_request>) WHERE trfunction = 'S' AND trstatus <> 'R'.
       WRITE: / |Releasing task { <ls_request>-trkorr }|.
       CALL FUNCTION 'TR_RELEASE_REQUEST'
         EXPORTING
@@ -971,10 +1056,27 @@ INITIALIZATION.
   s_pack[] = VALUE #( ( sign = 'I' option = 'CP' low = 'Z___*' )
                       ( sign = 'I' option = 'CP' low = '$___*' ) ).
 
+AT LINE-SELECTION.
+  IF gv_transport IS NOT INITIAL.
+    CALL FUNCTION 'TR_DISPLAY_REQUEST'
+      EXPORTING
+        i_trkorr = gv_transport.
+  ELSEIF gs_item IS NOT INITIAL.
+    TRY.
+        zcl_abapgit_objects=>jump( gs_item ).
+      CATCH zcx_abapgit_exception INTO gx_ex.
+        MESSAGE gx_ex TYPE 'S' DISPLAY LIKE 'E'.
+    ENDTRY.
+  ENDIF.
+
+  CLEAR: gv_transport, gv_package, gs_item.
+
 START-OF-SELECTION.
   TRY.
       NEW lcl_main( )->run( ).
-    CATCH zcx_abapgit_exception INTO DATA(gx_ex).
+    CATCH zcx_abapgit_exception INTO gx_ex.
       WRITE: / gx_ex->get_text( ).
       MESSAGE gx_ex TYPE 'S' DISPLAY LIKE 'E'.
   ENDTRY.
+
+  CLEAR: gv_transport, gv_package, gs_item.
