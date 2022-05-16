@@ -254,7 +254,9 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
     DATA lv_result TYPE string.
 
-    CHECK sy-batch = abap_true.
+    IF sy-batch = abap_false.
+      RETURN.
+    ENDIF.
 
     CASE is_ci_repo-status.
       WHEN zif_abapgit_ci_definitions=>co_status-ok.
@@ -284,7 +286,9 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
   METHOD repo_start.
 
-    CHECK sy-batch = abap_true.
+    IF sy-batch = abap_false.
+      RETURN.
+    ENDIF.
 
     DATA(lv_counter) = |{ iv_count } of { iv_total }:|.
 
