@@ -212,16 +212,16 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
       && `  border-color: black;`
       && `  background-color: darkgray;`
       && `}`
-      && `.tg .tg-kiyi {`
+      && `.tg .header {`
       && `  font-weight: bold;`
       && `  border-color: inherit;`
       && `  text-align: left;`
       && `}`
-      && `.tg .tg-xldj {`
+      && `.tg .row {`
       && `  border-color: inherit;`
       && `  text-align: left;`
       && `}`
-      && `td.status {`
+      && `.status {`
       && `  width: 70px;`
       && `}`
       && `.box {`
