@@ -89,7 +89,19 @@ CLASS lcl_main DEFINITION.
     CONSTANTS c_count TYPE i VALUE 20.
     TYPES: ty_devc_tt TYPE STANDARD TABLE OF devclass WITH DEFAULT KEY.
     METHODS:
-      get_packages RETURNING VALUE(rt_devclass) TYPE ty_devc_tt,
+      get_packages
+        RETURNING
+          VALUE(rt_devclass) TYPE ty_devc_tt,
+      drop_otr_short
+        IMPORTING
+          is_head TYPE sotr_head
+        RAISING
+          zcx_abapgit_exception,
+      drop_otr_long
+        IMPORTING
+          is_headu TYPE sotr_headu
+        RAISING
+          zcx_abapgit_exception,
       list_packages RAISING zcx_abapgit_exception,
       list_objects,
       list_logs,
@@ -562,36 +574,7 @@ CLASS lcl_main IMPLEMENTATION.
     SKIP.
 
     LOOP AT lt_head INTO DATA(ls_head).
-      FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
-      WRITE: AT /5 ls_head-concept, ls_head-paket, ls_head-crea_name, ls_head-crea_tstut.
-
-      CALL FUNCTION 'BTFR_DELETE_SINGLE_TEXT'
-        EXPORTING
-          concept               = ls_head-concept
-          flag_string           = abap_false
-          flag_correction_entry = abap_false
-        EXCEPTIONS
-          text_not_found        = 1
-          invalid_package       = 2
-          text_not_changeable   = 3
-          text_enqueued         = 4
-          no_correction         = 5
-          parameter_error       = 6
-          OTHERS                = 7.
-      IF sy-subrc <> 0.
-        WRITE: 'Error' COLOR COL_NEGATIVE.
-        IF p_forc = abap_true.
-          DELETE FROM sotr_head WHERE concept = @ls_head-concept.
-          DELETE FROM sotr_text WHERE concept = @ls_head-concept.
-          DELETE FROM sotr_use  WHERE concept = @ls_head-concept.
-          DELETE FROM sotr_alia WHERE concept = @ls_head-concept.
-          WRITE: 'Force Deleted' COLOR COL_POSITIVE.
-        ENDIF.
-      ELSE.
-        WRITE: 'Deleted' COLOR COL_POSITIVE.
-      ENDIF.
-      WRITE AT c_width space.
-      FORMAT COLOR OFF.
+      drop_otr_short( ls_head ).
     ENDLOOP.
     SKIP.
 
@@ -609,36 +592,7 @@ CLASS lcl_main IMPLEMENTATION.
     SKIP.
 
     LOOP AT lt_headu INTO DATA(ls_headu).
-      FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
-      WRITE: AT /5 ls_headu-concept, ls_headu-paket, ls_headu-crea_name, ls_headu-crea_tstut.
-
-      CALL FUNCTION 'BTFR_DELETE_SINGLE_TEXT'
-        EXPORTING
-          concept               = ls_headu-concept
-          flag_string           = abap_true
-          flag_correction_entry = abap_false
-        EXCEPTIONS
-          text_not_found        = 1
-          invalid_package       = 2
-          text_not_changeable   = 3
-          text_enqueued         = 4
-          no_correction         = 5
-          parameter_error       = 6
-          OTHERS                = 7.
-      IF sy-subrc <> 0.
-        WRITE: 'Error' COLOR COL_NEGATIVE.
-        IF p_forc = abap_true.
-          DELETE FROM sotr_headu WHERE concept = @ls_headu-concept.
-          DELETE FROM sotr_textu WHERE concept = @ls_headu-concept.
-          DELETE FROM sotr_useu  WHERE concept = @ls_headu-concept.
-          DELETE FROM sotr_aliau WHERE concept = @ls_headu-concept.
-          WRITE: 'Force Deleted' COLOR COL_POSITIVE.
-        ENDIF.
-      ELSE.
-        WRITE: 'Deleted' COLOR COL_POSITIVE.
-      ENDIF.
-      WRITE AT c_width space.
-      FORMAT COLOR OFF.
+      drop_otr_long( ls_headu ).
     ENDLOOP.
     SKIP.
 
@@ -686,6 +640,72 @@ CLASS lcl_main IMPLEMENTATION.
     ENDIF.
     SKIP.
 
+  ENDMETHOD.
+
+  METHOD drop_otr_long.
+    FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
+    WRITE: AT /5 is_headu-concept, is_headu-paket, is_headu-crea_name, is_headu-crea_tstut.
+
+    CALL FUNCTION 'BTFR_DELETE_SINGLE_TEXT'
+      EXPORTING
+        concept               = is_headu-concept
+        flag_string           = abap_true
+        flag_correction_entry = abap_false
+      EXCEPTIONS
+        text_not_found        = 1
+        invalid_package       = 2
+        text_not_changeable   = 3
+        text_enqueued         = 4
+        no_correction         = 5
+        parameter_error       = 6
+        OTHERS                = 7.
+    IF sy-subrc <> 0.
+      WRITE: 'Error' COLOR COL_NEGATIVE.
+      IF p_forc = abap_true.
+        DELETE FROM sotr_headu WHERE concept = @is_headu-concept.
+        DELETE FROM sotr_textu WHERE concept = @is_headu-concept.
+        DELETE FROM sotr_useu  WHERE concept = @is_headu-concept.
+        DELETE FROM sotr_aliau WHERE concept = @is_headu-concept.
+        WRITE: 'Force Deleted' COLOR COL_POSITIVE.
+      ENDIF.
+    ELSE.
+      WRITE: 'Deleted' COLOR COL_POSITIVE.
+    ENDIF.
+    WRITE AT c_width space.
+    FORMAT COLOR OFF.
+  ENDMETHOD.
+
+  METHOD drop_otr_short.
+    FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
+    WRITE: AT /5 is_head-concept, is_head-paket, is_head-crea_name, is_head-crea_tstut.
+
+    CALL FUNCTION 'BTFR_DELETE_SINGLE_TEXT'
+      EXPORTING
+        concept               = is_head-concept
+        flag_string           = abap_false
+        flag_correction_entry = abap_false
+      EXCEPTIONS
+        text_not_found        = 1
+        invalid_package       = 2
+        text_not_changeable   = 3
+        text_enqueued         = 4
+        no_correction         = 5
+        parameter_error       = 6
+        OTHERS                = 7.
+    IF sy-subrc <> 0.
+      WRITE: 'Error' COLOR COL_NEGATIVE.
+      IF p_forc = abap_true.
+        DELETE FROM sotr_head WHERE concept = @is_head-concept.
+        DELETE FROM sotr_text WHERE concept = @is_head-concept.
+        DELETE FROM sotr_use  WHERE concept = @is_head-concept.
+        DELETE FROM sotr_alia WHERE concept = @is_head-concept.
+        WRITE: 'Force Deleted' COLOR COL_POSITIVE.
+      ENDIF.
+    ELSE.
+      WRITE: 'Deleted' COLOR COL_POSITIVE.
+    ENDIF.
+    WRITE AT c_width space.
+    FORMAT COLOR OFF.
   ENDMETHOD.
 
   METHOD drop_logs.
