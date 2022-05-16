@@ -144,10 +144,14 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = xsdbool( sy-langu <> 'D' )
         skip_transportable = xsdbool( sy-langu <> 'D' )
         reason             = |Requires logon in German| )
-      ( repo_name          = |SFPF|
-        skip_local         = no_ads
-        skip_transportable = no_ads
-        reason             = |Requires Adobe Document Service (ADS)| )
+      ( repo_name          = |NSPC|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Requires package in namespace| )
+      ( repo_name          = |PDTS|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/5550| )
       ( repo_name          = |SFBF|
         skip_local         = abap_true
         skip_transportable = abap_true
@@ -156,6 +160,10 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Issue https://github.com/abapGit/abapGit/issues/2469| )
+      ( repo_name          = |SFPF|
+        skip_local         = no_ads
+        skip_transportable = no_ads
+        reason             = |Requires Adobe Document Service (ADS)| )
       ( repo_name          = |SFSW|
         skip_local         = abap_true
         skip_transportable = abap_true
@@ -176,7 +184,11 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Issue https://github.com/abapGit/abapGit/issues/4480| )
-      ( repo_name          = |SPRX_server_proxy|
+      ( repo_name          = |SPRX|
+        skip_local         = abap_false
+        skip_transportable = abap_true
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/5553| )
+      ( repo_name          = |SPRX_*|
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Issue https://github.com/abapGit/abapGit/issues/4140| )
@@ -192,10 +204,22 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Requires SAP ERP on HANA. Issue https://github.com/abapGit-tests/SQSC/issues/1| )
+      ( repo_name          = |SRVB|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Requires release >7.54. Issue https://github.com/abapGit-tests/SRVB/issues/9| )
+      ( repo_name          = |SRVD|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Requires release >7.54. Issue https://github.com/abapGit-tests/SRVD/issues/1| )
       ( repo_name          = |SXCI|
         skip_local         = not_diag
         skip_transportable = not_diag
-        reason             = |Requires user-interaction (not available in batch)| ) ).
+        reason             = |Requires user-interaction (not available in batch)| )
+      ( repo_name          = |WEBI|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/4140| ) ).
 
   ENDMETHOD.
 
