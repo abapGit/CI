@@ -33,7 +33,7 @@ CLASS lcl_table_renderer IMPLEMENTATION.
       WHERE name NOT IN mt_excl_columns.
 
       rv_html = rv_html
-            && |<th class="tg-kiyi">|
+            && |<th class="header">|
             && |{ CAST cl_abap_elemdescr( <ls_component>-type
                            )->get_ddic_field(
                            )-scrtext_m }|
@@ -69,17 +69,17 @@ CLASS lcl_table_renderer IMPLEMENTATION.
         ASSERT sy-subrc = 0.
 
         IF <ls_component>-name CS |URL|.
-          rv_html = rv_html && |<td class="tg-xldj url">|
+          rv_html = rv_html && |<td class="row url">|
                             && |<a href="{ <lv_field> }">Repo</a></td>\n|.
         ELSEIF <ls_component>-type->get_ddic_header( )-refname CS |STATUS|.
-          rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_status( <lv_field> ) }|
+          rv_html = rv_html && |<td class="row { get_css_class_for_status( <lv_field> ) }|
                             && | { get_css_class_for_field( <ls_component>-name ) }">|
                             && |{ get_value_for_status( <lv_field> ) }</td>\n|.
         ELSEIF <ls_component>-name = |MESSAGE|.
-          rv_html = rv_html && |<td class="tg-xldj">|
+          rv_html = rv_html && |<td class="row">|
                             && |{ get_message_text( <lv_field> ) }</td>\n|.
         ELSE.
-          rv_html = rv_html && |<td class="tg-xldj { get_css_class_for_field( <ls_component>-name ) }">|
+          rv_html = rv_html && |<td class="row { get_css_class_for_field( <ls_component>-name ) }">|
                             && |{ <lv_field> }</td>\n|.
         ENDIF.
 
