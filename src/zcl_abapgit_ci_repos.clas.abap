@@ -53,18 +53,28 @@ CLASS zcl_abapgit_ci_repos DEFINITION
           zcx_abapgit_exception.
 
     METHODS:
+      repo_start
+        IMPORTING
+          is_ci_repo TYPE zabapgit_ci_result
+          iv_count   TYPE i
+          iv_total   TYPE i,
+
       process_repo
         CHANGING
           cs_ci_repo TYPE zabapgit_ci_result
         RAISING
           zcx_abapgit_exception,
+
+      repo_finish
+        IMPORTING
+          is_ci_repo TYPE zabapgit_ci_result,
+
       get_repo_list_with_packages
         IMPORTING
           it_repos        TYPE zif_abapgit_ci_definitions=>tty_repo
           is_options      TYPE zif_abapgit_ci_definitions=>ty_repo_check_options
         RETURNING
           VALUE(rt_repos) TYPE zif_abapgit_ci_definitions=>tty_repo_result_list.
-
 ENDCLASS.
 
 
@@ -183,43 +193,47 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
     rt_result_list = get_repo_list_with_packages( it_repos = it_repos is_options = is_options ).
 
     LOOP AT rt_result_list ASSIGNING FIELD-SYMBOL(<ls_ci_repo>).
-      IF <ls_ci_repo>-skip = abap_true.
-        <ls_ci_repo>-status = zif_abapgit_ci_definitions=>co_status-skipped.
-        CONTINUE.
-      ENDIF.
 
-      IF sy-batch = abap_true.
-        DATA(lv_counter) = |{ sy-tabix } of { lines( rt_result_list ) }:|.
-        MESSAGE |{ lv_counter } Start processing repo { <ls_ci_repo>-name } { <ls_ci_repo>-package }| TYPE 'I'.
-      ENDIF.
+      repo_start(
+        is_ci_repo = <ls_ci_repo>
+        iv_count   = sy-tabix
+        iv_total   = lines( rt_result_list ) ).
 
       GET TIME STAMP FIELD lv_start_timestamp.
 
-      TRY.
-          process_repo(
-            CHANGING
-              cs_ci_repo = <ls_ci_repo> ).
+      IF <ls_ci_repo>-skip = abap_true.
 
-        CATCH zcx_abapgit_exception INTO DATA(lx_error).
-          <ls_ci_repo>-status  = zif_abapgit_ci_definitions=>co_status-not_ok.
-          <ls_ci_repo>-message = lx_error->get_text( ).
-      ENDTRY.
-
-      IF <ls_ci_repo>-create_package = zif_abapgit_ci_definitions=>co_status-not_ok
-      OR <ls_ci_repo>-clone          = zif_abapgit_ci_definitions=>co_status-not_ok
-      OR <ls_ci_repo>-pull           = zif_abapgit_ci_definitions=>co_status-not_ok
-      OR <ls_ci_repo>-syntax_check   = zif_abapgit_ci_definitions=>co_status-not_ok
-      OR <ls_ci_repo>-purge          = zif_abapgit_ci_definitions=>co_status-not_ok
-      OR <ls_ci_repo>-status         = zif_abapgit_ci_definitions=>co_status-not_ok
-      OR ( <ls_ci_repo>-layer IS NOT INITIAL AND
-           ( <ls_ci_repo>-check_create_transport = zif_abapgit_ci_definitions=>co_status-not_ok OR
-             <ls_ci_repo>-check_delete_transport = zif_abapgit_ci_definitions=>co_status-not_ok ) ).
-
-        <ls_ci_repo>-status = zif_abapgit_ci_definitions=>co_status-not_ok.
+        <ls_ci_repo>-status = zif_abapgit_ci_definitions=>co_status-skipped.
 
       ELSE.
 
-        <ls_ci_repo>-status = zif_abapgit_ci_definitions=>co_status-ok.
+        TRY.
+            process_repo(
+              CHANGING
+                cs_ci_repo = <ls_ci_repo> ).
+
+          CATCH zcx_abapgit_exception INTO DATA(lx_error).
+            <ls_ci_repo>-status  = zif_abapgit_ci_definitions=>co_status-not_ok.
+            <ls_ci_repo>-message = lx_error->get_text( ).
+        ENDTRY.
+
+        IF <ls_ci_repo>-create_package = zif_abapgit_ci_definitions=>co_status-not_ok
+        OR <ls_ci_repo>-clone          = zif_abapgit_ci_definitions=>co_status-not_ok
+        OR <ls_ci_repo>-pull           = zif_abapgit_ci_definitions=>co_status-not_ok
+        OR <ls_ci_repo>-syntax_check   = zif_abapgit_ci_definitions=>co_status-not_ok
+        OR <ls_ci_repo>-purge          = zif_abapgit_ci_definitions=>co_status-not_ok
+        OR <ls_ci_repo>-status         = zif_abapgit_ci_definitions=>co_status-not_ok
+        OR ( <ls_ci_repo>-layer IS NOT INITIAL AND
+             ( <ls_ci_repo>-check_create_transport = zif_abapgit_ci_definitions=>co_status-not_ok OR
+               <ls_ci_repo>-check_delete_transport = zif_abapgit_ci_definitions=>co_status-not_ok ) ).
+
+          <ls_ci_repo>-status = zif_abapgit_ci_definitions=>co_status-not_ok.
+
+        ELSE.
+
+          <ls_ci_repo>-status = zif_abapgit_ci_definitions=>co_status-ok.
+
+        ENDIF.
 
       ENDIF.
 
@@ -229,22 +243,56 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
         iv_timestamp0 = lv_start_timestamp
         iv_timestamp1 = lv_finish_timestamp ).
 
-      CASE <ls_ci_repo>-status.
-        WHEN zif_abapgit_ci_definitions=>co_status-not_ok.
-          lv_result = |{ icon_led_red } Result: Fail|.
-        WHEN zif_abapgit_ci_definitions=>co_status-ok.
-          lv_result = |{ icon_led_green } Result: Pass|.
-        WHEN zif_abapgit_ci_definitions=>co_status-skipped.
-          lv_result = |{ icon_led_yellow } Result: Skip|.
-        WHEN OTHERS.
-          lv_result = |{ icon_led_yellow } Result: Unknown|.
-      ENDCASE.
-
-      IF sy-batch = abap_true.
-        MESSAGE |{ lv_result }, Runtime: { <ls_ci_repo>-duration } seconds| TYPE 'I'.
-      ENDIF.
+      repo_finish( <ls_ci_repo> ).
 
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD repo_finish.
+
+    DATA lv_result TYPE string.
+
+    IF sy-batch = abap_false.
+      RETURN.
+    ENDIF.
+
+    CASE is_ci_repo-status.
+      WHEN zif_abapgit_ci_definitions=>co_status-ok.
+
+        lv_result = |{ icon_led_green } Result: Pass|.
+
+      WHEN zif_abapgit_ci_definitions=>co_status-skipped.
+
+        lv_result = |{ icon_led_yellow } Result: Skip|.
+        MESSAGE |{ is_ci_repo-message }| TYPE 'I'.
+
+      WHEN zif_abapgit_ci_definitions=>co_status-not_ok.
+
+        lv_result = |{ icon_led_red } Result: Fail|.
+        MESSAGE |{ is_ci_repo-message }| TYPE 'I'.
+
+      WHEN OTHERS.
+
+        lv_result = |{ icon_led_yellow } Result: Unknown|.
+
+    ENDCASE.
+
+    MESSAGE |{ lv_result }, Runtime: { is_ci_repo-duration } seconds| TYPE 'I'.
+
+  ENDMETHOD.
+
+
+  METHOD repo_start.
+
+    IF sy-batch = abap_false.
+      RETURN.
+    ENDIF.
+
+    DATA(lv_counter) = |{ iv_count } of { iv_total }:|.
+
+    MESSAGE |{ lv_counter } Start processing repo { is_ci_repo-name } { is_ci_repo-package }| TYPE 'I'.
 
   ENDMETHOD.
 
