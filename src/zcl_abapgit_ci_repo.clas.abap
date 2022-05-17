@@ -40,6 +40,14 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         RAISING
           zcx_abapgit_exception,
 
+      check_repo_exists
+        IMPORTING
+          io_repo          TYPE REF TO zcl_abapgit_repo_online
+        RETURNING
+          VALUE(rv_exists) TYPE abap_bool
+        RAISING
+          zcx_abapgit_exception,
+
       check_exists
         IMPORTING
           iv_package TYPE devclass
@@ -250,13 +258,13 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       IF zcl_abapgit_objects=>exists( ls_item ) = abap_true.
         " Note: If the zcl_abapgit_object_<type>~exists fails with exception, the check returns true!
         " So check if the implementation of `exists` is correct
-        zcx_abapgit_exception=>raise( |Object { ls_item-obj_type } { ls_item-obj_name } already exists| ).
+        zcx_abapgit_cancel=>raise( |Object { ls_item-obj_type } { ls_item-obj_name } already exists| ).
       ENDIF.
 
       SELECT SINGLE * FROM tadir INTO @ls_tadir
         WHERE pgmid = 'R3TR' AND object = @ls_item-obj_type AND obj_name = @ls_item-obj_name.
       IF sy-subrc = 0.
-        zcx_abapgit_exception=>raise( |TADIR entry { ls_item-obj_type } { ls_item-obj_name } already exists| ).
+        zcx_abapgit_cancel=>raise( |TADIR entry { ls_item-obj_type } { ls_item-obj_name } already exists| ).
       ENDIF.
 
       " Remember objects for check_leftover process
@@ -376,7 +384,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     ENDLOOP.
 
+    io_repo->refresh_local_objects( ).
     io_repo->reset_status( ).
+
     ls_files = zcl_abapgit_factory=>get_stage_logic( )->get( io_repo ).
 
     log_diffs(
@@ -424,6 +434,18 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD check_repo_exists.
+
+    DATA lt_list TYPE zif_abapgit_repo_srv=>ty_repo_list.
+
+    lt_list = zcl_abapgit_repo_srv=>get_instance( )->list( ).
+
+    READ TABLE lt_list TRANSPORTING NO FIELDS WITH TABLE KEY table_line = io_repo.
+    rv_exists = boolc( sy-subrc = 0 ).
+
+  ENDMETHOD.
+
+
   METHOD check_transport.
 
     DATA:
@@ -434,7 +456,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       lv_first_not_found        TYPE string,
       lv_first_too_much         TYPE string.
 
-    IF iv_transport IS INITIAL.
+    IF check_repo_exists( io_repo ) = abap_false OR iv_transport IS INITIAL.
       RETURN.
     ENDIF.
 
@@ -562,6 +584,12 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
+    " Exit if transport is already release
+    READ TABLE lt_requests TRANSPORTING NO FIELDS WITH KEY trkorr = iv_transport trstatus = 'R'.
+    IF sy-subrc = 0.
+      RETURN.
+    ENDIF.
+
     " First delete all empty tasks
     LOOP AT lt_requests ASSIGNING FIELD-SYMBOL(<ls_task>) WHERE trkorr <> iv_transport AND trstatus <> 'R'.
       SELECT COUNT(*) FROM e071 INTO @DATA(lv_count) WHERE trkorr = @<ls_task>-trkorr.
@@ -595,7 +623,6 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
         DATA(lv_objects_found) = abap_true.
       ENDIF.
     ENDLOOP.
-
 
     " Then delete empty transport request
     IF lv_objects_found = abap_false.
@@ -994,7 +1021,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     DATA lv_error TYPE string.
 
-    IF io_repo IS NOT BOUND OR cs_ri_repo-do_not_purge = abap_true.
+    IF check_repo_exists( io_repo ) = abap_false OR cs_ri_repo-do_not_purge = abap_true.
       RETURN.
     ENDIF.
 
@@ -1251,7 +1278,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
       CATCH zcx_abapgit_cancel INTO DATA(lx_cancel).
 
-        " ensure transport is released after cancel
+        " ensure transport is deleted (if empty) or released after cancel
+        cleanup_transport( lv_transport ).
+
         release_transport( lv_transport ).
 
         cs_ri_repo-message = lx_cancel->get_text( ).
