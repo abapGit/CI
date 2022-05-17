@@ -128,6 +128,10 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Issue https://github.com/abapGit/abapGit/issues/2722| )
+      ( repo_name          = |FDT0|
+        skip_local         = abap_false
+        skip_transportable = abap_true
+        reason             = |Cannot be installed in transportable package| )
       ( repo_name          = |FUGR_lxe|
         skip_local         = abap_true
         skip_transportable = abap_true
@@ -152,6 +156,10 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Issue https://github.com/abapGit/abapGit/issues/5550| )
+      ( repo_name          = |PINF_exposing_*|
+        skip_local         = abap_false
+        skip_transportable = abap_true
+        reason             = |Requires restart of application| )
       ( repo_name          = |SFBF|
         skip_local         = abap_true
         skip_transportable = abap_true
