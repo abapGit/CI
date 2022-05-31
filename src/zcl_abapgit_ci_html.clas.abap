@@ -154,7 +154,7 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
        TIME ZONE lv_timezone
        INTO DATE DATA(lv_date) TIME DATA(lv_time).
 
-    data(ls_release) = zcl_abapgit_factory=>get_environment( )->get_basis_release( ).
+    DATA(ls_release) = zcl_abapgit_factory=>get_environment( )->get_basis_release( ).
 
     rv_html = |<h2 class="{ COND #( WHEN ms_result-ci_has_errors = abap_true THEN |not_ok| ELSE |ok| ) }">|
            && |{ COND #( WHEN ms_result-ci_has_errors = abap_true THEN |CI Failed| ELSE |CI Successful| ) }</h2>\n|
