@@ -152,28 +152,28 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
 
     CONVERT TIME STAMP ms_result-statistics-finish_timestamp
        TIME ZONE lv_timezone
-       INTO DATE DATA(date) TIME DATA(time).
+       INTO DATE DATA(lv_date) TIME DATA(lv_time).
 
-    rv_html = |<h2 class="{
-                     COND #( WHEN ms_result-ci_has_errors = abap_true
-                             THEN |not_ok|
-                             ELSE |ok|
-                       ) }">{
-                     COND #( WHEN ms_result-ci_has_errors = abap_true
-                             THEN |CI Failed|
-                             ELSE |CI Successful| ) }</h2>\n|
-           && |<h3>Date: { date DATE = USER } |
-           && |- Time: { time TIME = USER } { lv_timezone } |
+    data(ls_release) = zcl_abapgit_factory=>get_environment( )->get_basis_release( ).
+
+    rv_html = |<h2 class="{ COND #( WHEN ms_result-ci_has_errors = abap_true THEN |not_ok| ELSE |ok| ) }">|
+           && |{ COND #( WHEN ms_result-ci_has_errors = abap_true THEN |CI Failed| ELSE |CI Successful| ) }</h2>\n|
+           && |<h3>Date: { lv_date DATE = USER } |
+           && |- Time: { lv_time TIME = USER } { lv_timezone } |
            && |- Duration: { ms_result-statistics-duration_in_seconds } seconds</h3>\n|
            && |<h3>abapGit Version: { zif_abapgit_version=>c_abap_version }</h3>\n|
+           && |<h3>SAP Release: { ls_release-release } SP { ls_release-sp }</h3>\n|
            && |<h3>Repo Links: \n|
            && |<a href='https://github.com/abapGit/abapGit'>abapGit</a> \| \n|
            && |<a href='https://github.com/abapGit/CI'>abapGit CI</a> \| \n|
            && |<a href='https://github.com/abapGit/ci.abapgit.org'>abapGit CI results</a></h3>\n|
            && |<h3>Test Cases: <span class="box key">Total: { ms_result-statistics-test_cases-total }</span> |
-           && |<span class="box ok">Successful: { ms_result-statistics-test_cases-successful }</span> |
-           && |<span class="box skipped">Skipped: { ms_result-statistics-test_cases-skipped }</span> |
-           && |<span class="box not_ok">Failed: { ms_result-statistics-test_cases-failed }</span>\n|.
+           && |<span class="box { COND #( WHEN ms_result-statistics-test_cases-successful > 0 THEN |ok| ) }">|
+           && |Successful: { ms_result-statistics-test_cases-successful }</span> |
+           && |<span class="box { COND #( WHEN ms_result-statistics-test_cases-skipped > 0 THEN |skipped| ) }">|
+           && |Skipped: { ms_result-statistics-test_cases-skipped }</span> |
+           && |<span class="box { COND #( WHEN ms_result-statistics-test_cases-failed > 0 THEN |not_ok| ) }">|
+           && |Failed: { ms_result-statistics-test_cases-failed }</span>\n|.
 
   ENDMETHOD.
 
