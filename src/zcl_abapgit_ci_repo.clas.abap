@@ -290,6 +290,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ELSEIF is_item-obj_type = 'SICF' AND iv_deletion = abap_true.
       " Object name of ICF services can not be decoded after deletion since this needs the TADIR entry
       rv_check = abap_false.
+    ELSEIF is_item-obj_type = 'SOTR' AND iv_deletion = abap_true.
+      " SOTR is not part of the repo but deletion creates an transport entry
+      rv_check = abap_false.
     ELSEIF is_item-obj_type = 'TDAT' AND is_item-obj_name = 'EDISEGMENT'.
       " IDOC and IEXT create additional TDAT entries
       rv_check = abap_false.
@@ -456,7 +459,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       lv_first_not_found        TYPE string,
       lv_first_too_much         TYPE string.
 
-    IF check_repo_exists( io_repo ) = abap_false OR iv_transport IS INITIAL.
+    IF iv_transport IS INITIAL.
       RETURN.
     ENDIF.
 
