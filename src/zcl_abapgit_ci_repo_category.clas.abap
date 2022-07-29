@@ -240,8 +240,6 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
 
   METHOD get_repo_category.
 
-    DATA lv_tlogo TYPE rstlogo.
-
     IF strlen( iv_repo_name ) < 4.
       rv_result = c_category_others.
       RETURN.
@@ -256,13 +254,6 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
       WITH TABLE KEY object_type = lv_object_type.
     IF sy-subrc = 0.
       rv_result = lr_object_category->category.
-    ELSE.
-      " Assign category for BW objects
-      SELECT SINGLE tlogo INTO @lv_tlogo FROM rstlogoprop
-        WHERE tlogo = @lv_object_type OR tlogo_d = @lv_object_type.
-      IF sy-subrc = 0.
-        rv_result = c_category_bw.
-      ENDIF.
     ENDIF.
 
     IF rv_result IS INITIAL OR rv_result = c_category_others.
@@ -280,6 +271,8 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
           rv_result = c_category_gateway_bse.
         WHEN 'SUCU' OR 'SUSC'.
           rv_result = c_category_auth.
+        WHEN 'AREA' OR 'IOBJ' OR 'ODSO'.
+          rv_result = c_category_bw.
         WHEN OTHERS.
           rv_result = c_category_others.
       ENDCASE.
