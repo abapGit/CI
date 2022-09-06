@@ -110,11 +110,11 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
 
     rv_count = REDUCE #( INIT result = 0
                          FOR gen_result IN is_result-generic_result_list
-                         WHERE status = iv_status
+                         WHERE ( status = iv_status )
                          NEXT result = result + 1 )
              + REDUCE #( INIT result = 0
                          FOR repo_result IN is_result-repo_result_list
-                         WHERE status = iv_status
+                         WHERE ( status = iv_status )
                          NEXT result = result + 1 ).
 
   ENDMETHOD.
@@ -127,7 +127,7 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
     DATA(lv_error_text) = REDUCE string(
                             INIT result = ||
                             FOR line IN is_result-repo_result_list
-                            WHERE status = zif_abapgit_ci_definitions=>co_status-not_ok
+                            WHERE ( status = zif_abapgit_ci_definitions=>co_status-not_ok )
                             NEXT result = result && |\nRepo: { line-name } Message: { line-message }\n| ).
 
     NEW zcl_abapgit_ci_slack( ms_options-slack_oauth_token )->post(
