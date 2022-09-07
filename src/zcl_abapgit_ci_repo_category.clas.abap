@@ -58,6 +58,8 @@ CLASS zcl_abapgit_ci_repo_category DEFINITION
       c_category_hier_label   TYPE string VALUE 'Hierarchy Storage',
       c_category_bw           TYPE string VALUE 'bw',
       c_category_bw_label     TYPE string VALUE 'Business Warehouse',
+      c_category_data         TYPE string VALUE 'data',
+      c_category_data_label   TYPE string VALUE 'Data',
       c_category_others       TYPE string VALUE 'zzz_other_zzz',
       c_category_others_label TYPE string VALUE 'Others'.
 
@@ -121,6 +123,11 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
     " Add "Hierarchy Storage"
     ls_category-category       = c_category_hier.
     ls_category-category_label = c_category_hier_label.
+    INSERT ls_category INTO TABLE rt_result.
+
+    " Add "Data"
+    ls_category-category       = c_category_data.
+    ls_category-category_label = c_category_data_label.
     INSERT ls_category INTO TABLE rt_result.
 
     SORT rt_result BY category_label.
@@ -245,7 +252,6 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-
     " First four letters of repo name represent the major test object (repo might include others)
     DATA(lv_object_type) = iv_repo_name(4).
 
@@ -263,7 +269,7 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
           rv_result = c_category_ddic.
         WHEN 'CUS0' OR 'CUS1' OR 'CUS2' OR 'SCP1'.
           rv_result = c_category_cust.
-        WHEN 'CHKC' OR 'CHKO' OR 'CHKV'.
+        WHEN 'CHKC' OR 'CHKO' OR 'CHKV' OR 'ETVB'.
           rv_result = c_category_aff.
         WHEN 'SHI3' OR 'SHI5' OR 'SHI8'.
           rv_result = c_category_hier.
@@ -274,7 +280,11 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
         WHEN 'AREA' OR 'IOBJ' OR 'ODSO'.
           rv_result = c_category_bw.
         WHEN OTHERS.
-          rv_result = c_category_others.
+          IF lv_object_type CP 'data*'.
+            rv_result = c_category_data.
+          ELSE.
+            rv_result = c_category_others.
+          ENDIF.
       ENDCASE.
     ENDIF.
 

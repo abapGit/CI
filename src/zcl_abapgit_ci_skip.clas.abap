@@ -104,6 +104,14 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_false
         skip_transportable = not_diag
         reason             = |Requires user-interaction (not available in batch)| )
+      ( repo_name          = |data_custom_table|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Data not supported yet| )
+      ( repo_name          = |data_test|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Data not supported yet| )
       ( repo_name          = |DDLS_cyclic|
         skip_local         = abap_true
         skip_transportable = abap_true
@@ -128,6 +136,10 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Issue https://github.com/abapGit/abapGit/issues/2722| )
+      ( repo_name          = |ETVB|
+        skip_local         = no_aff
+        skip_transportable = no_aff
+        reason             = |Requires support for ABAP File Format (AFF)| )
       ( repo_name          = |FDT0|
         skip_local         = abap_false
         skip_transportable = abap_true
