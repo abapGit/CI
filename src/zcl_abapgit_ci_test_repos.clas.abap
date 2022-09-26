@@ -90,9 +90,19 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
 
     ENDDO.
 
+    " Remove extension
+    LOOP AT rt_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
+      <ls_repo>-clone_url = replace(
+        val  = <ls_repo>-clone_url
+        sub  = '.git'
+        with = ''
+        occ  = -1 ).
+    ENDLOOP.
+
     " Excluded for test purposes, no need for skip reason
     DELETE rt_repos WHERE name NOT IN mt_repo_name_range.
 
     SORT rt_repos BY name.
+
   ENDMETHOD.
 ENDCLASS.

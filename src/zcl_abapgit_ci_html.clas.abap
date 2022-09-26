@@ -162,7 +162,7 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
            && |- Time: { lv_time TIME = USER } { lv_timezone } |
            && |- Duration: { ms_result-statistics-duration_in_seconds } seconds</h3>\n|
            && |<h3>abapGit Version: { zif_abapgit_version=>c_abap_version }</h3>\n|
-           && |<h3>SAP Release: { ls_release-release } SP { ls_release-sp }</h3>\n|
+           && |<h3>SAP Release: { ls_release-release } SP { ls_release-sp ALPHA = OUT }</h3>\n|
            && |<h3>Repo Links: \n|
            && |<a href='https://github.com/abapGit/abapGit'>abapGit</a> \| \n|
            && |<a href='https://github.com/abapGit/CI'>abapGit CI</a> \| \n|
@@ -222,7 +222,7 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
       && `  text-align: left;`
       && `}`
       && `.status {`
-      && `  width: 70px;`
+      && `  width: 65px;`
       && `}`
       && `.box {`
       && `  border-style: solid;`
@@ -250,21 +250,21 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
       && `  width: 170px;`
       && `}`
       && `.repo_pack {`
-      && `  width: 225px;`
+      && `  width: 100px;`
       && `}`
       && `.total {`
       && `  font-weight: bold;`
-      && `  width: 70px;`
+      && `  width: 65px;`
       && `}`
       && `.layer {`
-      && `  width: 70px;`
+      && `  width: 65px;`
       && `}`
       && `.duration {`
-      && `  width: 70px;`
+      && `  width: 65px;`
       && `  text-align: right;`
       && `}`
       && `.url {`
-      && `  width: 50px;`
+      && `  width: 45px;`
       && `}`
       && `</style>`.
 
