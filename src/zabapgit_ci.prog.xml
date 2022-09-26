@@ -20,7 +20,7 @@
     <item>
      <ID>I</ID>
      <KEY>B02</KEY>
-     <ENTRY>Options</ENTRY>
+     <ENTRY>Publish Results</ENTRY>
      <LENGTH>17</LENGTH>
     </item>
     <item>
@@ -38,7 +38,7 @@
     <item>
      <ID>I</ID>
      <KEY>B05</KEY>
-     <ENTRY>Restrict Repository Selection</ENTRY>
+     <ENTRY>Repositories</ENTRY>
      <LENGTH>40</LENGTH>
     </item>
     <item>
@@ -50,14 +50,8 @@
     <item>
      <ID>I</ID>
      <KEY>D01</KEY>
-     <ENTRY>This report starts the abapGit CI process.</ENTRY>
+     <ENTRY>This report starts the abapGit CI process (https://github.com/abapGit/CI)</ENTRY>
      <LENGTH>112</LENGTH>
-    </item>
-    <item>
-     <ID>I</ID>
-     <KEY>D02</KEY>
-     <ENTRY>https://github.com/abapGit/CI</ENTRY>
-     <LENGTH>124</LENGTH>
     </item>
     <item>
      <ID>I</ID>

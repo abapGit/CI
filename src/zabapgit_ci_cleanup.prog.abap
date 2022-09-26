@@ -13,12 +13,15 @@ DATA:
   gs_item      TYPE zif_abapgit_definitions=>ty_item.
 
 SELECTION-SCREEN SKIP.
-PARAMETERS: p_uninst TYPE abap_bool RADIOBUTTON GROUP r1 DEFAULT 'X'.
+PARAMETERS: p_list TYPE abap_bool RADIOBUTTON GROUP r1 DEFAULT 'X'.
+SELECTION-SCREEN SKIP.
+
+SELECTION-SCREEN SKIP.
+PARAMETERS: p_uninst TYPE abap_bool RADIOBUTTON GROUP r1.
 SELECTION-SCREEN SKIP.
 SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
   SELECT-OPTIONS: s_pack FOR gv_package.
-  PARAMETERS: p_list  TYPE abap_bool RADIOBUTTON GROUP r2 DEFAULT 'X',
-              p_purge TYPE abap_bool RADIOBUTTON GROUP r2,
+  PARAMETERS: p_purge TYPE abap_bool RADIOBUTTON GROUP r2 DEFAULT 'X',
               p_remov TYPE abap_bool RADIOBUTTON GROUP r2,
               p_obj   TYPE abap_bool RADIOBUTTON GROUP r2,
               p_otr   TYPE abap_bool RADIOBUTTON GROUP r2,
@@ -35,7 +38,7 @@ PARAMETERS: p_trrel TYPE abap_bool RADIOBUTTON GROUP r1.
 SELECTION-SCREEN SKIP.
 SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-002.
   PARAMETERS: p_txt   TYPE as4text DEFAULT 'abapGit CI*',
-              p_prev  TYPE abap_bool AS CHECKBOX DEFAULT abap_true,
+              p_prev  TYPE abap_bool AS CHECKBOX DEFAULT abap_false,
               p_force TYPE abap_bool AS CHECKBOX DEFAULT abap_false.
 SELECTION-SCREEN END OF BLOCK b2.
 
@@ -112,6 +115,9 @@ ENDCLASS.
 CLASS lcl_main IMPLEMENTATION.
   METHOD run.
     CASE abap_true.
+      WHEN p_list.
+        check_packages( ).
+        list( ).
       WHEN p_uninst.
         check_packages( ).
         IF p_pack = abap_true.
@@ -122,8 +128,6 @@ CLASS lcl_main IMPLEMENTATION.
           drop_otr( ).
         ELSEIF p_log = abap_true.
           drop_logs( ).
-        ELSEIF p_list = abap_true.
-          list( ).
         ELSE.
           uninstall_repos( ).
         ENDIF.
