@@ -39,6 +39,12 @@ CLASS lcl_table_renderer DEFINITION FINAL.
         RETURNING
           VALUE(rv_value) TYPE string,
 
+      get_package_text
+        IMPORTING
+          iv_package      TYPE any
+        RETURNING
+          VALUE(rv_value) TYPE string,
+
       get_value_for_status
         IMPORTING
           iv_status       TYPE csequence

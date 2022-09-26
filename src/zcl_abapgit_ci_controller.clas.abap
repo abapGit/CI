@@ -68,10 +68,13 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
                                           + cs_result-statistics-test_cases-failed.
 
     IF sy-batch = abap_true.
-      DATA(lv_msg) = |Total: { cs_result-statistics-test_cases-total } |
-                  && |\|{ icon_led_green }Passed: { cs_result-statistics-test_cases-successful } |
-                  && |\|{ icon_led_yellow }Skipped: { cs_result-statistics-test_cases-skipped } |
-                  && |\|{ icon_led_red }Failed: { cs_result-statistics-test_cases-failed }|.
+      DATA(lv_msg) = |Total: { cs_result-statistics-test_cases-total }|.
+      MESSAGE lv_msg TYPE 'I'.
+      lv_msg = |{ icon_led_green } Passed: { cs_result-statistics-test_cases-successful }|.
+      MESSAGE lv_msg TYPE 'I'.
+      lv_msg = |{ icon_led_yellow } Skipped: { cs_result-statistics-test_cases-skipped }|.
+      MESSAGE lv_msg TYPE 'I'.
+      lv_msg = |{ icon_led_red } Failed: { cs_result-statistics-test_cases-failed }|.
       MESSAGE lv_msg TYPE 'I'.
     ENDIF.
 
@@ -80,16 +83,19 @@ CLASS zcl_abapgit_ci_controller IMPLEMENTATION.
 
   METHOD collect_categories.
 
-    DATA lv_category LIKE LINE OF cs_result-category_list.
-
     CLEAR cs_result-category_list.
 
-    LOOP AT cs_result-repo_result_list INTO DATA(ls_repo_result).
-      lv_category = ls_repo_result-category.
-      COLLECT lv_category INTO cs_result-category_list.
-    ENDLOOP.
+    DATA(lt_categories) = NEW zcl_abapgit_ci_repo_category( )->get_categories( ).
 
-    SORT cs_result-category_list.
+    " Process categories in given order
+    LOOP AT lt_categories ASSIGNING FIELD-SYMBOL(<ls_category>).
+      " Check if category was used
+      READ TABLE cs_result-repo_result_list TRANSPORTING NO FIELDS
+        WITH KEY category = <ls_category>-category_label.
+      IF sy-subrc = 0.
+        COLLECT <ls_category>-category_label INTO cs_result-category_list.
+      ENDIF.
+    ENDLOOP.
 
   ENDMETHOD.
 
