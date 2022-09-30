@@ -19,7 +19,7 @@ CLASS zcl_abapgit_ci_repo_category DEFINITION
         category       TYPE string,
         category_label TYPE string,
       END OF ty_object_category,
-      ty_object_categories TYPE HASHED TABLE OF ty_object_category WITH UNIQUE KEY object_type.
+      ty_object_categories TYPE STANDARD TABLE OF ty_object_category WITH KEY object_type.
 
     CLASS-METHODS class_constructor.
 
@@ -42,7 +42,6 @@ CLASS zcl_abapgit_ci_repo_category DEFINITION
     METHODS f4
       RETURNING
         VALUE(rv_result) TYPE string.
-
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -50,6 +49,7 @@ CLASS zcl_abapgit_ci_repo_category DEFINITION
       c_category_gateway_bse  TYPE string VALUE 'rap_services',
       c_category_ddic         TYPE string VALUE 'dictionary',
       c_category_auth         TYPE string VALUE 'apsiam',
+      c_category_mime         TYPE string VALUE 'mime_objects',
       c_category_aff          TYPE string VALUE 'aff',
       c_category_aff_label    TYPE string VALUE 'ABAP File Format',
       c_category_cust         TYPE string VALUE 'customizing',
@@ -60,7 +60,7 @@ CLASS zcl_abapgit_ci_repo_category DEFINITION
       c_category_bw_label     TYPE string VALUE 'Business Warehouse',
       c_category_data         TYPE string VALUE 'data',
       c_category_data_label   TYPE string VALUE 'Data',
-      c_category_others       TYPE string VALUE 'zzz_other_zzz',
+      c_category_others       TYPE string VALUE 'other',
       c_category_others_label TYPE string VALUE 'Others'.
 
     CLASS-DATA:
@@ -264,12 +264,12 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
 
     IF rv_result IS INITIAL OR rv_result = c_category_others.
       " Assign some more cases, rest goes to "other"
-      CASE lv_object_type.
+      CASE to_upper( lv_object_type ).
         WHEN 'DDIC'.
           rv_result = c_category_ddic.
         WHEN 'CUS0' OR 'CUS1' OR 'CUS2' OR 'SCP1'.
           rv_result = c_category_cust.
-        WHEN 'CHKC' OR 'CHKO' OR 'CHKV' OR 'ETVB'.
+        WHEN 'CHKC' OR 'CHKO' OR 'CHKV' OR 'EVTB'.
           rv_result = c_category_aff.
         WHEN 'SHI3' OR 'SHI5' OR 'SHI8'.
           rv_result = c_category_hier.
@@ -279,8 +279,10 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
           rv_result = c_category_auth.
         WHEN 'AREA' OR 'IOBJ' OR 'ODSO'.
           rv_result = c_category_bw.
+        WHEN 'W3HT' OR 'W3MI'.
+          rv_result = c_category_mime.
         WHEN OTHERS.
-          IF lv_object_type CP 'data*'.
+          IF lv_object_type CP 'DATA*'.
             rv_result = c_category_data.
           ELSE.
             rv_result = c_category_others.

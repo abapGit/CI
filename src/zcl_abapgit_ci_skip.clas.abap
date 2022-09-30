@@ -75,7 +75,7 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
       ( repo_name          = |AOBJ|
         skip_local         = abap_true
         skip_transportable = abap_true
-        reason             = |No files found to deserialize| )
+        reason             = |Issue https://github.com/abapGit/abapGit/issue/804| )
       ( repo_name          = |AVAR|
         skip_local         = abap_true
         skip_transportable = abap_false
@@ -136,7 +136,7 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Issue https://github.com/abapGit/abapGit/issues/2722| )
-      ( repo_name          = |ETVB|
+      ( repo_name          = |EVTB|
         skip_local         = no_aff
         skip_transportable = no_aff
         reason             = |Requires support for ABAP File Format (AFF)| )
@@ -152,6 +152,10 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Issue https://github.com/abapGit/abapGit/issues/5451| )
+      ( repo_name          = |IOBJ|
+        skip_local         = abap_true
+        skip_transportable = abap_false
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/5775| )
       ( repo_name          = |IWMO|
         skip_local         = abap_true
         skip_transportable = abap_true
@@ -164,6 +168,10 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Requires package in namespace| )
+      ( repo_name          = |ODSO|
+        skip_local         = abap_true
+        skip_transportable = abap_false
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/5775| )
       ( repo_name          = |PDTS|
         skip_local         = abap_true
         skip_transportable = abap_true
@@ -236,6 +244,10 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = not_diag
         skip_transportable = not_diag
         reason             = |Requires user-interaction (not available in batch)| )
+      ( repo_name          = |WAPA_binary|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/5681| )
       ( repo_name          = |WEBI|
         skip_local         = abap_true
         skip_transportable = abap_true

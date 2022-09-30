@@ -78,6 +78,9 @@ CLASS lcl_table_renderer IMPLEMENTATION.
         ELSEIF <ls_component>-name = |MESSAGE|.
           rv_html = rv_html && |<td class="row">|
                             && |{ get_message_text( <lv_field> ) }</td>\n|.
+        ELSEIF <ls_component>-name = |PACKAGE|.
+          rv_html = rv_html && |<td class="row { get_css_class_for_field( <ls_component>-name ) }">|
+                            && |{ get_package_text( <lv_field> ) }</td>\n|.
         ELSE.
           rv_html = rv_html && |<td class="row { get_css_class_for_field( <ls_component>-name ) }">|
                             && |{ <lv_field> }</td>\n|.
@@ -146,6 +149,16 @@ CLASS lcl_table_renderer IMPLEMENTATION.
                         regex = '\n'
                         with  = '<br/>'
                         occ   = 0 ).
+
+  ENDMETHOD.
+
+  METHOD get_package_text.
+
+    rv_value = SWITCH #(
+                 |{ iv_package(1) }|
+                   WHEN '$' THEN |<span title="{ iv_package }">Local ($)</span>|
+                   WHEN 'Z' THEN |<span title="{ iv_package }">Transport (Z)</span>|
+                   ELSE |{ iv_package }| ).
 
   ENDMETHOD.
 

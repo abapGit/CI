@@ -904,11 +904,12 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     LOOP AT lt_messages ASSIGNING FIELD-SYMBOL(<ls_message>).
       CLEAR <ls_message>-exception.
-      IF <ls_message>-type CA 'AEX' AND lv_errors = abap_false.
-        DATA(ls_message) = <ls_message>.
-        lv_errors = abap_true.
-        EXIT.
-      ENDIF.
+    ENDLOOP.
+
+    LOOP AT lt_messages ASSIGNING <ls_message> WHERE type CA 'AEX'.
+      DATA(ls_message) = <ls_message>.
+      lv_errors = abap_true.
+      EXIT.
     ENDLOOP.
 
     IF lv_errors = abap_false.
