@@ -110,6 +110,7 @@ INITIALIZATION.
   scr_tab1+6 = 'Selection'.
   WRITE icon_icon_list AS ICON TO scr_tab2.
   scr_tab2+6 = 'Options'.
+
   descr01 = TEXT-d01.
   descr03 = TEXT-d03.
   descr04 = TEXT-d04.
