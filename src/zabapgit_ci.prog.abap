@@ -9,79 +9,109 @@ REPORT zabapgit_ci.
 DATA: gv_repo_name TYPE c LENGTH 60.
 DATA: gv_cat_name TYPE c LENGTH 60.
 
-SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-b01.
-  SELECTION-SCREEN COMMENT 1(79) descr01.
-  SELECTION-SCREEN COMMENT /1(79) descr02.
+*-----------------------------------------------------------------------
+
+" Function Keys
+TABLES: sscrfields.
+
+SELECTION-SCREEN FUNCTION KEY 1.
+
+" Selection
+SELECTION-SCREEN BEGIN OF SCREEN 100 AS SUBSCREEN.
+
+  SELECTION-SCREEN BEGIN OF BLOCK b5 WITH FRAME TITLE TEXT-b05.
+    SELECT-OPTIONS: s_repos FOR gv_repo_name LOWER CASE.
+    SELECT-OPTIONS: s_cats FOR gv_cat_name LOWER CASE.
+  SELECTION-SCREEN END OF BLOCK b5.
+
+  SELECTION-SCREEN BEGIN OF BLOCK b4 WITH FRAME TITLE TEXT-b04.
+    PARAMETERS:
+      generic TYPE abap_bool AS CHECKBOX DEFAULT 'X',
+      repo    TYPE abap_bool AS CHECKBOX DEFAULT 'X' USER-COMMAND u1.
+    SELECTION-SCREEN BEGIN OF LINE.
+      SELECTION-SCREEN POSITION 4.
+      PARAMETERS repol TYPE abap_bool AS CHECKBOX DEFAULT abap_true MODIF ID m1.
+      SELECTION-SCREEN COMMENT 9(30) FOR FIELD repol MODIF ID m1.
+    SELECTION-SCREEN END OF LINE.
+    SELECTION-SCREEN BEGIN OF LINE.
+      SELECTION-SCREEN POSITION 4.
+      PARAMETERS repot TYPE abap_bool AS CHECKBOX DEFAULT abap_false MODIF ID m1 USER-COMMAND u2.
+      SELECTION-SCREEN COMMENT 9(30) FOR FIELD repot MODIF ID m1.
+      SELECTION-SCREEN POSITION 40.
+      SELECTION-SCREEN COMMENT 40(20) FOR FIELD layer MODIF ID m1.
+      PARAMETERS layer TYPE devlayer MODIF ID m1.
+    SELECTION-SCREEN END OF LINE.
+    SELECTION-SCREEN BEGIN OF LINE.
+      SELECTION-SCREEN POSITION 4.
+      PARAMETERS createp TYPE abap_bool AS CHECKBOX DEFAULT abap_false MODIF ID m1.
+      SELECTION-SCREEN COMMENT 9(30) FOR FIELD createp MODIF ID m1.
+    SELECTION-SCREEN END OF LINE.
+    SELECTION-SCREEN BEGIN OF LINE.
+      SELECTION-SCREEN POSITION 4.
+      PARAMETERS no_purge TYPE abap_bool AS CHECKBOX DEFAULT abap_false MODIF ID m1.
+      SELECTION-SCREEN COMMENT 9(30) FOR FIELD no_purge MODIF ID m1.
+    SELECTION-SCREEN END OF LINE.
+  SELECTION-SCREEN END OF BLOCK b4.
+
+SELECTION-SCREEN END OF SCREEN 100.
+
+*-----------------------------------------------------------------------
+
+" Options
+SELECTION-SCREEN BEGIN OF SCREEN 200 AS SUBSCREEN.
+
+  SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-b02.
+    SELECTION-SCREEN COMMENT 1(77) opt01.
+    SELECTION-SCREEN COMMENT /1(77) opt02.
+    SELECTION-SCREEN COMMENT /1(77) opt03.
+    SELECTION-SCREEN SKIP.
+    PARAMETERS:
+      p_url  TYPE string LOWER CASE,
+      p_save TYPE abap_bool AS CHECKBOX,
+      p_hist TYPE abap_bool AS CHECKBOX.
+  SELECTION-SCREEN END OF BLOCK b2.
+
+  SELECTION-SCREEN BEGIN OF BLOCK b3 WITH FRAME TITLE TEXT-b03.
+    PARAMETERS:
+      slack TYPE abap_bool AS CHECKBOX,
+      token TYPE string LOWER CASE.
+  SELECTION-SCREEN END OF BLOCK b3.
+
+  SELECTION-SCREEN BEGIN OF BLOCK b6 WITH FRAME TITLE TEXT-b06.
+    PARAMETERS:
+      p_sync TYPE abap_bool AS CHECKBOX,
+      p_log  TYPE abap_bool AS CHECKBOX.
+  SELECTION-SCREEN END OF BLOCK b6.
+
+SELECTION-SCREEN END OF SCREEN 200.
+
+*-----------------------------------------------------------------------
+
+" Main
+SELECTION-SCREEN BEGIN OF BLOCK scr_header WITH FRAME TITLE TEXT-b01.
   SELECTION-SCREEN SKIP.
-  SELECTION-SCREEN COMMENT /1(79) descr03.
-  SELECTION-SCREEN COMMENT /1(79) descr04.
-  SELECTION-SCREEN COMMENT /1(79) descr05.
-  SELECTION-SCREEN COMMENT /1(79) descr06.
-  SELECTION-SCREEN COMMENT /1(79) descr07.
-  SELECTION-SCREEN COMMENT /1(79) descr08.
-  SELECTION-SCREEN COMMENT /1(79) descr09.
-SELECTION-SCREEN END OF BLOCK b1.
-
-SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-b02.
-  SELECTION-SCREEN COMMENT 1(79) opt01.
-  SELECTION-SCREEN COMMENT /1(79) opt02.
-  SELECTION-SCREEN COMMENT /1(79) opt03.
+  SELECTION-SCREEN COMMENT 1(77) descr01.
   SELECTION-SCREEN SKIP.
-  PARAMETERS:
-    p_url  TYPE string LOWER CASE,
-    p_save TYPE abap_bool AS CHECKBOX,
-    p_hist TYPE abap_bool AS CHECKBOX.
-SELECTION-SCREEN END OF BLOCK b2.
-
-SELECTION-SCREEN BEGIN OF BLOCK b5 WITH FRAME TITLE TEXT-b05.
-  SELECT-OPTIONS: s_repos FOR gv_repo_name LOWER CASE.
-  SELECT-OPTIONS: s_cats FOR gv_cat_name LOWER CASE.
-SELECTION-SCREEN END OF BLOCK b5.
-
-SELECTION-SCREEN BEGIN OF BLOCK b3 WITH FRAME TITLE TEXT-b03.
-  PARAMETERS:
-    slack TYPE abap_bool AS CHECKBOX,
-    token TYPE string LOWER CASE.
-SELECTION-SCREEN END OF BLOCK b3.
-
-SELECTION-SCREEN BEGIN OF BLOCK b4 WITH FRAME TITLE TEXT-b04.
-  PARAMETERS:
-    generic TYPE abap_bool AS CHECKBOX DEFAULT 'X',
-    repo    TYPE abap_bool AS CHECKBOX DEFAULT 'X' USER-COMMAND u1.
-  SELECTION-SCREEN BEGIN OF LINE.
-    SELECTION-SCREEN POSITION 4.
-    PARAMETERS repol TYPE abap_bool AS CHECKBOX DEFAULT abap_true MODIF ID m1.
-    SELECTION-SCREEN COMMENT 9(30) FOR FIELD repol MODIF ID m1.
-  SELECTION-SCREEN END OF LINE.
-  SELECTION-SCREEN BEGIN OF LINE.
-    SELECTION-SCREEN POSITION 4.
-    PARAMETERS repot TYPE abap_bool AS CHECKBOX DEFAULT abap_false MODIF ID m1 USER-COMMAND u2.
-    SELECTION-SCREEN COMMENT 9(30) FOR FIELD repot MODIF ID m1.
-    SELECTION-SCREEN POSITION 40.
-    SELECTION-SCREEN COMMENT 40(20) FOR FIELD layer MODIF ID m1.
-    PARAMETERS layer TYPE devlayer MODIF ID m1.
-  SELECTION-SCREEN END OF LINE.
-  SELECTION-SCREEN BEGIN OF LINE.
-    SELECTION-SCREEN POSITION 4.
-    PARAMETERS createp TYPE abap_bool AS CHECKBOX DEFAULT abap_false MODIF ID m1.
-    SELECTION-SCREEN COMMENT 9(30) FOR FIELD createp MODIF ID m1.
-  SELECTION-SCREEN END OF LINE.
-  SELECTION-SCREEN BEGIN OF LINE.
-    SELECTION-SCREEN POSITION 4.
-    PARAMETERS no_purge TYPE abap_bool AS CHECKBOX DEFAULT abap_false MODIF ID m1.
-    SELECTION-SCREEN COMMENT 9(30) FOR FIELD no_purge MODIF ID m1.
-  SELECTION-SCREEN END OF LINE.
-SELECTION-SCREEN END OF BLOCK b4.
-
-SELECTION-SCREEN BEGIN OF BLOCK b6 WITH FRAME TITLE TEXT-b06.
-  PARAMETERS:
-    p_sync TYPE abap_bool AS CHECKBOX,
-    p_log  TYPE abap_bool AS CHECKBOX.
-SELECTION-SCREEN END OF BLOCK b6.
+  SELECTION-SCREEN COMMENT /1(77) descr03.
+  SELECTION-SCREEN COMMENT /1(77) descr04.
+  SELECTION-SCREEN COMMENT /1(77) descr05.
+  SELECTION-SCREEN COMMENT /1(77) descr06.
+  SELECTION-SCREEN COMMENT /1(77) descr07.
+  SELECTION-SCREEN COMMENT /1(77) descr08.
+  SELECTION-SCREEN COMMENT /1(77) descr09.
+SELECTION-SCREEN END OF BLOCK scr_header.
+SELECTION-SCREEN BEGIN OF TABBED BLOCK scr_tab FOR 17 LINES.
+  SELECTION-SCREEN TAB (40) scr_tab1 USER-COMMAND scr_push1 DEFAULT SCREEN 0100.
+  SELECTION-SCREEN TAB (40) scr_tab2 USER-COMMAND scr_push2 DEFAULT SCREEN 0200.
+SELECTION-SCREEN END OF BLOCK scr_tab.
 
 INITIALIZATION.
+  sscrfields-functxt_01 = icon_biw_scheduler && 'Schedule Immediately'.
+  WRITE icon_selection AS ICON TO scr_tab1.
+  scr_tab1+6 = 'Selection'.
+  WRITE icon_icon_list AS ICON TO scr_tab2.
+  scr_tab2+6 = 'Options'.
   descr01 = TEXT-d01.
-  descr02 = TEXT-d02.
   descr03 = TEXT-d03.
   descr04 = TEXT-d04.
   descr05 = TEXT-d05.
@@ -138,7 +168,8 @@ CLASS lcl_abapgit_ci DEFINITION.
 
   PUBLIC SECTION.
     METHODS:
-      run.
+      run,
+      schedule.
 
   PRIVATE SECTION.
     METHODS:
@@ -192,6 +223,102 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD schedule.
+
+    DATA:
+      lv_code     TYPE c LENGTH 50,
+      lv_jobcount TYPE tbtcjob-jobcount,
+      lv_jobname  TYPE tbtcjob-jobname.
+
+    lv_jobname = sy-repid.
+
+    CALL FUNCTION 'JOB_OPEN'
+      EXPORTING
+        jobname          = lv_jobname
+        jobclass         = 'A'
+      IMPORTING
+        jobcount         = lv_jobcount
+      EXCEPTIONS
+        cant_create_job  = 1
+        invalid_job_data = 2
+        jobname_missing  = 3
+        OTHERS           = 4.
+    CASE sy-subrc.
+      WHEN 0.
+        SUBMIT zabapgit_ci
+          WITH createp = createp
+          WITH generic = generic
+          WITH layer = layer
+          WITH no_purge = no_purge
+          WITH p_hist = p_hist
+          WITH p_log = p_log
+          WITH p_save = p_save
+          WITH p_sync = p_sync
+          WITH p_url = p_url
+          WITH repo = repo
+          WITH repol = repol
+          WITH repot = repot
+          WITH slack = slack
+          WITH s_cats = s_cats
+          WITH s_repos = s_repos
+          WITH token = token
+          VIA JOB lv_jobname NUMBER lv_jobcount
+          AND RETURN.
+
+        CALL FUNCTION 'JOB_CLOSE'
+          EXPORTING
+            jobcount             = lv_jobcount
+            jobname              = lv_jobname
+            strtimmed            = abap_true
+          EXCEPTIONS
+            cant_start_immediate = 1
+            invalid_startdate    = 2
+            jobname_missing      = 3
+            job_close_failed     = 4
+            job_nosteps          = 5
+            job_notex            = 6
+            lock_failed          = 7
+            invalid_target       = 8
+            invalid_time_zone    = 9
+            OTHERS               = 10.
+        CASE sy-subrc.
+          WHEN 0.
+            RETURN.
+          WHEN 1.
+            lv_code = 'cant_start_immediate'.
+          WHEN 2.
+            lv_code = 'invalid_startdate'.
+          WHEN 3.
+            lv_code = 'jobname_missing'.
+          WHEN 4.
+            lv_code = 'job_close_failed'.
+          WHEN 5.
+            lv_code = 'job_nosteps'.
+          WHEN 6.
+            lv_code = 'job_notex'.
+          WHEN 7.
+            lv_code = 'lock_failed'.
+          WHEN 8.
+            lv_code = 'invalid_target'.
+          WHEN 9.
+            lv_code = 'invalid_time_zone'.
+          WHEN 10.
+            lv_code = 'others'.
+        ENDCASE.
+        MESSAGE i398(00) WITH 'JOB_CLOSE Error:' lv_code 'Program aborted'.
+      WHEN 1.
+        lv_code = 'cant_create_job'.
+      WHEN 2.
+        lv_code = 'invalid_job_data'.
+      WHEN 3.
+        lv_code = 'jobname_missing'.
+      WHEN 4.
+        lv_code = 'others'.
+    ENDCASE.
+    MESSAGE i398(00) WITH 'JOB_OPEN Error:' lv_code 'Program aborted'.
+
+  ENDMETHOD.
+
 
   METHOD send_to_slack.
     TRY.
@@ -205,6 +332,11 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
   ENDMETHOD.
 
 ENDCLASS.
+
+AT SELECTION-SCREEN.
+  IF sy-dynnr <> '1000' AND sscrfields-ucomm = 'FC01'.
+    NEW lcl_abapgit_ci( )->schedule( ).
+  ENDIF.
 
 START-OF-SELECTION.
   NEW lcl_abapgit_ci( )->run( ).
