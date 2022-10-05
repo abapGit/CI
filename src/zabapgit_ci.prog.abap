@@ -13,6 +13,7 @@ DATA: gv_cat_name TYPE c LENGTH 60.
 
 " Function Keys
 TABLES: sscrfields.
+
 SELECTION-SCREEN FUNCTION KEY 1.
 
 " Selection
