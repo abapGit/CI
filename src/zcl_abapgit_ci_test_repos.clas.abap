@@ -70,7 +70,7 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
 
   METHOD zif_abapgit_ci_repo_provider~get_repos.
 
-    DATA: lt_repos TYPE zif_abapgit_ci_definitions=>tty_repo.
+    DATA lt_repos TYPE zif_abapgit_ci_definitions=>tty_repo.
 
     DO.
 
@@ -89,6 +89,9 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
       INSERT LINES OF lt_repos INTO TABLE rt_repos.
 
     ENDDO.
+
+    " Remove some special repos
+    DELETE rt_repos WHERE name = 'chkc_namespace_ag'.
 
     " Remove extension
     LOOP AT rt_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
