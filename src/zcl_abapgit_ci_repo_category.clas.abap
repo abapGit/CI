@@ -65,7 +65,8 @@ CLASS zcl_abapgit_ci_repo_category DEFINITION
 
     CLASS-DATA:
       gt_categories         TYPE ty_categories,
-      gt_object_categrories TYPE ty_object_categories.
+      gt_object_categrories TYPE ty_object_categories,
+      go_aff_registry       TYPE REF TO zif_abapgit_aff_registry.
 
     CLASS-METHODS build_categories
       IMPORTING
@@ -180,6 +181,8 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
 
     gt_categories = build_categories( gt_object_categrories ).
 
+    CREATE OBJECT go_aff_registry TYPE zcl_abapgit_aff_registry.
+
   ENDMETHOD.
 
 
@@ -262,6 +265,10 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
       rv_result = lr_object_category->category.
     ENDIF.
 
+    IF go_aff_registry->is_supported_object_type( |{ lv_object_type }| ) = abap_true.
+      rv_result = c_category_aff.
+    ENDIF.
+
     IF rv_result IS INITIAL OR rv_result = c_category_others.
       " Assign some more cases, rest goes to "other"
       CASE to_upper( lv_object_type ).
@@ -269,8 +276,6 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
           rv_result = c_category_ddic.
         WHEN 'CUS0' OR 'CUS1' OR 'CUS2' OR 'SCP1'.
           rv_result = c_category_cust.
-        WHEN 'CHKC' OR 'CHKO' OR 'CHKV' OR 'EVTB'.
-          rv_result = c_category_aff.
         WHEN 'SHI3' OR 'SHI5' OR 'SHI8'.
           rv_result = c_category_hier.
         WHEN 'IWPR' OR 'IWVB'.
