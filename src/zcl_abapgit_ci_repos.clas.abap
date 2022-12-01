@@ -252,7 +252,10 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
   METHOD repo_finish.
 
-    DATA lv_result TYPE string.
+    DATA:
+      lv_icon    TYPE string,
+      lv_text    TYPE string,
+      lv_runtime TYPE string.
 
     IF sy-batch = abap_false.
       RETURN.
@@ -261,25 +264,35 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
     CASE is_ci_repo-status.
       WHEN zif_abapgit_ci_definitions=>co_status-ok.
 
-        lv_result = |{ icon_led_green } Result: Pass|.
+        lv_icon = icon_led_green.
+        lv_text = 'Pass'.
 
       WHEN zif_abapgit_ci_definitions=>co_status-skipped.
 
-        lv_result = |{ icon_led_yellow } Result: Skip|.
-        MESSAGE |{ is_ci_repo-message }| TYPE 'I'.
+        lv_icon = icon_led_yellow.
+        lv_text = 'Skip'.
+
+        MESSAGE is_ci_repo-message TYPE 'I'.
 
       WHEN zif_abapgit_ci_definitions=>co_status-not_ok.
 
-        lv_result = |{ icon_led_red } Result: Fail|.
-        MESSAGE |{ is_ci_repo-message }| TYPE 'I'.
+        lv_icon = icon_led_red.
+        lv_text = 'Fail'.
+
+        MESSAGE is_ci_repo-message TYPE 'I'.
 
       WHEN OTHERS.
 
-        lv_result = |{ icon_led_yellow } Result: Unknown|.
+        lv_icon = icon_led_yellow.
+        lv_text = 'Unknown'.
 
     ENDCASE.
 
-    MESSAGE |{ lv_result }, Runtime: { is_ci_repo-duration } seconds| TYPE 'I'.
+    IF is_ci_repo-duration > 0.
+      lv_runtime = |, Runtime: { is_ci_repo-duration } seconds|.
+    ENDIF.
+
+    MESSAGE |{ lv_icon } Result: { lv_text }{ lv_runtime }| TYPE 'I'.
 
   ENDMETHOD.
 
