@@ -158,7 +158,7 @@ CLASS zcl_abapgit_ci_latest_build IMPLEMENTATION.
 
     lo_rest_client->if_rest_client~create_request_entity( )->set_header_field(
         iv_name  = '~request_uri'
-        iv_value = |/abapGit/build/main/zabapgit.abap| ).
+        iv_value = |/abapGit/build/main/zabapgit_standalone.prog.abap| ).
 
     lo_rest_client->if_rest_client~get( ).
 
