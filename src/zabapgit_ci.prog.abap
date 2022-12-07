@@ -283,6 +283,7 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
             OTHERS               = 10.
         CASE sy-subrc.
           WHEN 0.
+            MESSAGE i398(00) WITH 'Job scheduled successfully'.
             RETURN.
           WHEN 1.
             lv_code = 'cant_start_immediate'.
