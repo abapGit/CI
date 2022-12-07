@@ -13,7 +13,9 @@ CLASS zcl_abapgit_ci_latest_build DEFINITION
   PRIVATE SECTION.
     CONSTANTS:
       co_report_name TYPE char30 VALUE 'Z___ABAPGIT_LATEST_BUILD',
-      co_package     TYPE devclass VALUE '$___ABAPGIT_LATEST_BUILD'.
+      co_package     TYPE devclass VALUE '$___ABAPGIT_LATEST_BUILD',
+      co_repository  TYPE string VALUE 'https://raw.githubusercontent.com',
+      co_program_url TYPE string VALUE '/abapGit/build/main/zabapgit_standalone.prog.abap'.
 
     DATA:
       mv_latest_build TYPE string,
@@ -140,7 +142,7 @@ CLASS zcl_abapgit_ci_latest_build IMPLEMENTATION.
 
     cl_http_client=>create_by_url(
       EXPORTING
-        url                = 'https://raw.githubusercontent.com'
+        url                = co_repository
         ssl_id             = 'ANONYM'
       IMPORTING
         client             = li_http_client
@@ -158,7 +160,7 @@ CLASS zcl_abapgit_ci_latest_build IMPLEMENTATION.
 
     lo_rest_client->if_rest_client~create_request_entity( )->set_header_field(
         iv_name  = '~request_uri'
-        iv_value = |/abapGit/build/main/zabapgit_standalone.prog.abap| ).
+        iv_value = co_program_url ).
 
     lo_rest_client->if_rest_client~get( ).
 
@@ -169,7 +171,7 @@ CLASS zcl_abapgit_ci_latest_build IMPLEMENTATION.
     IF lv_status <> cl_rest_status_code=>gc_success_ok.
       zcx_abapgit_exception=>raise(
           |HTTP status code { lv_status } |
-       && |from https://raw.githubusercontent.com/abapGit/build/main/zabapgit.abap | ).
+       && |from { co_repository }{ co_program_url }| ).
     ENDIF.
 
     SPLIT lo_response->get_string_data( )
