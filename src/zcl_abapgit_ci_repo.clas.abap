@@ -669,6 +669,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     " Use default branch
     co_repo ?= zcl_abapgit_repo_srv=>get_instance( )->new_online(
       iv_url     = |{ cs_ri_repo-clone_url }|
+      iv_labels  = 'ci'
       iv_package = cs_ri_repo-package ).
 
     COMMIT WORK AND WAIT.
