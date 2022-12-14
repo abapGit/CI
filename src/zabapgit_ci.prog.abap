@@ -259,8 +259,8 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
           WITH repol = repol
           WITH repot = repot
           WITH slack = slack
-          WITH s_cats = s_cats
-          WITH s_repos = s_repos
+          WITH s_cats IN s_cats
+          WITH s_repos IN s_repos
           WITH token = token
           VIA JOB lv_jobname NUMBER lv_jobcount
           AND RETURN.
