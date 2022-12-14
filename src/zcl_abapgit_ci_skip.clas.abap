@@ -6,12 +6,17 @@ CLASS zcl_abapgit_ci_skip DEFINITION
 
   PUBLIC SECTION.
 
+    CLASS-METHODS class_constructor.
+
     METHODS constructor .
+
     METHODS complete_skip_components
       CHANGING
         !cs_repo TYPE zabapgit_ci_result .
+
   PROTECTED SECTION.
   PRIVATE SECTION.
+
     TYPES:
       BEGIN OF gty_skip,
         repo_name          TYPE zif_abapgit_ci_definitions=>ty_repo-name,
@@ -19,11 +24,17 @@ CLASS zcl_abapgit_ci_skip DEFINITION
         skip_transportable TYPE abap_bool,
         reason             TYPE string,
       END OF gty_skip.
+
+    CLASS-DATA:
+      go_aff_registry TYPE REF TO zif_abapgit_aff_registry.
+
+    DATA:
+      mt_skipped TYPE SORTED TABLE OF gty_skip WITH UNIQUE KEY repo_name skip_local skip_transportable.
+
     METHODS:
       do_we_have_an_ads_connection RETURNING VALUE(rv_is_ads_on) TYPE abap_bool,
       does_system_support_aff RETURNING VALUE(rv_is_aff_on) TYPE abap_bool.
-    DATA:
-      mt_skipped TYPE SORTED TABLE OF gty_skip WITH UNIQUE KEY repo_name skip_local skip_transportable.
+
 ENDCLASS.
 
 
@@ -31,8 +42,28 @@ ENDCLASS.
 CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
 
 
+  METHOD class_constructor.
+    CREATE OBJECT go_aff_registry TYPE zcl_abapgit_aff_registry.
+  ENDMETHOD.
+
+
   METHOD complete_skip_components.
-    FIELD-SYMBOLS: <ls_skip> TYPE gty_skip.
+    DATA ls_skip TYPE gty_skip.
+
+    FIELD-SYMBOLS <ls_skip> TYPE gty_skip.
+
+    " Skip repos containing AFF if not supported
+    IF go_aff_registry->is_supported_object_type( cs_repo-name(4) ) AND NOT does_system_support_aff( ).
+      READ TABLE mt_skipped WITH KEY repo_name = cs_repo-name TRANSPORTING NO FIELDS.
+      IF sy-subrc <> 0.
+        ls_skip = VALUE #(
+          repo_name          = cs_repo-name
+          skip_local         = abap_true
+          skip_transportable = abap_true
+          reason             = |Requires support for ABAP File Format (AFF)| ).
+        INSERT ls_skip INTO TABLE mt_skipped.
+      ENDIF.
+    ENDIF.
 
     IF cs_repo-layer IS NOT INITIAL.
       READ TABLE mt_skipped WITH KEY repo_name          = cs_repo-name
@@ -65,7 +96,6 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
 
     mt_skipped = VALUE #(
       LET no_ads   = xsdbool( do_we_have_an_ads_connection( ) <> abap_true )
-          no_aff   = xsdbool( does_system_support_aff( ) <> abap_true )
           not_diag = xsdbool( sy-batch = abap_true )
           not_hana = xsdbool( cl_db_sys=>is_in_memory_db <> abap_true ) IN
       ( repo_name          = |AIFC|
@@ -84,18 +114,6 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |No files found to deserialize| )
-      ( repo_name          = |CHKC|
-        skip_local         = no_aff
-        skip_transportable = no_aff
-        reason             = |Requires support for ABAP File Format (AFF)| )
-      ( repo_name          = |CHKO|
-        skip_local         = no_aff
-        skip_transportable = no_aff
-        reason             = |Requires support for ABAP File Format (AFF)| )
-      ( repo_name          = |CHKV|
-        skip_local         = no_aff
-        skip_transportable = no_aff
-        reason             = |Requires support for ABAP File Format (AFF)| )
       ( repo_name          = |CLAS_wf|
         skip_local         = abap_true
         skip_transportable = abap_true
@@ -132,14 +150,14 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_false
         reason             = |Cannot be installed in local package| )
+      ( repo_name          = |DRUL|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/5932| )
       ( repo_name          = |ECATT|
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Issue https://github.com/abapGit/abapGit/issues/2722| )
-      ( repo_name          = |EVTB|
-        skip_local         = no_aff
-        skip_transportable = no_aff
-        reason             = |Requires support for ABAP File Format (AFF)| )
       ( repo_name          = |FDT0|
         skip_local         = abap_false
         skip_transportable = abap_true

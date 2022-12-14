@@ -265,7 +265,7 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
       rv_result = lr_object_category->category.
     ENDIF.
 
-    IF go_aff_registry->is_supported_object_type( |{ lv_object_type }| ) = abap_true.
+    IF go_aff_registry->is_supported_object_type( |{ lv_object_type }| ).
       rv_result = c_category_aff.
     ENDIF.
 
