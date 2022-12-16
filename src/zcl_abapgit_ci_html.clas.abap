@@ -162,7 +162,8 @@ CLASS zcl_abapgit_ci_html IMPLEMENTATION.
            && |- Time: { lv_time TIME = USER } { lv_timezone } |
            && |- Duration: { ms_result-statistics-duration_in_seconds } seconds</h3>\n|
            && |<h3>abapGit Version: { zif_abapgit_version=>c_abap_version }</h3>\n|
-           && |<h3>SAP Release: { ls_release-release } SP { ls_release-sp ALPHA = OUT }</h3>\n|
+           && |<h3>SAP Release: { ls_release-release(1) }.{ ls_release-release+1(2) } |
+           && |SP { ls_release-sp ALPHA = OUT }</h3>\n|
            && |<h3>Repo Links: \n|
            && |<a href='https://github.com/abapGit/abapGit'>abapGit</a> \| \n|
            && |<a href='https://github.com/abapGit/CI'>abapGit CI</a> \| \n|
