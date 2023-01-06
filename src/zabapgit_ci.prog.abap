@@ -283,7 +283,7 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
             OTHERS               = 10.
         CASE sy-subrc.
           WHEN 0.
-            MESSAGE i398(00) WITH 'Job scheduled successfully'.
+            MESSAGE s398(00) WITH 'Job scheduled successfully'.
             RETURN.
           WHEN 1.
             lv_code = 'cant_start_immediate'.
@@ -306,7 +306,8 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
           WHEN 10.
             lv_code = 'others'.
         ENDCASE.
-        MESSAGE i398(00) WITH 'JOB_CLOSE Error:' lv_code 'Program aborted'.
+        MESSAGE e398(00) DISPLAY LIKE 'I'
+          WITH 'JOB_CLOSE Error:' lv_code 'Program aborted'.
       WHEN 1.
         lv_code = 'cant_create_job'.
       WHEN 2.
@@ -316,7 +317,8 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
       WHEN 4.
         lv_code = 'others'.
     ENDCASE.
-    MESSAGE i398(00) WITH 'JOB_OPEN Error:' lv_code 'Program aborted'.
+    MESSAGE e398(00) DISPLAY LIKE 'I'
+      WITH 'JOB_OPEN Error:' lv_code 'Program aborted'.
 
   ENDMETHOD.
 
