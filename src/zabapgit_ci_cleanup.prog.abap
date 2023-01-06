@@ -152,6 +152,8 @@ CLASS lcl_main IMPLEMENTATION.
 
   METHOD list_packages.
 
+    DATA li_repo_online TYPE REF TO zcl_abapgit_repo_online.
+
     DATA(lv_found) = abap_false.
 
     SELECT devclass FROM tdevc INTO TABLE @DATA(lt_devclass) WHERE devclass IN @s_pack[] ORDER BY devclass.
@@ -187,9 +189,21 @@ CLASS lcl_main IMPLEMENTATION.
           IF li_repo->get_package( ) IN s_pack.
             lv_found = abap_true.
             FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
-            WRITE: AT /5 'Repository:', li_repo->get_name( ), li_repo->get_package( ), AT c_width space.
+            WRITE: AT /5 'Repository:',
+              li_repo->get_name( ), li_repo->get_package( ), AT c_width space.
             FORMAT COLOR OFF INTENSIFIED ON.
             SKIP.
+          ELSEIF li_repo->is_offline( ) = abap_false.
+            " Show test repos that were cloned to a non-CI package (needs to be uninstalled manually)
+            li_repo_online ?= li_repo.
+            IF li_repo_online->get_url( ) CS 'abapGit-test'.
+              lv_found = abap_true.
+              FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
+              WRITE: AT /5 'Repository:',
+                li_repo->get_name( ), li_repo->get_package( ) COLOR COL_NEGATIVE, AT c_width space.
+              FORMAT COLOR OFF INTENSIFIED ON.
+              SKIP.
+            ENDIF.
           ENDIF.
         CATCH zcx_abapgit_exception.
       ENDTRY.
