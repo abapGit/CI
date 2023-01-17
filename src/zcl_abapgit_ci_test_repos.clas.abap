@@ -91,7 +91,7 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
     ENDDO.
 
     " Remove some special repos
-    DELETE rt_repos WHERE name = 'chkc_namespace_ag' or name = 'Template'.
+    DELETE rt_repos WHERE name = 'chkc_namespace_ag' OR name = 'Template'.
 
     " Remove extension
     LOOP AT rt_repos ASSIGNING FIELD-SYMBOL(<ls_repo>).
