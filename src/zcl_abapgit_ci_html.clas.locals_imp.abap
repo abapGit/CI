@@ -131,9 +131,9 @@ CLASS lcl_table_renderer IMPLEMENTATION.
 
     rv_value = SWITCH #(
                  |{ iv_status }|
-                   WHEN zif_abapgit_ci_definitions=>co_status-ok THEN |&#10003;|      "check mark
-                   WHEN zif_abapgit_ci_definitions=>co_status-not_ok THEN |&#10007;|  "cross mark
-                   WHEN zif_abapgit_ci_definitions=>co_status-skipped THEN |&#8677;|  "arrow right
+                   WHEN zif_abapgit_ci_definitions=>co_status-ok THEN |&check;|               "check mark
+                   WHEN zif_abapgit_ci_definitions=>co_status-not_ok THEN |&cross;|           "cross mark
+                   WHEN zif_abapgit_ci_definitions=>co_status-skipped THEN |&RightTeeArrow;|  "arrow right
                    ELSE |{ iv_status }| ).
 
   ENDMETHOD.
