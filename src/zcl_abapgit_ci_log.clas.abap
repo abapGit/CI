@@ -10,6 +10,12 @@ CLASS zcl_abapgit_ci_log DEFINITION
       co_prefix  TYPE string VALUE 'ZABAPGIT_CI_',
       co_all     TYPE string VALUE 'ZABAPGIT_CI_%'.
 
+    METHODS is_active
+      IMPORTING
+        iv_log_type       TYPE csequence
+      RETURNING
+        VALUE(rv_logging) TYPE abap_bool.
+
     METHODS add
       IMPORTING
         !iv_log_object TYPE string
@@ -81,6 +87,10 @@ CLASS zcl_abapgit_ci_log IMPLEMENTATION.
       lt_w3params TYPE STANDARD TABLE OF wwwparams,
       lt_w3mime   TYPE STANDARD TABLE OF w3mime,
       lt_w3html   TYPE STANDARD TABLE OF w3html.
+
+    IF ig_data IS INITIAL.
+      RETURN.
+    ENDIF.
 
     lv_obj_name = get_next_objid( ).
 
@@ -168,6 +178,8 @@ CLASS zcl_abapgit_ci_log IMPLEMENTATION.
     IF sy-subrc <> 0.
       zcx_abapgit_exception=>raise( 'Cannot update TADIR for W3MI' ).
     ENDIF.
+
+    rv_key = lv_obj_name.
 
   ENDMETHOD.
 
@@ -285,6 +297,21 @@ CLASS zcl_abapgit_ci_log IMPLEMENTATION.
 
     " Format: ZABAPGIT_CI_nnnnnnnnnn
     rv_objid = co_prefix && lv_counter.
+
+  ENDMETHOD.
+
+
+  METHOD is_active.
+
+    DATA lv_ci_log TYPE c LENGTH 100.
+
+    rv_logging = abap_false.
+
+    GET PARAMETER ID 'ZABAPGIT_CI_LOG' FIELD lv_ci_log.
+
+    IF lv_ci_log IS INITIAL OR lv_ci_log CS iv_log_type.
+      rv_logging = abap_true.
+    ENDIF.
 
   ENDMETHOD.
 

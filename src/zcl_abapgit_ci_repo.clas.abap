@@ -15,7 +15,18 @@ CLASS zcl_abapgit_ci_repo DEFINITION
   PROTECTED SECTION.
   PRIVATE SECTION.
 
+    CONSTANTS:
+      BEGIN OF c_log_type,
+        diff   TYPE string VALUE 'DIFF',
+        enq    TYPE string VALUE 'ENQ',
+        msg    TYPE string VALUE 'MSG',
+        obj    TYPE string VALUE 'OBJ',
+        syntax TYPE string VALUE 'SYNTAX',
+        tadir  TYPE string VALUE 'TADIR',
+      END OF c_log_type.
+
     DATA:
+      mo_log   TYPE REF TO zcl_abapgit_ci_log,
       mt_items TYPE zif_abapgit_definitions=>ty_items_tt.
 
     METHODS:
@@ -169,13 +180,14 @@ CLASS zcl_abapgit_ci_repo DEFINITION
       log_tadir
         IMPORTING
           is_ri_repo TYPE zabapgit_ci_result
-          iv_prefix  TYPE string OPTIONAL
+          iv_phase  TYPE string
         RAISING
           zcx_abapgit_exception,
 
       log_enq
         IMPORTING
           is_ri_repo TYPE zabapgit_ci_result
+          iv_phase  TYPE string
         RAISING
           zcx_abapgit_exception,
 
@@ -190,7 +202,7 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         IMPORTING
           is_ri_repo      TYPE zabapgit_ci_result
           ii_log          TYPE REF TO zif_abapgit_log
-          iv_prefix       TYPE string OPTIONAL
+          iv_phase       TYPE string
         RETURNING
           VALUE(rv_error) TYPE string
         RAISING
@@ -685,6 +697,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     zcl_abapgit_ui_injector=>set_frontend_services( NEW lcl_mock_frontend_services( ) ).
 
+    mo_log = NEW #( ).
+
   ENDMETHOD.
 
 
@@ -834,29 +848,27 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     DATA lv_log TYPE abap_bool.
 
-    IF is_ri_repo-logging = abap_false OR is_files IS INITIAL.
+    IF is_ri_repo-logging = abap_false OR mo_log->is_active( c_log_type-diff ) = abap_false.
       RETURN.
     ENDIF.
 
-    DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
-
     IF is_files-local IS NOT INITIAL.
-      lo_log->add(
-        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Diff Local|
+      mo_log->add(
+        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package(1) }: Diff Local|
         ig_data       = is_files-local ).
       lv_log = abap_true.
     ENDIF.
 
     IF is_files-remote IS NOT INITIAL.
-      lo_log->add(
-        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Diff Remote|
+      mo_log->add(
+        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package(1) }: Diff Remote|
         ig_data       = is_files-remote ).
       lv_log = abap_true.
     ENDIF.
 
     IF lv_log = abap_true.
-      lo_log->add(
-        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Diff Status|
+      mo_log->add(
+        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package(1) }: Diff Status|
         ig_data       = is_files-status ).
     ENDIF.
 
@@ -869,7 +881,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       lv_subrc TYPE sy-subrc,
       lt_enq   TYPE STANDARD TABLE OF seqg3 WITH DEFAULT KEY.
 
-    IF is_ri_repo-logging = abap_false.
+    IF is_ri_repo-logging = abap_false OR mo_log->is_active( c_log_type-enq ) = abap_false.
       RETURN.
     ENDIF.
 
@@ -886,10 +898,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
         OTHERS                = 2.
     ASSERT sy-subrc = 0.
 
-    DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
-
-    lo_log->add(
-      iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Enqueue Locks|
+    mo_log->add(
+      iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package(1) }: Locks ({ iv_phase })|
       ig_data       = lt_enq ).
 
   ENDMETHOD.
@@ -917,15 +927,13 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    IF is_ri_repo-logging = abap_true.
-      DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
-
-      lo_log->add(
-        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Log Messages|
+    IF is_ri_repo-logging = abap_true AND mo_log->is_active( c_log_type-msg ) = abap_true.
+      mo_log->add(
+        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package(1) }: Messages ({ iv_phase })|
         ig_data       = lt_messages ).
     ENDIF.
 
-    rv_error = |{ iv_prefix } error: { ls_message-text }|.
+    rv_error = |{ iv_phase } error: { ls_message-text }|.
     IF ls_message-obj_name IS NOT INITIAL.
       rv_error = rv_error && | \nObject: { ls_message-obj_type } { ls_message-obj_name }|.
     ENDIF.
@@ -935,14 +943,12 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD log_objects.
 
-    IF is_ri_repo-logging = abap_false OR it_objects IS INITIAL.
+    IF is_ri_repo-logging = abap_false OR mo_log->is_active( c_log_type-obj ) = abap_false.
       RETURN.
     ENDIF.
 
-    DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
-
-    lo_log->add(
-      iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Objects in Transport|
+    mo_log->add(
+      iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package(1) }: Objects in Transport|
       ig_data       = it_objects ).
 
   ENDMETHOD.
@@ -950,14 +956,12 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD log_syntax_errors.
 
-    IF is_ri_repo-logging = abap_false OR it_list IS INITIAL.
+    IF is_ri_repo-logging = abap_false OR mo_log->is_active( c_log_type-syntax ) = abap_false.
       RETURN.
     ENDIF.
 
-    DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
-
-    lo_log->add(
-      iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: Syntax Errors|
+    mo_log->add(
+      iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package(1) }: Syntax Errors|
       ig_data       = it_list ).
 
   ENDMETHOD.
@@ -967,7 +971,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     DATA lt_tadir TYPE STANDARD TABLE OF tadir WITH DEFAULT KEY.
 
-    IF is_ri_repo-logging = abap_false.
+    IF is_ri_repo-logging = abap_false OR mo_log->is_active( c_log_type-tadir ) = abap_false.
       RETURN.
     ENDIF.
 
@@ -975,10 +979,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       WHERE devclass = @is_ri_repo-package
       ORDER BY PRIMARY KEY.
 
-    DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
-
-    lo_log->add(
-      iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package }: { iv_prefix } TADIR|
+    mo_log->add(
+      iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package(1) }: TADIR ({ iv_phase })|
       ig_data       = lt_tadir ).
 
   ENDMETHOD.
@@ -988,12 +990,13 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     cs_ri_repo-pull = zif_abapgit_ci_definitions=>co_status-not_ok.
 
-*    " For troubleshooting
-*    log_tadir(
-*      is_ri_repo = cs_ri_repo
-*      iv_prefix  = 'Before Pull' )
-*    log_enq(
-*      is_ri_repo = cs_ri_repo )
+    log_tadir(
+      is_ri_repo = cs_ri_repo
+      iv_phase   = 'Before Pull' ).
+
+    log_enq(
+      is_ri_repo = cs_ri_repo
+      iv_phase   = 'Before Pull' ).
 
     DATA(ls_checks) = zcl_abapgit_ci_repo_check=>get( io_repo ).
 
@@ -1008,12 +1011,11 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     log_messages(
       is_ri_repo = cs_ri_repo
       ii_log     = li_log
-      iv_prefix  = 'Install' ).
+      iv_phase   = 'Install' ).
 
-*    " For troubleshooting
-*    log_tadir(
-*      is_ri_repo = cs_ri_repo
-*      iv_prefix  = 'After Pull' )
+    log_tadir(
+      is_ri_repo = cs_ri_repo
+      iv_phase   = 'After Pull' ).
 
     io_repo->refresh( iv_drop_cache = abap_true ).
 
@@ -1032,10 +1034,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     cs_ri_repo-purge = zif_abapgit_ci_definitions=>co_status-not_ok.
 
-*    " For troubleshooting
-*    log_tadir(
-*      is_ri_repo = cs_ri_repo
-*      iv_prefix  = 'Before Purge' )
+    log_tadir(
+      is_ri_repo = cs_ri_repo
+      iv_phase   = 'Before Purge' ).
 
     TRY.
         DATA(ls_checks) = io_repo->delete_checks( ).
@@ -1052,12 +1053,16 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
         lv_error = log_messages(
           is_ri_repo = cs_ri_repo
           ii_log     = io_repo->get_log( )
-          iv_prefix  = 'Uninstall' ).
+          iv_phase   = 'Uninstall' ).
 
         IF lv_error IS INITIAL.
           lv_error = lx_exception->get_text( ).
         ENDIF.
     ENDTRY.
+
+    log_enq(
+      is_ri_repo = cs_ri_repo
+      iv_phase   = 'After Purge' ).
 
     CALL FUNCTION 'DEQUEUE_ALL'
       EXPORTING
@@ -1071,10 +1076,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       ENDIF.
     ENDIF.
 
-*    " For troubleshooting
-*    log_tadir(
-*      is_ri_repo = cs_ri_repo
-*      iv_prefix  = 'After Purge' )
+    log_tadir(
+      is_ri_repo = cs_ri_repo
+      iv_phase   = 'After Purge' ).
 
     cs_ri_repo-purge = zif_abapgit_ci_definitions=>co_status-ok.
 
