@@ -60,7 +60,7 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
           repo_name          = cs_repo-name
           skip_local         = abap_true
           skip_transportable = abap_true
-          reason             = |Requires support for ABAP File Format (AFF)| ).
+          reason             = |Requires support for\nABAP File Format (AFF)| ).
         INSERT ls_skip INTO TABLE mt_skipped.
       ENDIF.
     ENDIF.
@@ -114,10 +114,6 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |No files found to deserialize| )
-      ( repo_name          = |CLAS_wf|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |Issue https://github.com/abapGit/abapGit/issues/5449| )
       ( repo_name          = |CUS0|
         skip_local         = abap_false
         skip_transportable = not_diag
@@ -150,10 +146,14 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_false
         reason             = |Cannot be installed in local package| )
-      ( repo_name          = |DRUL|
+      ( repo_name          = |DIAL|
+        skip_local         = not_diag
+        skip_transportable = not_diag
+        reason             = |Requires user-interaction (not available in batch)| )
+      ( repo_name          = |DTEB|
         skip_local         = abap_true
         skip_transportable = abap_true
-        reason             = |Issue https://github.com/abapGit/abapGit/issues/5932| )
+        reason             = |Not implemented yet (AFF)| )
       ( repo_name          = |ECATT|
         skip_local         = abap_true
         skip_transportable = abap_true
@@ -166,10 +166,6 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Issue https://github.com/abapGit/abapGit/issues/4470| )
-      ( repo_name          = |FUGR_maint_view_var|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |Issue https://github.com/abapGit/abapGit/issues/5451| )
       ( repo_name          = |IOBJ|
         skip_local         = abap_true
         skip_transportable = abap_false
@@ -190,10 +186,6 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_false
         reason             = |Issue https://github.com/abapGit/abapGit/issues/5775| )
-      ( repo_name          = |PDTS|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |Issue https://github.com/abapGit/abapGit/issues/5550| )
       ( repo_name          = |PINF_exposing_*|
         skip_local         = abap_false
         skip_transportable = abap_true
@@ -249,23 +241,19 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
       ( repo_name          = |SQSC|
         skip_local         = abap_true
         skip_transportable = abap_true
-        reason             = |Requires SAP ERP on HANA. Issue https://github.com/abapGit-tests/SQSC/issues/1| )
+        reason             = |Requires SAP ERP on HANA\nIssue https://github.com/abapGit-tests/SQSC/issues/1| )
       ( repo_name          = |SRVB|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |Requires release >7.54. Issue https://github.com/abapGit-tests/SRVB/issues/9| )
+        skip_local         = xsdbool( sy-saprl < '755' )
+        skip_transportable = xsdbool( sy-saprl < '755' )
+        reason             = |Requires release 7.55\nIssue https://github.com/abapGit-tests/SRVB/issues/9| )
       ( repo_name          = |SRVD|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |Requires release >7.54. Issue https://github.com/abapGit-tests/SRVD/issues/1| )
+        skip_local         = xsdbool( sy-saprl < '755' )
+        skip_transportable = xsdbool( sy-saprl < '755' )
+        reason             = |Requires release 7.55\nIssue https://github.com/abapGit-tests/SRVD/issues/1| )
       ( repo_name          = |SXCI|
         skip_local         = not_diag
         skip_transportable = not_diag
         reason             = |Requires user-interaction (not available in batch)| )
-      ( repo_name          = |WAPA_binary|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |Issue https://github.com/abapGit/abapGit/issues/5681| )
       ( repo_name          = |WEBI|
         skip_local         = abap_true
         skip_transportable = abap_true
