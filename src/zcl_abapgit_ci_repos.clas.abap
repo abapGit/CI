@@ -217,9 +217,9 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
         lv_errid = 'DUMP'.
       ENDIF.
 
-      zcl_abapgit_ci_repos=>fail_message(
+      fail_message(
         EXPORTING
-          iv_message = |Error processing repo: { lv_errid } \n{ lv_message }|
+          iv_message = |Error processing repo: { lv_errid }\n{ lv_message }|
         CHANGING
           cs_ci_repo = cs_ci_repo ).
     ENDIF.
