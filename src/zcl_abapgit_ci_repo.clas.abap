@@ -599,13 +599,13 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
-    " Exit if transport is already release
+    " Exit if transport is already released
     READ TABLE lt_requests TRANSPORTING NO FIELDS WITH KEY trkorr = iv_transport trstatus = 'R'.
     IF sy-subrc = 0.
       RETURN.
     ENDIF.
 
-    " First delete all empty tasks
+    " First, delete all empty tasks
     LOOP AT lt_requests ASSIGNING FIELD-SYMBOL(<ls_task>) WHERE trkorr <> iv_transport AND trstatus <> 'R'.
       SELECT COUNT(*) FROM e071 INTO @DATA(lv_count) WHERE trkorr = @<ls_task>-trkorr.
       IF lv_count = 0.
@@ -639,7 +639,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       ENDIF.
     ENDLOOP.
 
-    " Then delete empty transport request
+    " Then, delete empty transport request
     IF lv_objects_found = abap_false.
       SELECT COUNT(*) FROM e071 INTO @lv_count WHERE trkorr = @iv_transport.
       IF lv_count = 0.
@@ -1171,7 +1171,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
-    " First release all open tasks
+    " First, release all open tasks
     LOOP AT lt_requests ASSIGNING FIELD-SYMBOL(<ls_task>) WHERE trkorr <> iv_transport AND trstatus <> 'R'.
       CALL FUNCTION 'TR_RELEASE_REQUEST'
         EXPORTING
@@ -1197,7 +1197,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       ENDIF.
     ENDLOOP.
 
-    " Then release transport request
+    " Then, release transport request
     CALL FUNCTION 'TR_RELEASE_REQUEST'
       EXPORTING
         iv_trkorr                  = iv_transport
@@ -1292,11 +1292,15 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
         release_transport( lv_transport ).
 
-        cs_ri_repo-message = lx_cancel->get_text( ).
+        zcl_abapgit_ci_repos=>fail_message(
+          EXPORTING
+            iv_message = lx_cancel->get_text( )
+          CHANGING
+            cs_ci_repo = cs_ri_repo ).
 
       CATCH zcx_abapgit_exception INTO DATA(lx_error).
 
-        " ensure uninstall after error
+        " Ensure uninstall after error
         uninstall( EXPORTING io_repo    = lo_repo
                              iv_cleanup = abap_true
                    CHANGING  cs_ri_repo = cs_ri_repo ).

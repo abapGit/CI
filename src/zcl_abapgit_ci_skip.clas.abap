@@ -60,7 +60,7 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
           repo_name          = cs_repo-name
           skip_local         = abap_true
           skip_transportable = abap_true
-          reason             = |Requires support for\nABAP File Format (AFF)| ).
+          reason             = |Requires support for ABAP File Format (AFF)| ).
         INSERT ls_skip INTO TABLE mt_skipped.
       ENDIF.
     ENDIF.
