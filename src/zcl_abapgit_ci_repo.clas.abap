@@ -1323,15 +1323,11 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     cs_ri_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-not_ok.
 
-    DATA(li_syntax_check) = zcl_abapgit_factory=>get_code_inspector( cs_ri_repo-package ).
-
-    DATA(lt_list) = li_syntax_check->run( 'SYNTAX_CHECK' ).
+    DATA(lt_list) = zcl_abapgit_factory=>get_code_inspector( cs_ri_repo-package )->run( 'SYNTAX_CHECK' ).
 
     READ TABLE lt_list INTO DATA(ls_list) WITH KEY kind = 'E'.
     IF sy-subrc = 0.
-      cs_ri_repo-message = |Syntax error: { ls_list-param1 } | &&
-                           |\nObject: { ls_list-objtype } { ls_list-objname }|.
-      cs_ri_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-not_ok.
+      cs_ri_repo-message = |Syntax error: { ls_list-param1 }\nObject: { ls_list-objtype } { ls_list-objname }|.
 
       log_syntax_errors(
         is_ri_repo = cs_ri_repo
