@@ -1230,13 +1230,16 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       IF sy-dbcnt = 1.
         EXIT.
       ELSE.
-        IF lv_wait_time > 5.
+        " Some test repos take a while longer to release
+        IF lv_wait_time > 10.
           zcx_abapgit_exception=>raise( |Transport { iv_transport } could not be released| ).
         ENDIF.
         CALL FUNCTION 'RZL_SLEEP'.
         lv_wait_time = lv_wait_time + 1.
       ENDIF.
     ENDDO.
+
+    COMMIT WORK AND WAIT.
 
     " Release of transport updates TADIR (deleted entries) but the TADIR changes aren't
     " visible to this process. Reset to table buffer will make sure that the process goes
