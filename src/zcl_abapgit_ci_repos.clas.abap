@@ -20,7 +20,13 @@ CLASS zcl_abapgit_ci_repos DEFINITION
           iv_repo_name TYPE string
           iv_branch    TYPE string DEFAULT gc_default_branch
         RAISING
-          zcx_abapgit_exception.
+          zcx_abapgit_exception,
+
+      fail_message
+        IMPORTING
+          !iv_message TYPE csequence
+        CHANGING
+          !cs_ci_repo TYPE zabapgit_ci_result.
 
     METHODS:
       constructor
@@ -61,9 +67,7 @@ CLASS zcl_abapgit_ci_repos DEFINITION
 
       process_repo
         CHANGING
-          cs_ci_repo TYPE zabapgit_ci_result
-        RAISING
-          zcx_abapgit_exception,
+          cs_ci_repo TYPE zabapgit_ci_result,
 
       repo_finish
         IMPORTING
@@ -74,7 +78,12 @@ CLASS zcl_abapgit_ci_repos DEFINITION
           it_repos        TYPE zif_abapgit_ci_definitions=>tty_repo
           is_options      TYPE zif_abapgit_ci_definitions=>ty_repo_check_options
         RETURNING
-          VALUE(rt_repos) TYPE zif_abapgit_ci_definitions=>tty_repo_result_list.
+          VALUE(rt_repos) TYPE zif_abapgit_ci_definitions=>tty_repo_result_list,
+
+      info_message
+        IMPORTING
+          iv_message TYPE csequence.
+
 ENDCLASS.
 
 
@@ -84,6 +93,20 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
   METHOD constructor.
     mv_sync = iv_sync.
+  ENDMETHOD.
+
+
+  METHOD fail_message.
+
+    cs_ci_repo-status  = zif_abapgit_ci_definitions=>co_status-not_ok.
+    cs_ci_repo-message = iv_message.
+
+    IF cs_ci_repo-logging = abap_true AND sy-batch = abap_false.
+      " For online execution, add timestamp to help cross-reference with other logs
+      GET TIME.
+      cs_ci_repo-message = cs_ci_repo-message && | ({ sy-uzeit TIME = ISO })|.
+    ENDIF.
+
   ENDMETHOD.
 
 
@@ -141,12 +164,28 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD info_message.
+
+    DATA lv_message TYPE string.
+
+    lv_message = condense( replace(
+      val  = iv_message
+      sub  = |\n|
+      with = ', '
+      occ  = 0 ) ).
+
+    MESSAGE lv_message TYPE 'I'.
+
+  ENDMETHOD.
+
+
   METHOD process_repo.
+
     DATA lv_message TYPE c LENGTH 255.
     DATA lv_errid TYPE c LENGTH 30.
 
-    " You should remember that we process the repo in synchron RFC because of
-    " shortdumps there doesn't crash the main process.
+    " You should remember that we process the repo in synchronous RFC because of
+    " shortdumps there do not crash this main process
 
     ASSERT cs_ci_repo-package IS NOT INITIAL.
 
@@ -154,7 +193,9 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
       " Synchronous for debugging
       CALL FUNCTION 'ZABAPGIT_CI_PROCESS_REPO'
         CHANGING
-          cs_ci_repo = cs_ci_repo.
+          cs_ci_repo = cs_ci_repo
+        EXCEPTIONS
+          OTHERS     = 1.
     ELSE.
       " Asynchronous for mass processing
       CALL FUNCTION 'ZABAPGIT_CI_PROCESS_REPO'
@@ -175,9 +216,12 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
       IF sy-subrc <> 0.
         lv_errid = 'DUMP'.
       ENDIF.
-      cs_ci_repo-message = |Error processing repo: { lv_errid } \n{ lv_message }|.
-      cs_ci_repo-status  = zif_abapgit_ci_definitions=>co_status-not_ok.
-      RETURN.
+
+      zcl_abapgit_ci_repos=>fail_message(
+        EXPORTING
+          iv_message = |Error processing repo: { lv_errid } \n{ lv_message }|
+        CHANGING
+          cs_ci_repo = cs_ci_repo ).
     ENDIF.
 
   ENDMETHOD.
@@ -207,15 +251,9 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
       ELSE.
 
-        TRY.
-            process_repo(
-              CHANGING
-                cs_ci_repo = <ls_ci_repo> ).
-
-          CATCH zcx_abapgit_exception INTO DATA(lx_error).
-            <ls_ci_repo>-status  = zif_abapgit_ci_definitions=>co_status-not_ok.
-            <ls_ci_repo>-message = lx_error->get_text( ).
-        ENDTRY.
+        process_repo(
+          CHANGING
+            cs_ci_repo = <ls_ci_repo> ).
 
         IF <ls_ci_repo>-create_package = zif_abapgit_ci_definitions=>co_status-not_ok
         OR <ls_ci_repo>-clone          = zif_abapgit_ci_definitions=>co_status-not_ok
@@ -272,14 +310,14 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
         lv_icon = icon_led_yellow.
         lv_text = 'Skip'.
 
-        MESSAGE is_ci_repo-message TYPE 'I'.
+        info_message( is_ci_repo-message ).
 
       WHEN zif_abapgit_ci_definitions=>co_status-not_ok.
 
         lv_icon = icon_led_red.
         lv_text = 'Fail'.
 
-        MESSAGE is_ci_repo-message TYPE 'I'.
+        info_message( is_ci_repo-message ).
 
       WHEN OTHERS.
 
@@ -292,7 +330,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
       lv_runtime = |, Runtime: { is_ci_repo-duration } seconds|.
     ENDIF.
 
-    MESSAGE |{ lv_icon } Result: { lv_text }{ lv_runtime }| TYPE 'I'.
+    info_message( |{ lv_icon } Result: { lv_text }{ lv_runtime }| ).
 
   ENDMETHOD.
 
