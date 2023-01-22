@@ -8,7 +8,7 @@ CLASS zcl_abapgit_ci_repo DEFINITION
 
     METHODS run
       CHANGING
-        !cs_ri_repo TYPE zabapgit_ci_result
+        !cs_ci_repo TYPE zabapgit_ci_result
       RAISING
         zcx_abapgit_exception.
 
@@ -34,13 +34,13 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         IMPORTING
           iv_transport TYPE trkorr OPTIONAL
         CHANGING
-          cs_ri_repo   TYPE zabapgit_ci_result
+          cs_ci_repo   TYPE zabapgit_ci_result
         RAISING
           zcx_abapgit_exception,
 
       clone
         CHANGING
-          cs_ri_repo TYPE zabapgit_ci_result
+          cs_ci_repo TYPE zabapgit_ci_result
           co_repo    TYPE REF TO zcl_abapgit_repo_online
         RAISING
           zcx_abapgit_exception,
@@ -72,7 +72,7 @@ CLASS zcl_abapgit_ci_repo DEFINITION
           io_repo      TYPE REF TO zcl_abapgit_repo_online
           iv_transport TYPE trkorr OPTIONAL
         CHANGING
-          cs_ri_repo   TYPE zabapgit_ci_result
+          cs_ci_repo   TYPE zabapgit_ci_result
         RAISING
           zcx_abapgit_cancel
           zcx_abapgit_exception,
@@ -82,7 +82,7 @@ CLASS zcl_abapgit_ci_repo DEFINITION
           io_repo    TYPE REF TO zcl_abapgit_repo_online
           iv_cleanup TYPE abap_bool DEFAULT abap_false
         CHANGING
-          cs_ri_repo TYPE zabapgit_ci_result
+          cs_ci_repo TYPE zabapgit_ci_result
         RAISING
           zcx_abapgit_exception,
 
@@ -92,13 +92,13 @@ CLASS zcl_abapgit_ci_repo DEFINITION
           iv_transport TYPE trkorr OPTIONAL
           iv_cleanup   TYPE abap_bool DEFAULT abap_false
         CHANGING
-          cs_ri_repo   TYPE zabapgit_ci_result
+          cs_ci_repo   TYPE zabapgit_ci_result
         RAISING
           zcx_abapgit_exception,
 
       syntax_check
         CHANGING
-          cs_ri_repo TYPE zabapgit_ci_result
+          cs_ci_repo TYPE zabapgit_ci_result
         RAISING
           zcx_abapgit_exception,
 
@@ -106,13 +106,13 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         IMPORTING
           io_repo    TYPE REF TO zcl_abapgit_repo_online
         CHANGING
-          cs_ri_repo TYPE zabapgit_ci_result
+          cs_ci_repo TYPE zabapgit_ci_result
         RAISING
           zcx_abapgit_exception,
 
       check_leftovers
         CHANGING
-          cs_ri_repo TYPE zabapgit_ci_result
+          cs_ci_repo TYPE zabapgit_ci_result
         RAISING
           zcx_abapgit_exception,
 
@@ -148,7 +148,7 @@ CLASS zcl_abapgit_ci_repo DEFINITION
           iv_transport TYPE trkorr
           iv_deletion  TYPE abap_bool DEFAULT abap_false
         CHANGING
-          cs_ri_repo   TYPE zabapgit_ci_result
+          cs_ci_repo   TYPE zabapgit_ci_result
         RAISING
           zcx_abapgit_exception,
 
@@ -179,30 +179,30 @@ CLASS zcl_abapgit_ci_repo DEFINITION
 
       log_tadir
         IMPORTING
-          is_ri_repo TYPE zabapgit_ci_result
-          iv_phase  TYPE string
+          is_ci_repo TYPE zabapgit_ci_result
+          iv_phase   TYPE string
         RAISING
           zcx_abapgit_exception,
 
       log_enq
         IMPORTING
-          is_ri_repo TYPE zabapgit_ci_result
-          iv_phase  TYPE string
+          is_ci_repo TYPE zabapgit_ci_result
+          iv_phase   TYPE string
         RAISING
           zcx_abapgit_exception,
 
       log_diffs
         IMPORTING
-          is_ri_repo TYPE zabapgit_ci_result
+          is_ci_repo TYPE zabapgit_ci_result
           is_files   TYPE zif_abapgit_definitions=>ty_stage_files
         RAISING
           zcx_abapgit_exception,
 
       log_messages
         IMPORTING
-          is_ri_repo      TYPE zabapgit_ci_result
+          is_ci_repo      TYPE zabapgit_ci_result
           ii_log          TYPE REF TO zif_abapgit_log
-          iv_phase       TYPE string
+          iv_phase        TYPE string
         RETURNING
           VALUE(rv_error) TYPE string
         RAISING
@@ -210,14 +210,14 @@ CLASS zcl_abapgit_ci_repo DEFINITION
 
       log_objects
         IMPORTING
-          is_ri_repo TYPE zabapgit_ci_result
+          is_ci_repo TYPE zabapgit_ci_result
           it_objects TYPE tr_objects
         RAISING
           zcx_abapgit_exception,
 
       log_syntax_errors
         IMPORTING
-          is_ri_repo TYPE zabapgit_ci_result
+          is_ci_repo TYPE zabapgit_ci_result
           it_list    TYPE scit_alvlist
         RAISING
           zcx_abapgit_exception.
@@ -322,10 +322,10 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       lv_count TYPE i,
       ls_tadir TYPE tadir.
 
-    cs_ri_repo-check_leftovers = zif_abapgit_ci_definitions=>co_status-not_ok.
+    cs_ci_repo-check_leftovers = zif_abapgit_ci_definitions=>co_status-not_ok.
 
     " Check for tadir entries
-    DATA(lt_tadir) = zcl_abapgit_factory=>get_tadir( )->read( cs_ri_repo-package ).
+    DATA(lt_tadir) = zcl_abapgit_factory=>get_tadir( )->read( cs_ci_repo-package ).
 
     LOOP AT lt_tadir ASSIGNING FIELD-SYMBOL(<ls_tadir>) WHERE object <> 'DEVC' AND object <> 'NSPC'.
       IF cleanup_tadir( <ls_tadir> ) = abap_false.
@@ -333,7 +333,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       ENDIF.
     ENDLOOP.
 
-    IF cs_ri_repo-layer IS INITIAL. " Only check leftover of local packages
+    IF cs_ci_repo-layer IS INITIAL. " Only check leftover of local packages
       LOOP AT lt_tadir ASSIGNING <ls_tadir> WHERE object = 'DEVC'.
         zcx_abapgit_exception=>raise( |Leftover TADIR entry { <ls_tadir>-object } { <ls_tadir>-obj_name }| ).
       ENDLOOP.
@@ -354,24 +354,24 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ENDLOOP.
 
     " Check for leftover texts in OTR
-    SELECT COUNT(*) FROM sotr_head INTO @lv_count WHERE paket = @cs_ri_repo-package.
+    SELECT COUNT(*) FROM sotr_head INTO @lv_count WHERE paket = @cs_ci_repo-package.
     IF lv_count > 0.
       zcx_abapgit_exception=>raise( |Leftover short texts: { lv_count }| ).
     ENDIF.
 
-    SELECT COUNT(*) FROM sotr_headu INTO @lv_count WHERE paket = @cs_ri_repo-package.
+    SELECT COUNT(*) FROM sotr_headu INTO @lv_count WHERE paket = @cs_ci_repo-package.
     IF lv_count > 0.
       zcx_abapgit_exception=>raise( |Leftover long texts: { lv_count }| ).
     ENDIF.
 
     " Check if package is still registered in abapGit
     DATA(lt_repos) = zcl_abapgit_persist_factory=>get_repo( )->list( ).
-    READ TABLE lt_repos TRANSPORTING NO FIELDS WITH KEY package = cs_ri_repo-package.
+    READ TABLE lt_repos TRANSPORTING NO FIELDS WITH KEY package = cs_ci_repo-package.
     IF sy-subrc = 0.
       zcx_abapgit_exception=>raise( |Package still registered in abapGit| ).
     ENDIF.
 
-    cs_ri_repo-check_leftovers = zif_abapgit_ci_definitions=>co_status-ok.
+    cs_ci_repo-check_leftovers = zif_abapgit_ci_definitions=>co_status-ok.
 
   ENDMETHOD.
 
@@ -384,7 +384,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     FIELD-SYMBOLS: <ls_local_file>  TYPE zif_abapgit_definitions=>ty_file_item,
                    <ls_remote_file> LIKE LINE OF ls_files-remote.
 
-    cs_ri_repo-object_check = zif_abapgit_ci_definitions=>co_status-not_ok.
+    cs_ci_repo-object_check = zif_abapgit_ci_definitions=>co_status-not_ok.
 
     DATA(lt_tadir) = zcl_abapgit_factory=>get_tadir( )->read( io_repo->get_package( ) ).
 
@@ -405,7 +405,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ls_files = zcl_abapgit_factory=>get_stage_logic( )->get( io_repo ).
 
     log_diffs(
-      is_ri_repo = cs_ri_repo
+      is_ci_repo = cs_ci_repo
       is_files   = ls_files ).
 
     LOOP AT ls_files-local ASSIGNING <ls_local_file>.
@@ -416,7 +416,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       zcx_abapgit_exception=>raise( |Remote file diffs to local: { <ls_remote_file>-filename }| ).
     ENDLOOP.
 
-    cs_ri_repo-object_check = zif_abapgit_ci_definitions=>co_status-ok.
+    cs_ci_repo-object_check = zif_abapgit_ci_definitions=>co_status-ok.
 
   ENDMETHOD.
 
@@ -476,9 +476,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ENDIF.
 
     IF iv_deletion = abap_false.
-      cs_ri_repo-check_create_transport = zif_abapgit_ci_definitions=>co_status-not_ok.
+      cs_ci_repo-check_create_transport = zif_abapgit_ci_definitions=>co_status-not_ok.
     ELSE.
-      cs_ri_repo-check_delete_transport = zif_abapgit_ci_definitions=>co_status-not_ok.
+      cs_ci_repo-check_delete_transport = zif_abapgit_ci_definitions=>co_status-not_ok.
     ENDIF.
 
     DATA(lt_objects) = read_transport( iv_transport ).
@@ -507,7 +507,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     IF lv_repo_object_count <> lv_transport_object_count.
       log_objects(
-        is_ri_repo = cs_ri_repo
+        is_ci_repo = cs_ci_repo
         it_objects = lt_objects ).
 
       zcx_abapgit_exception=>raise( |{ COND #( WHEN iv_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
@@ -537,7 +537,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     IF lv_objects_in_tr > lv_repo_object_count.
       log_objects(
-        is_ri_repo = cs_ri_repo
+        is_ci_repo = cs_ci_repo
         it_objects = lt_objects ).
 
       zcx_abapgit_exception=>raise( |{ COND #( WHEN iv_deletion = abap_true THEN 'DELETE' ELSE 'CREATE' ) } | &&
@@ -548,9 +548,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ENDIF.
 
     IF iv_deletion = abap_false.
-      cs_ri_repo-check_create_transport = zif_abapgit_ci_definitions=>co_status-ok.
+      cs_ci_repo-check_create_transport = zif_abapgit_ci_definitions=>co_status-ok.
     ELSE.
-      cs_ri_repo-check_delete_transport = zif_abapgit_ci_definitions=>co_status-ok.
+      cs_ci_repo-check_delete_transport = zif_abapgit_ci_definitions=>co_status-ok.
     ENDIF.
 
   ENDMETHOD.
@@ -676,19 +676,19 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD clone.
 
-    cs_ri_repo-clone = zif_abapgit_ci_definitions=>co_status-not_ok.
+    cs_ci_repo-clone = zif_abapgit_ci_definitions=>co_status-not_ok.
 
     " Use default branch
     co_repo ?= zcl_abapgit_repo_srv=>get_instance( )->new_online(
-      iv_url     = |{ cs_ri_repo-clone_url }|
+      iv_url     = |{ cs_ci_repo-clone_url }|
       iv_labels  = 'ci'
-      iv_package = cs_ri_repo-package ).
+      iv_package = cs_ci_repo-package ).
 
     COMMIT WORK AND WAIT.
 
     check_repo( co_repo ).
 
-    cs_ri_repo-clone = zif_abapgit_ci_definitions=>co_status-ok.
+    cs_ci_repo-clone = zif_abapgit_ci_definitions=>co_status-ok.
 
   ENDMETHOD.
 
@@ -704,27 +704,27 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD create_package.
 
-    IF cs_ri_repo-create_package = zif_abapgit_ci_definitions=>co_status-skipped.
-      cs_ri_repo-create_package = zif_abapgit_ci_definitions=>co_status-undefined.
+    IF cs_ci_repo-create_package = zif_abapgit_ci_definitions=>co_status-skipped.
+      cs_ci_repo-create_package = zif_abapgit_ci_definitions=>co_status-undefined.
       RETURN.
     ENDIF.
 
-    DATA(li_package) = zcl_abapgit_factory=>get_sap_package( cs_ri_repo-package ).
+    DATA(li_package) = zcl_abapgit_factory=>get_sap_package( cs_ci_repo-package ).
 
     IF li_package->exists( ) = abap_true.
       RETURN.
     ENDIF.
 
-    cs_ri_repo-create_package = zif_abapgit_ci_definitions=>co_status-not_ok.
+    cs_ci_repo-create_package = zif_abapgit_ci_definitions=>co_status-not_ok.
 
     DATA(ls_package_data) = VALUE scompkdtln(
       as4user   = sy-uname
-      devclass  = cs_ri_repo-package
+      devclass  = cs_ci_repo-package
       ctext     = |abapGit CI run|
-      pdevclass = cs_ri_repo-layer
+      pdevclass = cs_ci_repo-layer
       dlvunit   = 'HOME' ).
 
-    IF cs_ri_repo-layer IS INITIAL.
+    IF cs_ci_repo-layer IS INITIAL.
       li_package->create( ls_package_data ).
     ELSE.
       " Assume not initial layer means transports are required;
@@ -804,7 +804,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       ENDIF.
     ENDIF.
 
-    cs_ri_repo-create_package = zif_abapgit_ci_definitions=>co_status-ok.
+    cs_ci_repo-create_package = zif_abapgit_ci_definitions=>co_status-ok.
 
   ENDMETHOD.
 
@@ -848,27 +848,27 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     DATA lv_log TYPE abap_bool.
 
-    IF is_ri_repo-logging = abap_false OR mo_log->is_active( c_log_type-diff ) = abap_false.
+    IF is_ci_repo-logging = abap_false OR mo_log->is_active( c_log_type-diff ) = abap_false.
       RETURN.
     ENDIF.
 
     IF is_files-local IS NOT INITIAL.
       mo_log->add(
-        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package(1) }: Diff Local|
+        iv_log_object = |{ is_ci_repo-name }, { is_ci_repo-package(1) }: Diff Local|
         ig_data       = is_files-local ).
       lv_log = abap_true.
     ENDIF.
 
     IF is_files-remote IS NOT INITIAL.
       mo_log->add(
-        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package(1) }: Diff Remote|
+        iv_log_object = |{ is_ci_repo-name }, { is_ci_repo-package(1) }: Diff Remote|
         ig_data       = is_files-remote ).
       lv_log = abap_true.
     ENDIF.
 
     IF lv_log = abap_true.
       mo_log->add(
-        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package(1) }: Diff Status|
+        iv_log_object = |{ is_ci_repo-name }, { is_ci_repo-package(1) }: Diff Status|
         ig_data       = is_files-status ).
     ENDIF.
 
@@ -881,7 +881,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       lv_subrc TYPE sy-subrc,
       lt_enq   TYPE STANDARD TABLE OF seqg3 WITH DEFAULT KEY.
 
-    IF is_ri_repo-logging = abap_false OR mo_log->is_active( c_log_type-enq ) = abap_false.
+    IF is_ci_repo-logging = abap_false OR mo_log->is_active( c_log_type-enq ) = abap_false.
       RETURN.
     ENDIF.
 
@@ -899,7 +899,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ASSERT sy-subrc = 0.
 
     mo_log->add(
-      iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package(1) }: Locks ({ iv_phase })|
+      iv_log_object = |{ is_ci_repo-name }, { is_ci_repo-package(1) }: Locks ({ iv_phase })|
       ig_data       = lt_enq ).
 
   ENDMETHOD.
@@ -927,9 +927,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    IF is_ri_repo-logging = abap_true AND mo_log->is_active( c_log_type-msg ) = abap_true.
+    IF is_ci_repo-logging = abap_true AND mo_log->is_active( c_log_type-msg ) = abap_true.
       mo_log->add(
-        iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package(1) }: Messages ({ iv_phase })|
+        iv_log_object = |{ is_ci_repo-name }, { is_ci_repo-package(1) }: Messages ({ iv_phase })|
         ig_data       = lt_messages ).
     ENDIF.
 
@@ -943,12 +943,12 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD log_objects.
 
-    IF is_ri_repo-logging = abap_false OR mo_log->is_active( c_log_type-obj ) = abap_false.
+    IF is_ci_repo-logging = abap_false OR mo_log->is_active( c_log_type-obj ) = abap_false.
       RETURN.
     ENDIF.
 
     mo_log->add(
-      iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package(1) }: Objects in Transport|
+      iv_log_object = |{ is_ci_repo-name }, { is_ci_repo-package(1) }: Objects in Transport|
       ig_data       = it_objects ).
 
   ENDMETHOD.
@@ -956,12 +956,12 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD log_syntax_errors.
 
-    IF is_ri_repo-logging = abap_false OR mo_log->is_active( c_log_type-syntax ) = abap_false.
+    IF is_ci_repo-logging = abap_false OR mo_log->is_active( c_log_type-syntax ) = abap_false.
       RETURN.
     ENDIF.
 
     mo_log->add(
-      iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package(1) }: Syntax Errors|
+      iv_log_object = |{ is_ci_repo-name }, { is_ci_repo-package(1) }: Syntax Errors|
       ig_data       = it_list ).
 
   ENDMETHOD.
@@ -971,16 +971,16 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     DATA lt_tadir TYPE STANDARD TABLE OF tadir WITH DEFAULT KEY.
 
-    IF is_ri_repo-logging = abap_false OR mo_log->is_active( c_log_type-tadir ) = abap_false.
+    IF is_ci_repo-logging = abap_false OR mo_log->is_active( c_log_type-tadir ) = abap_false.
       RETURN.
     ENDIF.
 
     SELECT * FROM tadir INTO TABLE @lt_tadir
-      WHERE devclass = @is_ri_repo-package
+      WHERE devclass = @is_ci_repo-package
       ORDER BY PRIMARY KEY.
 
     mo_log->add(
-      iv_log_object = |{ is_ri_repo-name }, { is_ri_repo-package(1) }: TADIR ({ iv_phase })|
+      iv_log_object = |{ is_ci_repo-name }, { is_ci_repo-package(1) }: TADIR ({ iv_phase })|
       ig_data       = lt_tadir ).
 
   ENDMETHOD.
@@ -988,14 +988,14 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD pull.
 
-    cs_ri_repo-pull = zif_abapgit_ci_definitions=>co_status-not_ok.
+    cs_ci_repo-pull = zif_abapgit_ci_definitions=>co_status-not_ok.
 
     log_tadir(
-      is_ri_repo = cs_ri_repo
+      is_ci_repo = cs_ci_repo
       iv_phase   = 'Before Pull' ).
 
     log_enq(
-      is_ri_repo = cs_ri_repo
+      is_ci_repo = cs_ci_repo
       iv_phase   = 'Before Pull' ).
 
     DATA(ls_checks) = zcl_abapgit_ci_repo_check=>get( io_repo ).
@@ -1009,17 +1009,17 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       ii_log    = li_log ).
 
     log_messages(
-      is_ri_repo = cs_ri_repo
+      is_ci_repo = cs_ci_repo
       ii_log     = li_log
       iv_phase   = 'Install' ).
 
     log_tadir(
-      is_ri_repo = cs_ri_repo
+      is_ci_repo = cs_ci_repo
       iv_phase   = 'After Pull' ).
 
     io_repo->refresh( iv_drop_cache = abap_true ).
 
-    cs_ri_repo-pull = zif_abapgit_ci_definitions=>co_status-ok.
+    cs_ci_repo-pull = zif_abapgit_ci_definitions=>co_status-ok.
 
   ENDMETHOD.
 
@@ -1028,14 +1028,14 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     DATA lv_error TYPE string.
 
-    IF check_repo_exists( io_repo ) = abap_false OR cs_ri_repo-do_not_purge = abap_true.
+    IF check_repo_exists( io_repo ) = abap_false OR cs_ci_repo-do_not_purge = abap_true.
       RETURN.
     ENDIF.
 
-    cs_ri_repo-purge = zif_abapgit_ci_definitions=>co_status-not_ok.
+    cs_ci_repo-purge = zif_abapgit_ci_definitions=>co_status-not_ok.
 
     log_tadir(
-      is_ri_repo = cs_ri_repo
+      is_ci_repo = cs_ci_repo
       iv_phase   = 'Before Purge' ).
 
     TRY.
@@ -1051,7 +1051,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
         lv_error = lx_cancel->get_text( ).
       CATCH zcx_abapgit_exception INTO DATA(lx_exception).
         lv_error = log_messages(
-          is_ri_repo = cs_ri_repo
+          is_ci_repo = cs_ci_repo
           ii_log     = io_repo->get_log( )
           iv_phase   = 'Uninstall' ).
 
@@ -1061,7 +1061,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ENDTRY.
 
     log_enq(
-      is_ri_repo = cs_ri_repo
+      is_ci_repo = cs_ci_repo
       iv_phase   = 'After Purge' ).
 
     CALL FUNCTION 'DEQUEUE_ALL'
@@ -1077,10 +1077,10 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ENDIF.
 
     log_tadir(
-      is_ri_repo = cs_ri_repo
+      is_ci_repo = cs_ci_repo
       iv_phase   = 'After Purge' ).
 
-    cs_ri_repo-purge = zif_abapgit_ci_definitions=>co_status-ok.
+    cs_ci_repo-purge = zif_abapgit_ci_definitions=>co_status-ok.
 
   ENDMETHOD.
 
@@ -1261,32 +1261,32 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     DATA lo_repo TYPE REF TO zcl_abapgit_repo_online.
 
     TRY.
-        DATA(lv_transport) = create_transport( iv_repo_name = cs_ri_repo-name
-                                               iv_package   = cs_ri_repo-package ).
+        DATA(lv_transport) = create_transport( iv_repo_name = cs_ci_repo-name
+                                               iv_package   = cs_ci_repo-package ).
 
         create_package( EXPORTING iv_transport = lv_transport
-                        CHANGING  cs_ri_repo   = cs_ri_repo ).
+                        CHANGING  cs_ci_repo   = cs_ci_repo ).
 
-        clone( CHANGING cs_ri_repo = cs_ri_repo
+        clone( CHANGING cs_ci_repo = cs_ci_repo
                         co_repo    = lo_repo ).
 
         pull( EXPORTING io_repo      = lo_repo
                         iv_transport = lv_transport
-              CHANGING  cs_ri_repo   = cs_ri_repo ).
+              CHANGING  cs_ci_repo   = cs_ci_repo ).
 
-        syntax_check( CHANGING cs_ri_repo = cs_ri_repo ).
+        syntax_check( CHANGING cs_ci_repo = cs_ci_repo ).
 
         check_objects( EXPORTING io_repo    = lo_repo
-                       CHANGING  cs_ri_repo = cs_ri_repo ).
+                       CHANGING  cs_ci_repo = cs_ci_repo ).
 
         release_transport( lv_transport ).
 
         check_transport( EXPORTING io_repo      = lo_repo
                                    iv_transport = lv_transport
-                         CHANGING  cs_ri_repo   = cs_ri_repo ).
+                         CHANGING  cs_ci_repo   = cs_ci_repo ).
 
         uninstall( EXPORTING io_repo    = lo_repo
-                   CHANGING  cs_ri_repo = cs_ri_repo ).
+                   CHANGING  cs_ci_repo = cs_ci_repo ).
 
       CATCH zcx_abapgit_cancel INTO DATA(lx_cancel).
 
@@ -1299,20 +1299,20 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
           EXPORTING
             iv_message = lx_cancel->get_text( )
           CHANGING
-            cs_ci_repo = cs_ri_repo ).
+            cs_ci_repo = cs_ci_repo ).
 
       CATCH zcx_abapgit_exception INTO DATA(lx_error).
 
         " Ensure uninstall after error
         uninstall( EXPORTING io_repo    = lo_repo
                              iv_cleanup = abap_true
-                   CHANGING  cs_ri_repo = cs_ri_repo ).
+                   CHANGING  cs_ci_repo = cs_ci_repo ).
 
         zcx_abapgit_exception=>raise_with_text( lx_error ).
 
     ENDTRY.
 
-    check_leftovers( CHANGING cs_ri_repo = cs_ri_repo ).
+    check_leftovers( CHANGING cs_ci_repo = cs_ci_repo ).
 
     cleanup_transport( lv_transport ).
 
@@ -1324,19 +1324,19 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD syntax_check.
 
-    cs_ri_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-not_ok.
+    cs_ci_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-not_ok.
 
-    DATA(lt_list) = zcl_abapgit_factory=>get_code_inspector( cs_ri_repo-package )->run( 'SYNTAX_CHECK' ).
+    DATA(lt_list) = zcl_abapgit_factory=>get_code_inspector( cs_ci_repo-package )->run( 'SYNTAX_CHECK' ).
 
     READ TABLE lt_list INTO DATA(ls_list) WITH KEY kind = 'E'.
     IF sy-subrc = 0.
-      cs_ri_repo-message = |Syntax error: { ls_list-param1 }\nObject: { ls_list-objtype } { ls_list-objname }|.
+      cs_ci_repo-message = |Syntax error: { ls_list-param1 }\nObject: { ls_list-objtype } { ls_list-objname }|.
 
       log_syntax_errors(
-        is_ri_repo = cs_ri_repo
+        is_ci_repo = cs_ci_repo
         it_list    = lt_list ).
     ELSE.
-      cs_ri_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-ok.
+      cs_ci_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-ok.
     ENDIF.
 
   ENDMETHOD.
@@ -1347,17 +1347,17 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     COMMIT WORK AND WAIT.
 
     " Check if we want to keep installed repos
-    IF cs_ri_repo-do_not_purge = abap_true.
+    IF cs_ci_repo-do_not_purge = abap_true.
       RETURN.
     ENDIF.
 
-    DATA(lv_transport) = create_transport( iv_repo_name = cs_ri_repo-name
-                                           iv_package   = cs_ri_repo-package
+    DATA(lv_transport) = create_transport( iv_repo_name = cs_ci_repo-name
+                                           iv_package   = cs_ci_repo-package
                                            iv_deletion  = abap_true ).
 
     purge( EXPORTING io_repo      = io_repo
                      iv_transport = lv_transport
-           CHANGING  cs_ri_repo   = cs_ri_repo ).
+           CHANGING  cs_ci_repo   = cs_ci_repo ).
 
     release_transport( lv_transport ).
 
@@ -1365,7 +1365,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       check_transport( EXPORTING io_repo      = io_repo
                                  iv_transport = lv_transport
                                  iv_deletion  = abap_true
-                       CHANGING  cs_ri_repo   = cs_ri_repo ).
+                       CHANGING  cs_ci_repo   = cs_ci_repo ).
     ENDIF.
 
   ENDMETHOD.
