@@ -229,7 +229,7 @@ CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
   METHOD push_to_git_repo.
 
     DATA:
-      ls_comment  TYPE zif_abapgit_definitions=>ty_comment,
+      ls_comment  TYPE zif_abapgit_git_definitions=>ty_comment,
       lv_timezone TYPE timezone.
 
     DATA(lo_repo) = get_repo( ).
