@@ -63,7 +63,7 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         IMPORTING
           iv_package TYPE devclass
           io_dot     TYPE REF TO zcl_abapgit_dot_abapgit
-          it_files   TYPE zif_abapgit_definitions=>ty_files_tt
+          it_files   TYPE zif_abapgit_git_definitions=>ty_files_tt
         RAISING
           zcx_abapgit_exception,
 
