@@ -20,8 +20,7 @@
   "syntax": {
     "version": "v750",
     "errorNamespace": "^(Z|Y)",
-    "globalConstants": [],
-    "globalMacros": []
+    "globalConstants": ["skwfc_obtype_loio"]
   },
   "rules": {
     "dangerous_statement": false,
