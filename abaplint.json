@@ -2,8 +2,13 @@
   "dependencies": [
     {
       "files": "/src/**/*.*",
-      "folder": "/deps",
+      "folder": "/deps1",
       "url": "https://github.com/abaplint/deps"
+    },
+    {
+      "files": "/src/**/*.*",
+      "folder": "/deps2",
+      "url": "https://github.com/abapGit/abapGit"
     }
   ],
   "global": {
