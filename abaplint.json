@@ -139,7 +139,8 @@
     "mix_returning": true,
     "modify_only_own_db_tables": {
       "exclude": [
-        "zabapgit_ci_cleanup.prog.abap"
+        "zabapgit_ci_cleanup.prog.abap",
+        "zcl_abapgit_ci_repo.clas.abap"
       ],
       "ownTables": "^[yz]",
       "reportDynamic": true
@@ -156,7 +157,10 @@
       ]
     },
     "no_inline_in_optional_branches": false,
-    "no_public_attributes": true,
+    "no_public_attributes": {
+      "allowReadOnly": true,
+      "ignoreTestClasses": false
+    },
     "no_yoda_conditions": true,
     "nrob_consistency": true,
     "object_naming": true,

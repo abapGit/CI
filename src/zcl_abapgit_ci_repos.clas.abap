@@ -205,7 +205,8 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
         EXCEPTIONS
           communication_failure = 1 MESSAGE lv_message
           system_failure        = 2 MESSAGE lv_message
-          OTHERS                = 3.
+          resource_failure      = 3
+          OTHERS                = 4.
     ENDIF.
 
     IF sy-subrc <> 0.
@@ -230,11 +231,12 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
   METHOD process_repos.
 
     DATA:
-      lv_result           TYPE string,
       lv_start_timestamp  TYPE timestampl,
       lv_finish_timestamp TYPE timestampl.
 
-    rt_result_list = get_repo_list_with_packages( it_repos = it_repos is_options = is_options ).
+    rt_result_list = get_repo_list_with_packages(
+      it_repos   = it_repos
+      is_options = is_options ).
 
     LOOP AT rt_result_list ASSIGNING FIELD-SYMBOL(<ls_ci_repo>).
 
@@ -251,9 +253,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
       ELSE.
 
-        process_repo(
-          CHANGING
-            cs_ci_repo = <ls_ci_repo> ).
+        process_repo( CHANGING cs_ci_repo = <ls_ci_repo> ).
 
         IF <ls_ci_repo>-create_package = zif_abapgit_ci_definitions=>co_status-not_ok
         OR <ls_ci_repo>-clone          = zif_abapgit_ci_definitions=>co_status-not_ok
@@ -382,10 +382,10 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
     DATA(lt_repo_list) = zcl_abapgit_repo_srv=>get_instance( )->list( ).
 
-    LOOP AT lt_repo_list ASSIGNING FIELD-SYMBOL(<repo>).
+    LOOP AT lt_repo_list ASSIGNING FIELD-SYMBOL(<lo_repo>).
 
-      IF <repo>->get_name( ) = iv_repo_name.
-        lo_repo ?= <repo>.
+      IF <lo_repo>->get_name( ) = iv_repo_name.
+        lo_repo ?= <lo_repo>.
         EXIT.
       ENDIF.
 
@@ -416,7 +416,9 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
   METHOD update_repository.
 
-    update_repo( iv_repo_name = iv_repo_name iv_branch = iv_branch ).
+    update_repo(
+      iv_repo_name = iv_repo_name
+      iv_branch    = iv_branch ).
 
   ENDMETHOD.
 ENDCLASS.
