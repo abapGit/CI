@@ -85,7 +85,14 @@
     "if_in_if": true,
     "implement_methods": true,
     "in_statement_indentation": false,
-    "indentation": true,
+    "indentation": {
+      "alignTryCatch": false,
+      "globalClassSkipFirst": false,
+      "ignoreExceptions": true,
+      "ignoreGlobalClassDefinition": false,
+      "ignoreGlobalInterface": false,
+      "selectionScreenBlockIndentation": true
+    },
     "inline_data_old_versions": true,
     "intf_referencing_clas": true,
     "keep_single_parameter_on_one_line": true,
