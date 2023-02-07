@@ -26,9 +26,6 @@
     "dangerous_statement": false,
     "db_operation_in_loop": false,
     "max_one_method_parameter_per_line": true,
-    "modify_only_own_db_tables": {
-      "ownTables": "^[tadir|y|z|sotr_.*]"
-    },
     "no_yoda_conditions": true,
     "prefer_raise_exception_new": true,
     "select_add_order_by": true,
@@ -74,8 +71,7 @@
     "check_comments": false,
     "check_ddic": true,
     "check_include": true,
-    "check_no_handler_pragma": true,
-    "check_syntax": false,
+    "check_syntax": true,
     "check_text_elements": true,
     "check_transformation_exists": true,
     "constructor_visibility_public": true,
@@ -90,7 +86,6 @@
     "keep_single_parameter_on_one_line": false,
     "keyword_case": true,
     "line_break_multiple_parameters": false,
-    "local_testclass_location": true,
     "main_file_contents": true,
     "newline_between_methods": true,
     "prefer_inline": false,
@@ -115,6 +110,7 @@
     "avoid_use": {
       "define": false,
       "break": true,
+      "testSeams": true,
       "defaultKey": false,
       "statics": true,
       "describeLines": false
@@ -173,6 +169,7 @@
       "depth": 5
     },
     "no_public_attributes": {
+      "ignoreTestClasses": true,
       "allowReadOnly": true
     },
     "object_naming": {
@@ -197,6 +194,10 @@
     },
     "obsolete_statement": {
       "refresh": true,
+      "occurences": true,
+      "formDefinition": true,
+      "formImplementation": true,
+      "clientSpecified": true,
       "compute": true,
       "add": true,
       "parameter": true,
