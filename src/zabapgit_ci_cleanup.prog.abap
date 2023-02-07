@@ -88,8 +88,8 @@ CLASS lcl_main DEFINITION.
           zcx_abapgit_exception.
   PROTECTED SECTION.
   PRIVATE SECTION.
-    CONSTANTS c_width TYPE i VALUE 200 ##NEEDED.
-    CONSTANTS c_count TYPE i VALUE 20 ##NEEDED.
+    CONSTANTS c_width TYPE i VALUE 200.
+    CONSTANTS c_count TYPE i VALUE 20.
     TYPES: ty_devc_tt TYPE STANDARD TABLE OF devclass WITH DEFAULT KEY.
     METHODS:
       get_packages
