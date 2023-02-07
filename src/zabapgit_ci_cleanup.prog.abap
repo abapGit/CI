@@ -88,8 +88,8 @@ CLASS lcl_main DEFINITION.
           zcx_abapgit_exception.
   PROTECTED SECTION.
   PRIVATE SECTION.
-    CONSTANTS c_width TYPE i VALUE 200.
-    CONSTANTS c_count TYPE i VALUE 20.
+    CONSTANTS c_width TYPE i VALUE 200 ##NEEDED.
+    CONSTANTS c_count TYPE i VALUE 20 ##NEEDED.
     TYPES: ty_devc_tt TYPE STANDARD TABLE OF devclass WITH DEFAULT KEY.
     METHODS:
       get_packages
@@ -423,7 +423,9 @@ CLASS lcl_main IMPLEMENTATION.
           CASE abap_true.
             WHEN p_purge.
               WRITE: / |Purge { lo_repo->get_name( ) } in { lo_repo->get_package( ) }|.
-              li_repo_srv->purge( ii_repo = lo_repo is_checks = ls_checks ).
+              li_repo_srv->purge( 
+                ii_repo   = lo_repo
+                is_checks = ls_checks ).
               WRITE: / 'Purged' COLOR COL_POSITIVE.
             WHEN p_remov.
               WRITE: / |Delete { lo_repo->get_name( ) } in { lo_repo->get_package( ) }|.

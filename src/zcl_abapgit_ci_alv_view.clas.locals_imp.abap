@@ -89,30 +89,30 @@ CLASS lcl_view IMPLEMENTATION.
     ASSIGN ir_table->* TO <lt_table>.
     ASSERT sy-subrc = 0.
 
-    DATA(components) = CAST cl_abap_structdescr(
-                         CAST cl_abap_tabledescr(
-                           cl_abap_tabledescr=>describe_by_data( it_table )
-                                            )->get_table_line_type( )
-                       )->get_components( ).
+    DATA(lt_components) = CAST cl_abap_structdescr(
+                            CAST cl_abap_tabledescr(
+                              cl_abap_tabledescr=>describe_by_data( it_table ) 
+                            )->get_table_line_type( )
+                          )->get_components( ).
 
     LOOP AT it_table ASSIGNING FIELD-SYMBOL(<ls_line>).
 
       CREATE DATA lr_line LIKE LINE OF <lt_table>.
       ASSIGN lr_line->* TO <lv_line>.
 
-      LOOP AT components ASSIGNING FIELD-SYMBOL(<component>).
+      LOOP AT lt_components ASSIGNING FIELD-SYMBOL(<ls_component>).
 
-        ASSIGN COMPONENT <component>-name
+        ASSIGN COMPONENT <ls_component>-name
                OF STRUCTURE <ls_line>
                TO <lv_right>.
         ASSERT sy-subrc = 0.
 
-        ASSIGN COMPONENT <component>-name
+        ASSIGN COMPONENT <ls_component>-name
                OF STRUCTURE <lv_line>
                TO <lv_left>.
         ASSERT sy-subrc = 0.
 
-        IF <component>-type->get_ddic_header( )-refname CS |STATUS|.
+        IF <ls_component>-type->get_ddic_header( )-refname CS |STATUS|.
           <lv_left> = SWITCH icon_d(
                         <lv_right>
                           WHEN zif_abapgit_ci_definitions=>co_status-ok        THEN icon_checked
@@ -149,7 +149,7 @@ CLASS lcl_alv IMPLEMENTATION.
 
   METHOD constructor.
 
-    super->constructor( it_table = it_table ).
+    super->constructor( it_table ).
 
     mo_container = io_container.
 
@@ -223,7 +223,7 @@ CLASS lcl_list IMPLEMENTATION.
 
   METHOD constructor.
 
-    super->constructor( it_table = it_table ).
+    super->constructor( it_table ).
     mv_tabname = iv_tabname.
 
   ENDMETHOD.

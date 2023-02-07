@@ -7,9 +7,7 @@ FUNCTION zabapgit_ci_process_repo.
 
   TRY.
 
-      NEW zcl_abapgit_ci_repo( )->run(
-        CHANGING
-          cs_ci_repo = cs_ci_repo ).
+      NEW zcl_abapgit_ci_repo( )->run( CHANGING cs_ci_repo = cs_ci_repo ).
 
     CATCH zcx_abapgit_exception INTO DATA(lx_error).
 

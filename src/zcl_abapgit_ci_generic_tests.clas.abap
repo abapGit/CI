@@ -51,7 +51,7 @@ CLASS zcl_abapgit_ci_generic_tests IMPLEMENTATION.
           ls_result-description = li_test->get_description( ).
           DATA(lt_list) = li_test->execute( ).
 
-          READ TABLE lt_list ASSIGNING FIELD-SYMBOL(<ls_error>) WITH KEY kind = 'E'.
+          READ TABLE lt_list TRANSPORTING NO FIELDS WITH KEY kind = 'E'.
           IF sy-subrc = 0.
             ls_result-message = 'At least one unit test failed (see below)'.
             ls_result-status = zif_abapgit_ci_definitions=>co_status-not_ok.

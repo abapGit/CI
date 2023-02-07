@@ -31,7 +31,15 @@
     "allowed_object_naming": true,
     "allowed_object_types": true,
     "ambiguous_statement": true,
-    "avoid_use": true,
+    "avoid_use": {
+      "break": true,
+      "defaultKey": false,
+      "define": true,
+      "describeLines": true,
+      "skipQuickFix": false,
+      "statics": true,
+      "testSeams": true
+    },
     "begin_end_names": true,
     "begin_single_include": true,
     "call_transaction_authority_check": true,
@@ -64,7 +72,9 @@
     "description_empty": true,
     "double_space": true,
     "downport": true,
-    "empty_line_in_statement": true,
+    "empty_line_in_statement": {
+      "allowChained": true 
+    },
     "empty_statement": true,
     "empty_structure": true,
     "exit_or_check": true,
@@ -114,14 +124,24 @@
     "method_overwrites_builtin": true,
     "method_parameter_names": true,
     "mix_returning": true,
-    "modify_only_own_db_tables": true,
+    "modify_only_own_db_tables": {
+      "exclude": [
+        "zabapgit_ci_cleanup.prog.abap"
+      ],
+      "ownTables": "^[yz]",
+      "reportDynamic": true
+    },
     "msag_consistency": true,
     "names_no_dash": true,
     "nesting": true,
     "newline_between_methods": true,
     "no_aliases": true,
     "no_chained_assignment": true,
-    "no_external_form_calls": true,
+    "no_external_form_calls": {
+      "exclude": [
+        "zabapgit_ci_results.prog.abap"
+      ]
+    },
     "no_inline_in_optional_branches": false,
     "no_public_attributes": true,
     "no_yoda_conditions": true,
@@ -187,7 +207,9 @@
   },
   "syntax": {
     "errorNamespace": "^(Z|Y|LCL_|TY_|LIF_)",
-    "globalConstants": [],
+    "globalConstants": [
+      "skwfc_obtype_loio"
+    ],
     "globalMacros": [],
     "version": "v750"
   }

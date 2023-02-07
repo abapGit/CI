@@ -40,7 +40,9 @@ CLASS lcl_abapgit_update IMPLEMENTATION.
         IF branch IS INITIAL.
           zcl_abapgit_ci_repos=>update_repository( repo ).
         ELSE.
-          zcl_abapgit_ci_repos=>update_repository( iv_repo_name = repo iv_branch = branch ).
+          zcl_abapgit_ci_repos=>update_repository( 
+            iv_repo_name = repo
+            iv_branch    = branch ).
         ENDIF.
 
         MESSAGE |Repository { repo } updated successfully| TYPE 'S'.
