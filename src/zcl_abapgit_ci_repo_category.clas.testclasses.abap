@@ -42,7 +42,7 @@ CLASS ltcl_tests IMPLEMENTATION.
       exp = 'Customizing' ).
 
     cl_abap_unit_assert=>assert_equals(
-      act = mo_cut->get_category_label( 'zzz_other_zzz' )
+      act = mo_cut->get_category_label( 'other' )
       exp = 'Others' ).
 
   ENDMETHOD.
@@ -75,7 +75,7 @@ CLASS ltcl_tests IMPLEMENTATION.
 
     cl_abap_unit_assert=>assert_equals(
       act = mo_cut->get_repo_category( 'SICF' )
-      exp = 'zzz_other_zzz' ).
+      exp = 'other' ).
 
   ENDMETHOD.
 
