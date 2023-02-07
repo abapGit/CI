@@ -91,7 +91,7 @@ CLASS lcl_view IMPLEMENTATION.
 
     DATA(lt_components) = CAST cl_abap_structdescr(
                             CAST cl_abap_tabledescr(
-                              cl_abap_tabledescr=>describe_by_data( it_table ) 
+                              cl_abap_tabledescr=>describe_by_data( it_table )
                             )->get_table_line_type( )
                           )->get_components( ).
 

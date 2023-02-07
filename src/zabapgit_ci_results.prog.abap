@@ -114,7 +114,7 @@ CLASS lcl_gui DEFINITION.
       IMPORTING
         !iv_action   TYPE c
         !iv_getdata  TYPE c OPTIONAL
-        !it_postdata TYPE cnht_post_data_tab OPTIONAL.
+        !it_postdata TYPE cnht_post_data_tab OPTIONAL ##NEEDED.
 
     METHODS back
       RETURNING
@@ -227,8 +227,7 @@ DATA go_gui TYPE REF TO lcl_gui.
 
 INITIALIZATION.
 
-  DATA: lx_error TYPE REF TO zcx_abapgit_exception,
-        lt_ucomm TYPE TABLE OF sy-ucomm.
+  DATA lt_ucomm TYPE TABLE OF sy-ucomm.
 
   PERFORM set_pf_status IN PROGRAM rsdbrunt IF FOUND.
 

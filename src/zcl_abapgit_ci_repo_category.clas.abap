@@ -201,7 +201,7 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
       lt_return TYPE STANDARD TABLE OF ddshretval.
 
     LOOP AT gt_categories INTO DATA(ls_category).
-      MOVE-CORRESPONDING ls_category TO ls_value.
+      ls_value = CORRESPONDING #( ls_category ).
       APPEND ls_value TO lt_value.
     ENDLOOP.
 

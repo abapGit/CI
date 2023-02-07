@@ -423,7 +423,7 @@ CLASS lcl_main IMPLEMENTATION.
           CASE abap_true.
             WHEN p_purge.
               WRITE: / |Purge { lo_repo->get_name( ) } in { lo_repo->get_package( ) }|.
-              li_repo_srv->purge( 
+              li_repo_srv->purge(
                 ii_repo   = lo_repo
                 is_checks = ls_checks ).
               WRITE: / 'Purged' COLOR COL_POSITIVE.

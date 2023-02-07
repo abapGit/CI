@@ -288,8 +288,6 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD check_item.
 
-    DATA lv_category TYPE seoclassdf-category.
-
     rv_check = abap_true.
 
     " In some cases, object directory (tadir) and transport entries (e07x) do not match.
@@ -378,8 +376,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD check_objects.
 
-    DATA: lt_items TYPE zif_abapgit_definitions=>ty_items_ts,
-          ls_files TYPE zif_abapgit_definitions=>ty_stage_files.
+    DATA ls_files TYPE zif_abapgit_definitions=>ty_stage_files.
 
     FIELD-SYMBOLS: <ls_local_file>  TYPE zif_abapgit_definitions=>ty_file_item,
                    <ls_remote_file> LIKE LINE OF ls_files-remote.
@@ -1017,7 +1014,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       is_ci_repo = cs_ci_repo
       iv_phase   = 'After Pull' ).
 
-    io_repo->refresh( iv_drop_cache = abap_true ).
+    io_repo->refresh( abap_true ).
 
     cs_ci_repo-pull = zif_abapgit_ci_definitions=>co_status-ok.
 

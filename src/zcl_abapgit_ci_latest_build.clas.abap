@@ -18,7 +18,6 @@ CLASS zcl_abapgit_ci_latest_build DEFINITION
       co_program_url TYPE string VALUE '/abapGit/build/main/zabapgit_standalone.prog.abap'.
 
     DATA:
-      mv_latest_build TYPE string,
       mt_latest_build TYPE string_table,
       mi_package      TYPE REF TO zif_abapgit_sap_package.
 
