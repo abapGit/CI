@@ -189,11 +189,11 @@ CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
 
     DATA(lt_list) = zcl_abapgit_repo_srv=>get_instance( )->list( ).
 
-    LOOP AT lt_list ASSIGNING FIELD-SYMBOL(<repo>).
+    LOOP AT lt_list ASSIGNING FIELD-SYMBOL(<lo_repo>).
 
-      IF <repo>->is_offline( ) = abap_false.
+      IF <lo_repo>->is_offline( ) = abap_false.
 
-        lo_repo_online ?= <repo>.
+        lo_repo_online ?= <lo_repo>.
 
         IF lo_repo_online->get_url( ) = mv_url.
 
@@ -271,11 +271,11 @@ CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
 
     CONVERT TIME STAMP is_result-statistics-finish_timestamp
       TIME ZONE lv_timezone
-      INTO DATE DATA(start_date)
-           TIME DATA(start_time).
+      INTO DATE DATA(lv_start_date)
+           TIME DATA(lv_start_time).
 
     ls_comment-comment = |{ zif_abapgit_ci_definitions=>co_title }|
-                      && | from { start_date DATE = USER } { start_time TIME = USER }|.
+                      && | from { lv_start_date DATE = USER } { lv_start_time TIME = USER }|.
 
     lo_repo->push( is_comment = ls_comment
                    io_stage   = lo_stage ).

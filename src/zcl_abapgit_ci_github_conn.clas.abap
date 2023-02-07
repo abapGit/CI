@@ -21,8 +21,7 @@ CLASS zcl_abapgit_ci_github_conn IMPLEMENTATION.
 
   METHOD create_http_client.
 
-    DATA: li_http_client TYPE REF TO if_http_client,
-          lv_rfcdes      TYPE rfcdes-rfcdest.
+    DATA lv_rfcdes TYPE rfcdes-rfcdest.
 
     lv_rfcdes = |API_GITHUB_{ sy-uname }|.
 
@@ -46,10 +45,6 @@ CLASS zcl_abapgit_ci_github_conn IMPLEMENTATION.
           internal_error           = 5
           OTHERS                   = 6 ).
 
-      IF sy-subrc <> 0.
-        zcx_abapgit_exception=>raise_t100( ).
-      ENDIF.
-
     ELSE.
 
       cl_http_client=>create_by_url(
@@ -64,10 +59,10 @@ CLASS zcl_abapgit_ci_github_conn IMPLEMENTATION.
           internal_error     = 3
           OTHERS             = 4 ).
 
-      IF sy-subrc <> 0.
-        zcx_abapgit_exception=>raise_t100( ).
-      ENDIF.
+    ENDIF.
 
+    IF sy-subrc <> 0.
+      zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
   ENDMETHOD.

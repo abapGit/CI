@@ -83,7 +83,6 @@ CLASS zcl_abapgit_ci_log IMPLEMENTATION.
       lv_xstring  TYPE xstring,
       lv_obj_name TYPE tadir-obj_name,
       lv_size     TYPE i,
-      lv_name     TYPE string,
       lt_w3params TYPE STANDARD TABLE OF wwwparams,
       lt_w3mime   TYPE STANDARD TABLE OF w3mime,
       lt_w3html   TYPE STANDARD TABLE OF w3html.
@@ -201,9 +200,7 @@ CLASS zcl_abapgit_ci_log IMPLEMENTATION.
 
   METHOD drop_all.
 
-    DATA:
-      lv_obj_name TYPE tadir-obj_name,
-      lt_tadir    TYPE STANDARD TABLE OF tadir WITH DEFAULT KEY.
+    DATA lt_tadir TYPE STANDARD TABLE OF tadir WITH DEFAULT KEY.
 
     SELECT * FROM tadir INTO TABLE @lt_tadir
       WHERE pgmid = 'R3TR' AND object = 'W3MI' AND obj_name LIKE @co_all AND devclass = @co_package

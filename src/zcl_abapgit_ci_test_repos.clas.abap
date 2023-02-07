@@ -17,9 +17,9 @@ CLASS zcl_abapgit_ci_test_repos DEFINITION
     METHODS:
       fetch_repo_page
         IMPORTING
-          VALUE(iv_page_count) TYPE i
+          iv_page_count   TYPE i
         RETURNING
-          VALUE(rt_repos)      TYPE zif_abapgit_ci_definitions=>tty_repo
+          VALUE(rt_repos) TYPE zif_abapgit_ci_definitions=>tty_repo
         RAISING
           zcx_abapgit_exception.
 
@@ -75,7 +75,7 @@ CLASS zcl_abapgit_ci_test_repos IMPLEMENTATION.
     DO.
 
       TRY.
-          lt_repos = fetch_repo_page( iv_page_count = sy-index ).
+          lt_repos = fetch_repo_page( sy-index ).
 
         CATCH zcx_abapgit_exception cx_rest_client_exception INTO DATA(lx_error).
           zcx_abapgit_exception=>raise( iv_text     = lx_error->get_text( )

@@ -96,8 +96,7 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
 
     mt_skipped = VALUE #(
       LET no_ads   = xsdbool( do_we_have_an_ads_connection( ) <> abap_true )
-          not_diag = xsdbool( sy-batch = abap_true )
-          not_hana = xsdbool( cl_db_sys=>is_in_memory_db <> abap_true ) IN
+          not_diag = xsdbool( sy-batch = abap_true ) IN
       ( repo_name          = |AIFC|
         skip_local         = xsdbool( sy-saprl < '755' )
         skip_transportable = xsdbool( sy-saprl < '755' )

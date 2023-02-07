@@ -21,10 +21,10 @@ CLASS zcl_abapgit_ci_run_abapgit_ut IMPLEMENTATION.
 
     DATA(lt_repo_list) = zcl_abapgit_repo_srv=>get_instance( )->list( ).
 
-    LOOP AT lt_repo_list ASSIGNING FIELD-SYMBOL(<repo>).
+    LOOP AT lt_repo_list ASSIGNING FIELD-SYMBOL(<lo_repo>).
 
-      IF <repo>->get_name( ) = 'abapGit'.
-        lo_repo ?= <repo>.
+      IF <lo_repo>->get_name( ) = 'abapGit'.
+        lo_repo ?= <lo_repo>.
         EXIT.
       ENDIF.
 
@@ -34,8 +34,7 @@ CLASS zcl_abapgit_ci_run_abapgit_ut IMPLEMENTATION.
       zcx_abapgit_exception=>raise( |Couldn't find abapGit repo| ).
     ENDIF.
 
-    rt_list = zcl_abapgit_factory=>get_code_inspector( lo_repo->get_package( )
-      )->run( 'SWF_ABAP_UNIT' ).
+    rt_list = zcl_abapgit_factory=>get_code_inspector( lo_repo->get_package( ) )->run( 'SWF_ABAP_UNIT' ).
 
   ENDMETHOD.
 

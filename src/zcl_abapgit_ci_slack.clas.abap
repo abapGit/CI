@@ -9,11 +9,13 @@ CLASS zcl_abapgit_ci_slack DEFINITION
         !iv_token TYPE string
       RAISING
         zcx_abapgit_exception .
+
     METHODS post
       IMPORTING
         !iv_message TYPE string
       RAISING
         zcx_abapgit_exception .
+
   PROTECTED SECTION.
   PRIVATE SECTION.
     DATA:
@@ -89,7 +91,8 @@ CLASS zcl_abapgit_ci_slack IMPLEMENTATION.
 
         lo_rest_client->if_rest_client~post( lo_entity ).
 
-        DATA(lo_response) = lo_rest_client->if_rest_client~get_response_entity( ).
+        " For debugging
+        DATA(lo_response) = lo_rest_client->if_rest_client~get_response_entity( ) ##NEEDED.
 
         DATA(lv_status) = lo_rest_client->if_rest_client~get_status( ).
 

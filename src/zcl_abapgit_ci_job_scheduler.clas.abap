@@ -82,25 +82,25 @@ CLASS ZCL_ABAPGIT_CI_JOB_SCHEDULER IMPLEMENTATION.
 
   METHOD schedule_jobs.
 
-    DATA(jobcount_update_abapgit) = schedule_update_abapgit( ).
+    DATA(lv_jobcount_update_abapgit) = schedule_update_abapgit( ).
 
-    DATA(jobcount_update_abapgit_ci) = schedule_job_with_predecessor(
-        iv_pred_jobcount = jobcount_update_abapgit
-        iv_pred_jobname  = co_job_name-update_abapgit
-        iv_new_jobname   = co_job_name-update_abapgit_ci
-        iv_report        = co_report-update_abapgit_ci
-        iv_variant       = mv_variant_update_abapgit_ci ).
+    DATA(lv_jobcount_update_abapgit_ci) = schedule_job_with_predecessor(
+      iv_pred_jobcount = lv_jobcount_update_abapgit
+      iv_pred_jobname  = co_job_name-update_abapgit
+      iv_new_jobname   = co_job_name-update_abapgit_ci
+      iv_report        = co_report-update_abapgit_ci
+      iv_variant       = mv_variant_update_abapgit_ci ).
 
     schedule_job_with_predecessor(
-        iv_pred_jobcount = jobcount_update_abapgit_ci
-        iv_pred_jobname  = co_job_name-update_abapgit_ci
-        iv_new_jobname   = co_job_name-run_abapgit_ci
-        iv_report        = co_report-run_abapgit_ci
-        iv_variant       = mv_variant_run_abapgit_ci ).
+      iv_pred_jobcount = lv_jobcount_update_abapgit_ci
+      iv_pred_jobname  = co_job_name-update_abapgit_ci
+      iv_new_jobname   = co_job_name-run_abapgit_ci
+      iv_report        = co_report-run_abapgit_ci
+      iv_variant       = mv_variant_run_abapgit_ci ).
 
     IF mv_variant_cleanup1_abapgit_ci IS NOT INITIAL.
       schedule_job_with_predecessor(
-        iv_pred_jobcount = jobcount_update_abapgit_ci
+        iv_pred_jobcount = lv_jobcount_update_abapgit_ci
         iv_pred_jobname  = co_job_name-run_abapgit_ci
         iv_new_jobname   = co_job_name-cleanup_abapgit_ci && '-1'
         iv_report        = co_report-cleanup_abapgit_ci
@@ -109,7 +109,7 @@ CLASS ZCL_ABAPGIT_CI_JOB_SCHEDULER IMPLEMENTATION.
 
     IF mv_variant_cleanup2_abapgit_ci IS NOT INITIAL.
       schedule_job_with_predecessor(
-        iv_pred_jobcount = jobcount_update_abapgit_ci
+        iv_pred_jobcount = lv_jobcount_update_abapgit_ci
         iv_pred_jobname  = co_job_name-cleanup_abapgit_ci && '-1'
         iv_new_jobname   = co_job_name-cleanup_abapgit_ci && '-2'
         iv_report        = co_report-cleanup_abapgit_ci
@@ -118,7 +118,7 @@ CLASS ZCL_ABAPGIT_CI_JOB_SCHEDULER IMPLEMENTATION.
 
     IF mv_variant_cleanup3_abapgit_ci IS NOT INITIAL.
       schedule_job_with_predecessor(
-        iv_pred_jobcount = jobcount_update_abapgit_ci
+        iv_pred_jobcount = lv_jobcount_update_abapgit_ci
         iv_pred_jobname  = co_job_name-cleanup_abapgit_ci && '-2'
         iv_new_jobname   = co_job_name-cleanup_abapgit_ci && '-3'
         iv_report        = co_report-cleanup_abapgit_ci
