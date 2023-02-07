@@ -20,8 +20,7 @@
   "syntax": {
     "version": "v750",
     "errorNamespace": "^(Z|Y)",
-    "globalConstants": [],
-    "globalMacros": []
+    "globalConstants": ["skwfc_obtype_loio"]
   },
   "rules": {
     "dangerous_statement": false,
@@ -107,7 +106,7 @@
     "try_without_catch": true,
     "type_form_parameters": true,
     "types_naming": false,
-    "unknown_types": false,
+    "unknown_types": true,
     "unreachable_code": true,
     "unused_variables": false,
     "use_new": false,
