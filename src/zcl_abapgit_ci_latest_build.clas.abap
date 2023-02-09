@@ -174,7 +174,7 @@ CLASS zcl_abapgit_ci_latest_build IMPLEMENTATION.
     ENDIF.
 
     SPLIT lo_response->get_string_data( )
-      AT zif_abapgit_definitions=>c_newline
+      AT cl_abap_char_utilities=>newline
       INTO TABLE mt_latest_build.
 
   ENDMETHOD.
