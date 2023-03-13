@@ -290,7 +290,10 @@ CLASS lcl_main IMPLEMENTATION.
         HIDE gs_item.
       ENDSELECT.
       SELECT * FROM sotr_text INTO @DATA(ls_text) WHERE concept = @ls_head-concept ORDER BY PRIMARY KEY.
-        WRITE: AT /10 ls_text-langu, ls_text-lfd_num, ls_text-text(120), AT c_width space.
+        IF strlen( ls_text-text ) > 120.
+          ls_text-text = ls_text-text(120).
+        ENDIF.
+        WRITE: AT /10 ls_text-langu, ls_text-lfd_num, ls_text-text, AT c_width space.
       ENDSELECT.
       FORMAT COLOR OFF INTENSIFIED ON.
     ENDLOOP.
@@ -319,7 +322,10 @@ CLASS lcl_main IMPLEMENTATION.
         HIDE gs_item.
       ENDSELECT.
       SELECT * FROM sotr_textu INTO @DATA(ls_textu) WHERE concept = @ls_headu-concept ORDER BY PRIMARY KEY.
-        WRITE: AT /10 ls_textu-langu, ls_textu-lfd_num, ls_textu-text(120), AT c_width space.
+        IF strlen( ls_textu-text ) > 120.
+          ls_textu-text = ls_textu-text(120).
+        ENDIF.
+        WRITE: AT /10 ls_textu-langu, ls_textu-lfd_num, ls_textu-text, AT c_width space.
       ENDSELECT.
       FORMAT COLOR OFF INTENSIFIED ON.
     ENDLOOP.
