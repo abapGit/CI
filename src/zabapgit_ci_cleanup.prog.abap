@@ -336,11 +336,12 @@ CLASS lcl_main IMPLEMENTATION.
     ENDIF.
     SKIP.
 
-    SELECT * FROM tadir INTO TABLE @DATA(lt_tadir) WHERE devclass IN @s_pack[] AND object = 'SOTR'
+    SELECT * FROM tadir INTO TABLE @DATA(lt_tadir)
+      WHERE devclass IN @s_pack[] AND ( object = 'SOTR' OR object = 'SOTS' )
       ORDER BY PRIMARY KEY.
 
     FORMAT COLOR COL_KEY.
-    WRITE: / 'SOTR Objects:', AT c_count lines( lt_tadir ), AT c_width space.
+    WRITE: / 'SOTR/S Objects:', AT c_count lines( lt_tadir ), AT c_width space.
     FORMAT COLOR OFF.
     SKIP.
 
@@ -629,11 +630,12 @@ CLASS lcl_main IMPLEMENTATION.
     ENDIF.
 
     " Drop TADIR
-    SELECT * FROM tadir INTO TABLE @DATA(lt_tadir) WHERE devclass IN @s_pack[] AND object = 'SOTR'
+    SELECT * FROM tadir INTO TABLE @DATA(lt_tadir)
+      WHERE devclass IN @s_pack[] AND ( object = 'SOTR' OR object = 'SOTS' )
       ORDER BY PRIMARY KEY.
 
     FORMAT COLOR COL_KEY.
-    WRITE: / 'SOTR Objects:', AT c_count lines( lt_tadir ), AT c_width space.
+    WRITE: / 'SOTR/S Objects:', AT c_count lines( lt_tadir ), AT c_width space.
     FORMAT COLOR OFF.
     SKIP.
 
