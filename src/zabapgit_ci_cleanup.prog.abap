@@ -640,7 +640,7 @@ CLASS lcl_main IMPLEMENTATION.
     LOOP AT lt_tadir INTO DATA(ls_tadir).
       FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
       WRITE: AT /5 ls_tadir-object, ls_tadir-obj_name,
-        ls_tadir-delflag COLOR COL_TOTAL, ls_tadir-devclass, AT c_width space.
+        ls_tadir-delflag COLOR COL_TOTAL, ls_tadir-devclass.
 
       SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket = @ls_tadir-devclass ORDER BY PRIMARY KEY.
       IF sy-subrc <> 0.
@@ -872,9 +872,18 @@ CLASS lcl_main IMPLEMENTATION.
         change_of_class_not_allowed    = 23
         no_change_from_sap_to_tmp      = 24
         OTHERS                         = 25.
-    IF ( sy-subrc <> 0 AND p_forc = abap_true ) OR sy-subrc = 9.
-      DELETE FROM tadir
-        WHERE pgmid = 'R3TR' AND object = @iv_obj_type AND obj_name = @iv_obj_name.
+    IF sy-subrc <> 0.
+      IF p_forc = abap_true OR sy-subrc = 9.
+        DELETE FROM tadir
+          WHERE pgmid = 'R3TR' AND object = @iv_obj_type AND obj_name = @iv_obj_name.
+        IF sy-subrc = 0.
+          WRITE: 'Force deleted' COLOR COL_POSITIVE.
+        ELSE.
+          WRITE: 'Error trying to force delete' COLOR COL_NEGATIVE.
+        ENDIF.
+      ELSE.
+        WRITE: 'Error' COLOR COL_NEGATIVE, sy-subrc.
+      ENDIF.
     ENDIF.
 
   ENDMETHOD.
