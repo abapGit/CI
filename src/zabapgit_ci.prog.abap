@@ -79,8 +79,9 @@ SELECTION-SCREEN BEGIN OF SCREEN 200 AS SUBSCREEN.
 
   SELECTION-SCREEN BEGIN OF BLOCK b6 WITH FRAME TITLE TEXT-b06.
     PARAMETERS:
-      p_sync TYPE abap_bool AS CHECKBOX,
-      p_log  TYPE abap_bool AS CHECKBOX.
+      p_sync   TYPE abap_bool AS CHECKBOX,
+      p_log    TYPE abap_bool AS CHECKBOX,
+      p_noskip TYPE abap_bool AS CHECKBOX.
   SELECTION-SCREEN END OF BLOCK b6.
 
 SELECTION-SCREEN END OF SCREEN 200.
@@ -203,6 +204,7 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
               create_package      = createp
               no_purge            = no_purge
               logging             = p_log
+              ignore_skipping     = p_noskip
               categories          = CORRESPONDING #( s_cats[] )
             )
             sync_processing       = p_sync
@@ -255,6 +257,7 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
           WITH p_log = p_log
           WITH p_save = p_save
           WITH p_sync = p_sync
+          WITH p_noskip = p_noskip
           WITH p_url = p_url
           WITH repo = repo
           WITH repol = repol

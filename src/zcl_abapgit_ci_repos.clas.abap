@@ -139,7 +139,9 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
           <ls_ci_repo>-create_package = zif_abapgit_ci_definitions=>co_status-skipped.
         ENDIF.
 
-        lo_skip->complete_skip_components( CHANGING cs_repo = <ls_ci_repo> ).
+        IF is_options-ignore_skipping IS INITIAL.
+          lo_skip->complete_skip_components( CHANGING cs_repo = <ls_ci_repo> ).
+        ENDIF.
       ENDIF.
 
       IF is_options-check_transportable = abap_true.
@@ -156,7 +158,9 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
           <ls_ci_repo>-create_package = zif_abapgit_ci_definitions=>co_status-skipped.
         ENDIF.
 
-        lo_skip->complete_skip_components( CHANGING cs_repo = <ls_ci_repo> ).
+        IF is_options-ignore_skipping IS INITIAL.
+          lo_skip->complete_skip_components( CHANGING cs_repo = <ls_ci_repo> ).
+        ENDIF.
       ENDIF.
 
     ENDLOOP.
