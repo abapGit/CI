@@ -1222,7 +1222,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     DATA(lv_wait_time) = 0.
     DO.
       SELECT COUNT(*) FROM e070
-        WHERE trkorr = iv_transport
+        WHERE trkorr = @iv_transport
           AND trstatus = 'R'.
       IF sy-dbcnt = 1.
         EXIT.
