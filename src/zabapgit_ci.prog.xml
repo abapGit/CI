@@ -157,6 +157,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_NOSKIP</KEY>
+     <ENTRY>Ignore skipping repos</ENTRY>
+     <LENGTH>29</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_SAVE</KEY>
      <ENTRY>Save results without push</ENTRY>
      <LENGTH>33</LENGTH>

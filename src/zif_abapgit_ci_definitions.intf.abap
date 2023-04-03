@@ -43,6 +43,7 @@ INTERFACE zif_abapgit_ci_definitions
       create_package      TYPE abap_bool,
       no_purge            TYPE abap_bool,
       logging             TYPE abap_bool,
+      ignore_skipping     TYPE abap_bool,
       categories          TYPE RANGE OF string,
     END OF ty_repo_check_options .
   TYPES:
