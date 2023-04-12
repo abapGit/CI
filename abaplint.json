@@ -1,14 +1,14 @@
 {
   "dependencies": [
     {
+      "url": "https://github.com/abaplint/deps",
       "files": "/src/**/*.*",
-      "folder": "/deps1",
-      "url": "https://github.com/abaplint/deps"
+      "folder": "/deps1"
     },
     {
+      "url": "https://github.com/abapGit/abapGit",
       "files": "/src/**/*.*",
-      "folder": "/deps2",
-      "url": "https://github.com/abapGit/abapGit"
+      "folder": "/deps2"
     }
   ],
   "global": {
@@ -86,7 +86,7 @@
     "double_space": true,
     "downport": true,
     "empty_line_in_statement": {
-      "allowChained": true 
+      "allowChained": true
     },
     "empty_statement": true,
     "empty_structure": true,
@@ -121,7 +121,7 @@
     "keep_single_parameter_on_one_line": true,
     "keyword_case": true,
     "line_break_multiple_parameters": true,
-    "line_break_style": true,
+    "line_break_style": false,
     "line_length": true,
     "line_only_punc": true,
     "local_class_naming": true,
