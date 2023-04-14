@@ -218,7 +218,7 @@ CLASS zcl_abapgit_ci_repo DEFINITION
       log_syntax_errors
         IMPORTING
           is_ci_repo TYPE zabapgit_ci_result
-          it_list    TYPE scit_alvlist
+          it_list    TYPE zif_abapgit_code_inspector=>ty_results
         RAISING
           zcx_abapgit_exception.
 ENDCLASS.
