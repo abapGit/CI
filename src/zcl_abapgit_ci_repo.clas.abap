@@ -171,12 +171,6 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         RETURNING
           VALUE(rv_check) TYPE abap_bool,
 
-      adjust_item
-        CHANGING
-          cs_item TYPE zif_abapgit_definitions=>ty_item
-        RAISING
-          zcx_abapgit_exception,
-
       log_tadir
         IMPORTING
           is_ci_repo TYPE zabapgit_ci_result
@@ -226,16 +220,6 @@ ENDCLASS.
 
 
 CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
-
-
-  METHOD adjust_item.
-
-    IF cs_item-obj_type = 'SICF'.
-      " Object name of ICF services are encoded using hash of URL and need to be decoded for comparison with TADIR
-      cs_item-obj_name = zcl_abapgit_object_sicf=>read_tadir_sicf( cs_item-obj_name )-obj_name.
-    ENDIF.
-
-  ENDMETHOD.
 
 
   METHOD check_exists.
@@ -487,8 +471,6 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
                      iv_deletion = iv_deletion ) = abap_false.
         CONTINUE.
       ENDIF.
-
-      adjust_item( CHANGING cs_item = <ls_file>-item ).
 
       lv_repo_object_count = lv_repo_object_count + 1.
 
