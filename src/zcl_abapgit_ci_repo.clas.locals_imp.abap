@@ -1,21 +1,19 @@
 CLASS lcl_mock_frontend_services IMPLEMENTATION.
 
   METHOD zif_abapgit_frontend_services~gui_is_available.
-
     rv_gui_is_available = abap_false.
+  ENDMETHOD.
 
+  METHOD zif_abapgit_frontend_services~open_ie_devtools.
+    RETURN.
   ENDMETHOD.
 
   METHOD zif_abapgit_frontend_services~is_sapgui_for_java.
-
     rv_result = abap_false.
-
   ENDMETHOD.
 
   METHOD zif_abapgit_frontend_services~is_sapgui_for_windows.
-
     rv_result = abap_false.
-
   ENDMETHOD.
 
   METHOD zif_abapgit_frontend_services~file_upload.
