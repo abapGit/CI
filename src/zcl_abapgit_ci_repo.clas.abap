@@ -976,7 +976,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     " Object directory entry cannot be deleted, since the object is distributed
     " This is normal but for the CI tests we ignore such entries and clean them up
 
-    CHECK iv_package(1) <> '$'.
+    IF iv_package(1) = '$'.
+      RETURN.
+    ENDIF.
 
     DATA(lt_tadir) = zcl_abapgit_factory=>get_tadir( )->read( iv_package ).
 
