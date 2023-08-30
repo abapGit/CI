@@ -231,8 +231,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       lt_objects TYPE tr_objects.
 
     " Transports containing deleted tables might need to be adjusted or releasing will raise errors
-    SELECT * FROM e071 INTO TABLE lt_objects
-      WHERE trkorr = iv_transport AND pgmid = 'R3TR' AND object = 'TABL'.
+    SELECT * FROM e071 INTO TABLE @lt_objects
+      WHERE trkorr = @iv_transport AND pgmid = 'R3TR' AND object = 'TABL'
+      ORDER BY PRIMARY KEY.
     IF sy-subrc = 0.
       CALL FUNCTION 'TRINT_ADJUST_DELETION_FLAG'
         IMPORTING
@@ -243,7 +244,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
           invalid_object = 1
           OTHERS         = 2.
       IF sy-subrc = 0 AND lv_changed = abap_true.
-        UPDATE e071 FROM TABLE lt_objects.
+        UPDATE e071 FROM TABLE @lt_objects.
         COMMIT WORK AND WAIT.
       ENDIF.
     ENDIF.
@@ -983,7 +984,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     DATA(lt_tadir) = zcl_abapgit_factory=>get_tadir( )->read( iv_package ).
 
     LOOP AT lt_tadir ASSIGNING FIELD-SYMBOL(<ls_tadir>).
-      MOVE-CORRESPONDING <ls_tadir> TO ls_tadir.
+      ls_tadir = CORRESPONDING #( <ls_tadir> ).
 
       CALL FUNCTION 'TRINT_SET_TADIR_CPROJECT'
         EXPORTING
