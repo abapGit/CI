@@ -25,6 +25,7 @@ CLASS zcl_abapgit_ci_repos DEFINITION
       fail_message
         IMPORTING
           !iv_message TYPE csequence
+          !iv_skip    TYPE abap_bool DEFAULT abap_false
         CHANGING
           !cs_ci_repo TYPE zabapgit_ci_result.
 
@@ -98,7 +99,11 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
   METHOD fail_message.
 
-    cs_ci_repo-status  = zif_abapgit_ci_definitions=>co_status-not_ok.
+    IF iv_skip = abap_true.
+      cs_ci_repo-status = zif_abapgit_ci_definitions=>co_status-skipped.
+    ELSE.
+      cs_ci_repo-status = zif_abapgit_ci_definitions=>co_status-not_ok.
+    ENDIF.
     cs_ci_repo-message = iv_message.
 
     IF cs_ci_repo-logging = abap_true AND sy-batch = abap_false.
