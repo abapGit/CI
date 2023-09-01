@@ -43,6 +43,7 @@ CLASS zcl_abapgit_ci_repo DEFINITION
           cs_ci_repo TYPE zabapgit_ci_result
           co_repo    TYPE REF TO zcl_abapgit_repo_online
         RAISING
+          zcx_abapgit_cancel
           zcx_abapgit_exception,
 
       check_repo
@@ -280,6 +281,10 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       " skip the root package and namespaces
       CHECK ls_item-obj_type <> 'DEVC' OR ls_item-obj_name <> iv_package.
       CHECK ls_item-obj_type <> 'NSPC'.
+
+      IF zcl_abapgit_objects=>is_type_supported( ls_item-obj_type ) = abap_false.
+        zcx_abapgit_cancel=>raise( |Object type { ls_item-obj_type } not supported by system| ).
+      ENDIF.
 
       IF zcl_abapgit_objects=>exists( ls_item ) = abap_true.
         " Note: If the zcl_abapgit_object_<type>~exists fails with exception, the check returns true!
@@ -1317,14 +1322,18 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
       CATCH zcx_abapgit_cancel INTO DATA(lx_cancel).
 
+        " early process cancelation:
+        " no objects have been created at this point but
         " ensure transport is deleted (if empty) or released after cancel
         cleanup_transport( lv_transport ).
 
         release_transport( lv_transport ).
 
+        " mark repo as "skipped"
         zcl_abapgit_ci_repos=>fail_message(
           EXPORTING
             iv_message = lx_cancel->get_text( )
+            iv_skip    = abap_true
           CHANGING
             cs_ci_repo = cs_ci_repo ).
 
