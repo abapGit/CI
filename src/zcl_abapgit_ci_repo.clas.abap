@@ -116,11 +116,9 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         RAISING
           zcx_abapgit_exception,
 
-      cleanup_tadir
+      prepare_tadir
         IMPORTING
-          is_tadir             TYPE zif_abapgit_definitions=>ty_tadir
-        RETURNING
-          VALUE(rv_cleaned_up) TYPE abap_bool
+          iv_package TYPE devclass
         RAISING
           zcx_abapgit_exception,
 
@@ -171,6 +169,10 @@ CLASS zcl_abapgit_ci_repo DEFINITION
         RETURNING
           VALUE(rv_check) TYPE abap_bool,
 
+      adjust_transport
+        IMPORTING
+          iv_transport TYPE trkorr,
+
       log_tadir
         IMPORTING
           is_ci_repo TYPE zabapgit_ci_result
@@ -220,6 +222,34 @@ ENDCLASS.
 
 
 CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
+
+
+  METHOD adjust_transport.
+
+    DATA:
+      lv_changed TYPE abap_bool,
+      lt_objects TYPE tr_objects.
+
+    " Transports containing deleted tables might need to be adjusted or releasing will raise errors
+    SELECT * FROM e071 INTO TABLE @lt_objects
+      WHERE trkorr = @iv_transport AND pgmid = 'R3TR' AND object = 'TABL'
+      ORDER BY PRIMARY KEY.
+    IF sy-subrc = 0.
+      CALL FUNCTION 'TRINT_ADJUST_DELETION_FLAG'
+        IMPORTING
+          ev_changed     = lv_changed
+        CHANGING
+          ct_objects     = lt_objects
+        EXCEPTIONS
+          invalid_object = 1
+          OTHERS         = 2.
+      IF sy-subrc = 0 AND lv_changed = abap_true.
+        UPDATE e071 FROM TABLE @lt_objects.
+        COMMIT WORK AND WAIT.
+      ENDIF.
+    ENDIF.
+
+  ENDMETHOD.
 
 
   METHOD check_exists.
@@ -287,6 +317,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ELSEIF is_item-obj_type = 'SOTR' AND iv_deletion = abap_true.
       " SOTR is not part of the repo but deletion creates an transport entry
       rv_check = abap_false.
+    ELSEIF is_item-obj_type = 'SOTS' AND iv_deletion = abap_true.
+      " SOTS might not be part of the repo (depends on object type) but deletion creates an transport entry
+      rv_check = abap_false.
     ELSEIF is_item-obj_type = 'TDAT' AND is_item-obj_name = 'EDISEGMENT'.
       " IDOC and IEXT create additional TDAT entries
       rv_check = abap_false.
@@ -310,9 +343,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     DATA(lt_tadir) = zcl_abapgit_factory=>get_tadir( )->read( cs_ci_repo-package ).
 
     LOOP AT lt_tadir ASSIGNING FIELD-SYMBOL(<ls_tadir>) WHERE object <> 'DEVC' AND object <> 'NSPC'.
-      IF cleanup_tadir( <ls_tadir> ) = abap_false.
-        zcx_abapgit_exception=>raise( |Leftover TADIR entry { <ls_tadir>-object } { <ls_tadir>-obj_name }| ).
-      ENDIF.
+      zcx_abapgit_exception=>raise( |Leftover TADIR entry { <ls_tadir>-object } { <ls_tadir>-obj_name }| ).
     ENDLOOP.
 
     IF cs_ci_repo-layer IS INITIAL. " Only check leftover of local packages
@@ -529,29 +560,6 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       cs_ci_repo-check_create_transport = zif_abapgit_ci_definitions=>co_status-ok.
     ELSE.
       cs_ci_repo-check_delete_transport = zif_abapgit_ci_definitions=>co_status-ok.
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD cleanup_tadir.
-
-    DATA lv_cproject TYPE tadir-cproject.
-
-    " In case of transportable packages, some objects cannot be deleted (error TR 024):
-    " Object directory entry cannot be deleted, since the object is distributed
-    " This is normal but for the CI tests we ignore such entries and clean them up
-
-    IF is_tadir-devclass(1) <> '$'.
-      SELECT SINGLE cproject FROM tadir INTO @lv_cproject
-        WHERE pgmid = @is_tadir-pgmid AND object = @is_tadir-object AND obj_name = @is_tadir-obj_name.
-      IF sy-subrc = 0 AND lv_cproject+1(1) CA ' S'.
-        DELETE FROM tadir
-          WHERE pgmid = @is_tadir-pgmid AND object = @is_tadir-object AND obj_name = @is_tadir-obj_name.
-        IF sy-subrc = 0.
-          rv_cleaned_up = abap_true.
-        ENDIF.
-      ENDIF.
     ENDIF.
 
   ENDMETHOD.
@@ -947,19 +955,50 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD log_tadir.
 
-    DATA lt_tadir TYPE STANDARD TABLE OF tadir WITH DEFAULT KEY.
-
     IF is_ci_repo-logging = abap_false OR mo_log->is_active( c_log_type-tadir ) = abap_false.
       RETURN.
     ENDIF.
 
-    SELECT * FROM tadir INTO TABLE @lt_tadir
-      WHERE devclass = @is_ci_repo-package
-      ORDER BY PRIMARY KEY.
+    DATA(lt_tadir) = zcl_abapgit_factory=>get_tadir( )->read( is_ci_repo-package ).
 
     mo_log->add(
       iv_log_object = |{ is_ci_repo-name }, { is_ci_repo-package(1) }: TADIR ({ iv_phase })|
       ig_data       = lt_tadir ).
+
+  ENDMETHOD.
+
+
+  METHOD prepare_tadir.
+
+    DATA ls_tadir TYPE tadir.
+
+    " In case of transportable packages, some objects cannot be deleted (error TR 024):
+    " Object directory entry cannot be deleted, since the object is distributed
+    " This is normal but for the CI tests we ignore such entries and clean them up
+
+    IF iv_package(1) = '$'.
+      RETURN.
+    ENDIF.
+
+    DATA(lt_tadir) = zcl_abapgit_factory=>get_tadir( )->read( iv_package ).
+
+    LOOP AT lt_tadir ASSIGNING FIELD-SYMBOL(<ls_tadir>).
+      ls_tadir = CORRESPONDING #( <ls_tadir> ).
+
+      CALL FUNCTION 'TRINT_SET_TADIR_CPROJECT'
+        EXPORTING
+          is_tadir              = ls_tadir
+          iv_number_of_byte     = '2'
+          iv_new_value          = 'L'  "local
+        EXCEPTIONS
+          tadir_entry_not_found = 1
+          update_error          = 2
+          object_not_original   = 3
+          OTHERS                = 4.
+      IF sy-subrc <> 0.
+        zcx_abapgit_exception=>raise_t100( ).
+      ENDIF.
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -1015,6 +1054,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     log_tadir(
       is_ci_repo = cs_ci_repo
       iv_phase   = 'Before Purge' ).
+
+    prepare_tadir( cs_ci_repo-package ).
 
     TRY.
         DATA(ls_checks) = io_repo->delete_checks( ).
@@ -1126,6 +1167,12 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     DELETE rt_objects WHERE pgmid <> 'R3TR' OR ( pgmid  = 'R3TR' AND object = 'DEVC' ).
 
+    " SHI3 includes SHI6, SHI7, and TABU entries
+    READ TABLE rt_objects TRANSPORTING NO FIELDS WITH KEY object = 'SHI3'.
+    IF sy-subrc = 0.
+      DELETE rt_objects WHERE pgmid  = 'R3TR' AND ( object = 'TABU' OR object = 'SHI6' OR object = 'SHI7' ).
+    ENDIF.
+
   ENDMETHOD.
 
 
@@ -1151,6 +1198,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     " First, release all open tasks
     LOOP AT lt_requests ASSIGNING FIELD-SYMBOL(<ls_task>) WHERE trkorr <> iv_transport AND trstatus <> 'R'.
+      adjust_transport( <ls_task>-trkorr ).
+
       CALL FUNCTION 'TR_RELEASE_REQUEST'
         EXPORTING
           iv_trkorr                  = <ls_task>-trkorr
