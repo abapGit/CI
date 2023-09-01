@@ -60,6 +60,14 @@ CLASS zcl_abapgit_ci_repo_category DEFINITION
       c_category_bw_label     TYPE string VALUE 'Business Warehouse',
       c_category_data         TYPE string VALUE 'data',
       c_category_data_label   TYPE string VALUE 'Data',
+      c_category_aq           TYPE string VALUE 'sapquery',
+      c_category_aq_label     TYPE string VALUE 'SAP Query',
+      c_category_docs         TYPE string VALUE 'documents',
+      c_category_docs_label   TYPE string VALUE 'Documents (Longtexts)',
+      c_category_idoc         TYPE string VALUE 'idoc',
+      c_category_idoc_label   TYPE string VALUE 'IDoc',
+      c_category_iac          TYPE string VALUE 'iac',
+      c_category_iac_label    TYPE string VALUE 'Internet Application Components',
       c_category_others       TYPE string VALUE 'other',
       c_category_others_label TYPE string VALUE 'Others'.
 
@@ -129,6 +137,26 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
     " Add "Data"
     ls_category-category       = c_category_data.
     ls_category-category_label = c_category_data_label.
+    INSERT ls_category INTO TABLE rt_result.
+
+    " Add "SAP Query"
+    ls_category-category       = c_category_aq.
+    ls_category-category_label = c_category_aq_label.
+    INSERT ls_category INTO TABLE rt_result.
+
+    " Add "Documents"
+    ls_category-category       = c_category_docs.
+    ls_category-category_label = c_category_docs_label.
+    INSERT ls_category INTO TABLE rt_result.
+
+    " Add "IDoc"
+    ls_category-category       = c_category_idoc.
+    ls_category-category_label = c_category_idoc_label.
+    INSERT ls_category INTO TABLE rt_result.
+
+    " Add "Internet Application Components"
+    ls_category-category       = c_category_iac.
+    ls_category-category_label = c_category_iac_label.
     INSERT ls_category INTO TABLE rt_result.
 
     SORT rt_result BY category_label.
@@ -286,8 +314,16 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
           rv_result = c_category_bw.
         WHEN 'W3HT' OR 'W3MI'.
           rv_result = c_category_mime.
+        WHEN 'AQBG' OR 'AQQU' OR 'AQSG'.
+          rv_result = c_category_aq.
+        WHEN 'DOCT' OR 'DOCV' OR 'DSYS'.
+          rv_result = c_category_docs.
+        WHEN 'IDOC' OR 'IEXT'.
+          rv_result = c_category_idoc.
+        WHEN 'IARP' OR 'IASP' OR 'IATU' OR 'IAXU'.
+          rv_result = c_category_iac.
         WHEN OTHERS.
-          IF lv_object_type CP 'DATA*'.
+          IF lv_object_type CP 'DATA*' OR lv_object_type CP 'TABU*'.
             rv_result = c_category_data.
           ELSE.
             rv_result = c_category_others.
