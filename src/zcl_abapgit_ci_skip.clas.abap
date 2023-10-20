@@ -101,6 +101,10 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = xsdbool( sy-saprl < '755' )
         skip_transportable = xsdbool( sy-saprl < '755' )
         reason             = |Requires release 7.55 (SAP Notes 3106807, 3117150)| )
+      ( repo_name          = |CLAS_KEY_USER|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Issue https://github.com/abapGit/abapGit/issues/6154| )
       ( repo_name          = |AOBJ|
         skip_local         = abap_true
         skip_transportable = abap_true
