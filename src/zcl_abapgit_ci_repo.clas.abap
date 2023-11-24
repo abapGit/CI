@@ -716,8 +716,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       dlvunit   = 'HOME' ).
 
     IF cs_ci_repo-layer IS INITIAL.
-      DATA ls_package TYPE zif_abapgit_sap_package=>ty_create.
-      MOVE-CORRESPONDING ls_package_data TO ls_package.
+      DATA(ls_package) = CORRESPONDING zif_abapgit_sap_package=>ty_create( ls_package_data ).
       li_package->create( ls_package ).
     ELSE.
       " Assume not initial layer means transports are required;
