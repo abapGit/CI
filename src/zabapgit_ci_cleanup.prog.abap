@@ -895,7 +895,7 @@ CLASS lcl_main IMPLEMENTATION.
     DATA ls_request_header TYPE trwbo_request_header.
 
     " Reset standard request (to avoid confusion)
-    zcl_abapgit_default_transport=>get_instance( )->reset( ).
+    zcl_abapgit_factory=>get_default_transport( )->reset( ).
 
     " Get transport via popup or create one automatically
     IF p_popup = abap_true.

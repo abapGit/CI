@@ -813,7 +813,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
                     |{ iv_repo_name } in { iv_package }|. " Might be too long but does not really matter
 
     " Reset standard request (to avoid confusion)
-    zcl_abapgit_default_transport=>get_instance( )->reset( ).
+    zcl_abapgit_factory=>get_default_transport( )->reset( ).
 
     " Create new request for this repository and package
     CALL FUNCTION 'TR_INSERT_REQUEST_WITH_TASKS'
@@ -1284,7 +1284,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
         tabname = 'TADIR'.
 
     " Reset standard request (to avoid confusion)
-    zcl_abapgit_default_transport=>get_instance( )->reset( ).
+    zcl_abapgit_factory=>get_default_transport( )->reset( ).
 
   ENDMETHOD.
 
