@@ -686,7 +686,8 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD constructor.
 
-    zcl_abapgit_ui_injector=>set_frontend_services( NEW lcl_mock_frontend_services( ) ).
+    " Disbale GUI
+    zcl_abapgit_ui_factory=>get_frontend_services( abap_true ).
 
     mo_log = NEW #( ).
 
