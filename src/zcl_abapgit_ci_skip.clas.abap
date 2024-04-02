@@ -117,10 +117,6 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |No files found to deserialize| )
-      ( repo_name          = |CLAS_exceptions|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |Issue https://github.com/abapGit/abapGit/issues/6490| )
       ( repo_name          = |CLAS_KEY_USER|
         skip_local         = abap_true
         skip_transportable = abap_true
@@ -157,10 +153,6 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Not implemented yet (AFF)| )
-      ( repo_name          = |ENHO_ENHS_with_SOTR|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |Not supported yet| )
       ( repo_name          = |FDT0|
         skip_local         = abap_false
         skip_transportable = abap_true
@@ -169,10 +161,6 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Issue https://github.com/abapGit/abapGit/issues/4470| )
-      ( repo_name          = |IOBJ|
-        skip_local         = abap_true
-        skip_transportable = abap_false
-        reason             = |Issue https://github.com/abapGit/abapGit/issues/5775| )
       ( repo_name          = |Language_DE|
         skip_local         = xsdbool( sy-langu <> 'D' )
         skip_transportable = xsdbool( sy-langu <> 'D' )
@@ -181,10 +169,6 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Requires package in namespace| )
-      ( repo_name          = |ODSO|
-        skip_local         = abap_true
-        skip_transportable = abap_false
-        reason             = |Issue https://github.com/abapGit/abapGit/issues/5775| )
       ( repo_name          = |PINF_exposing_*|
         skip_local         = abap_false
         skip_transportable = abap_true
