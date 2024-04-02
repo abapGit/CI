@@ -344,18 +344,12 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     cs_ci_repo-check_leftovers = zif_abapgit_ci_definitions=>co_status-not_ok.
 
-    " Check for tadir entries
+    " Check for tadir entries (DEVC and NSPC are added automatically so don't check them below)
     DATA(lt_tadir) = zcl_abapgit_factory=>get_tadir( )->read( cs_ci_repo-package ).
 
     LOOP AT lt_tadir ASSIGNING FIELD-SYMBOL(<ls_tadir>) WHERE object <> 'DEVC' AND object <> 'NSPC'.
       zcx_abapgit_exception=>raise( |Leftover TADIR entry { <ls_tadir>-object } { <ls_tadir>-obj_name }| ).
     ENDLOOP.
-
-    IF cs_ci_repo-layer IS INITIAL. " Only check leftover of local packages
-      LOOP AT lt_tadir ASSIGNING <ls_tadir> WHERE object = 'DEVC'.
-        zcx_abapgit_exception=>raise( |Leftover TADIR entry { <ls_tadir>-object } { <ls_tadir>-obj_name }| ).
-      ENDLOOP.
-    ENDIF.
 
     " Check for leftover objects
     LOOP AT mt_items ASSIGNING FIELD-SYMBOL(<ls_item>) WHERE obj_type <> 'DEVC' AND obj_type <> 'NSPC'.
@@ -1179,6 +1173,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     IF sy-subrc = 0.
       DELETE rt_objects WHERE pgmid  = 'R3TR' AND ( object = 'TABU' OR object = 'SHI6' OR object = 'SHI7' ).
     ENDIF.
+
+    " AREA will have additional entry in transport
+    DELETE rt_objects WHERE pgmid = 'R3TR' AND object = 'AREA' AND obj_name = 'NODESNOTCONNECTED'.
 
   ENDMETHOD.
 
