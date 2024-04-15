@@ -149,10 +149,6 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = not_diag
         skip_transportable = not_diag
         reason             = |Requires user-interaction (not available in batch)| )
-      ( repo_name          = |DTEB|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |Not implemented yet (AFF)| )
       ( repo_name          = |FDT0|
         skip_local         = abap_false
         skip_transportable = abap_true
