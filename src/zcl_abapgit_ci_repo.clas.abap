@@ -989,18 +989,18 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     " - check if all objects are de-/serialized
     " - check if all objects are deleted
     " - check if objects appear in several test cases
-    DELETE FROM zabapgit_ci_objs WHERE name = is_ci_repo-name AND phase = iv_phase.
+    DELETE FROM zabapgit_ci_objs WHERE name = @is_ci_repo-name AND phase = @iv_phase.
 
     LOOP AT lt_tadir INTO DATA(ls_tadir).
       CLEAR ls_obj.
       ls_obj-name  = is_ci_repo-name.
       ls_obj-phase = iv_phase.
       ls_obj-id    = sy-tabix.
-      MOVE-CORRESPONDING ls_tadir TO ls_obj.
+      ls_obj = CORRESPONDING #( ls_tadir ).
       INSERT ls_obj INTO TABLE lt_obj.
     ENDLOOP.
 
-    INSERT zabapgit_ci_objs FROM TABLE lt_obj.
+    INSERT zabapgit_ci_objs FROM TABLE @lt_obj.
 
   ENDMETHOD.
 
