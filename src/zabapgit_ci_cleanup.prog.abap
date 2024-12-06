@@ -53,6 +53,7 @@ CLASS lcl_main DEFINITION.
       drop_objects RAISING zcx_abapgit_exception,
       drop_otr RAISING zcx_abapgit_exception,
       drop_logs RAISING zcx_abapgit_exception,
+      drop_tadir_logs RAISING zcx_abapgit_exception,
       delete_package
         IMPORTING
           iv_package   TYPE devclass
@@ -108,6 +109,7 @@ CLASS lcl_main DEFINITION.
       list_packages RAISING zcx_abapgit_exception,
       list_objects,
       list_logs,
+      list_tadir_logs,
       list_otr,
       list_transports.
 ENDCLASS.
@@ -128,6 +130,7 @@ CLASS lcl_main IMPLEMENTATION.
           drop_otr( ).
         ELSEIF p_log = abap_true.
           drop_logs( ).
+          drop_tadir_logs( ).
         ELSE.
           uninstall_repos( ).
         ENDIF.
@@ -145,6 +148,8 @@ CLASS lcl_main IMPLEMENTATION.
     list_otr( ).
 
     list_logs( ).
+
+    list_tadir_logs( ).
 
     list_transports( ).
 
@@ -259,6 +264,30 @@ CLASS lcl_main IMPLEMENTATION.
     LOOP AT lt_logs INTO DATA(ls_log).
       FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
       WRITE: AT /5 ls_log-objid, ls_log-text, AT c_width space.
+      FORMAT COLOR OFF INTENSIFIED ON.
+    ENDLOOP.
+
+    IF sy-subrc <> 0.
+      FORMAT COLOR COL_POSITIVE.
+      WRITE: AT /5 'None', AT c_width space.
+    ENDIF.
+    SKIP.
+
+  ENDMETHOD.
+
+  METHOD list_tadir_logs.
+
+    SELECT DISTINCT name FROM zabapgit_ci_objs INTO TABLE @DATA(lt_logs)
+      ORDER BY name.
+
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'TADIR Logs:', AT c_count lines( lt_logs ), AT c_width space.
+    FORMAT COLOR OFF.
+    SKIP.
+
+    LOOP AT lt_logs INTO DATA(ls_log).
+      FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
+      WRITE: AT /5 ls_log-name, AT c_width space.
       FORMAT COLOR OFF INTENSIFIED ON.
     ENDLOOP.
 
@@ -737,11 +766,39 @@ CLASS lcl_main IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD drop_logs.
-    DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
 
+    SELECT COUNT(*) FROM wwwdata INTO @DATA(lv_count)
+      WHERE objid LIKE @zcl_abapgit_ci_log=>co_all.
+
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'Logs:', AT c_count lv_count, AT c_width space.
+    FORMAT COLOR OFF.
+    SKIP.
+
+    DATA(lo_log) = NEW zcl_abapgit_ci_log( ).
     lo_log->drop_all( ).
 
-    list_logs( ).
+    FORMAT COLOR COL_POSITIVE.
+    WRITE: AT /5 'None', AT c_width space.
+    SKIP.
+
+  ENDMETHOD.
+
+  METHOD drop_tadir_logs.
+
+    SELECT COUNT(*) FROM zabapgit_ci_objs INTO @DATA(lv_count).
+
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'TADIR Logs:', AT c_count lv_count, AT c_width space.
+    FORMAT COLOR OFF.
+    SKIP.
+
+    DELETE FROM zabapgit_ci_objs WHERE name <> 'ANY'.
+
+    FORMAT COLOR COL_POSITIVE.
+    WRITE: AT /5 'None', AT c_width space.
+    SKIP.
+
   ENDMETHOD.
 
   METHOD delete_package.
