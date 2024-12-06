@@ -169,7 +169,7 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_false
         skip_transportable = abap_true
         reason             = |Requires restart of application| )
-      ( repo_name          = |SFPF|
+      ( repo_name          = |SFPF_SFPI|
         skip_local         = no_ads
         skip_transportable = no_ads
         reason             = |Requires Adobe Document Service (ADS)| )
