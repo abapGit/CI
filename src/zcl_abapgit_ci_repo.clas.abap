@@ -48,7 +48,8 @@ CLASS zcl_abapgit_ci_repo DEFINITION
 
       check_repo
         IMPORTING
-          io_repo TYPE REF TO zcl_abapgit_repo_online
+          is_ci_repo TYPE zabapgit_ci_result
+          io_repo    TYPE REF TO zcl_abapgit_repo_online
         RAISING
           zcx_abapgit_exception,
 
@@ -450,6 +451,17 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       zcx_abapgit_cancel=>raise( 'No files found to deserialize' ).
     ENDIF.
 
+    " Check if there's at least one object other than the root package (except for DEVC tests)
+    IF is_ci_repo-name NP 'DEVC_*'.
+      LOOP AT lt_files TRANSPORTING NO FIELDS
+        WHERE path CS lo_dot->get_starting_folder( ) AND filename <> 'package.devc.xml'.
+        EXIT.
+      ENDLOOP.
+      IF sy-subrc <> 0.
+        zcx_abapgit_cancel=>raise( 'No objects found to deserialize' ).
+      ENDIF.
+    ENDIF.
+
     " Check if any item already exits
     check_exists(
       iv_package = io_repo->get_package( )
@@ -671,7 +683,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     COMMIT WORK AND WAIT.
 
-    check_repo( co_repo ).
+    check_repo(
+      is_ci_repo = cs_ci_repo
+      io_repo    = co_repo ).
 
     cs_ci_repo-clone = zif_abapgit_ci_definitions=>co_status-ok.
 
