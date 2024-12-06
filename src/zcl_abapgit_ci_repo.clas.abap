@@ -975,15 +975,32 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
   METHOD log_tadir.
 
+    DATA:
+      ls_obj TYPE zabapgit_ci_objs,
+      lt_obj TYPE STANDARD TABLE OF zabapgit_ci_objs.
+
     IF is_ci_repo-logging = abap_false OR mo_log->is_active( c_log_type-tadir ) = abap_false.
       RETURN.
     ENDIF.
 
     DATA(lt_tadir) = zcl_abapgit_factory=>get_tadir( )->read( is_ci_repo-package ).
 
-    mo_log->add(
-      iv_log_object = |{ is_ci_repo-name }, { is_ci_repo-package(1) }: TADIR ({ iv_phase })|
-      ig_data       = lt_tadir ).
+    " Save object list to DB which can be used to
+    " - check if all objects are de-/serialized
+    " - check if all objects are deleted
+    " - check if objects appear in several test cases
+    DELETE FROM zabapgit_ci_objs WHERE name = is_ci_repo-name AND phase = iv_phase.
+
+    LOOP AT lt_tadir INTO DATA(ls_tadir).
+      CLEAR ls_obj.
+      ls_obj-name  = is_ci_repo-name.
+      ls_obj-phase = iv_phase.
+      ls_obj-id    = sy-tabix.
+      MOVE-CORRESPONDING ls_tadir TO ls_obj.
+      INSERT ls_obj INTO TABLE lt_obj.
+    ENDLOOP.
+
+    INSERT zabapgit_ci_objs FROM TABLE lt_obj.
 
   ENDMETHOD.
 
