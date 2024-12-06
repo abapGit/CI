@@ -538,6 +538,11 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     ENDIF.
 
     LOOP AT lt_objects ASSIGNING FIELD-SYMBOL(<ls_object>) WHERE object <> 'DEVC'.
+      " Ignore auth. group assignments for views
+      IF <ls_object>-object = 'TABU' AND <ls_object>-obj_name = 'TDDAT'.
+        CONTINUE.
+      ENDIF.
+
       CLEAR ls_item.
       ls_item-obj_type = <ls_object>-object.
       ls_item-obj_name = <ls_object>-obj_name.
