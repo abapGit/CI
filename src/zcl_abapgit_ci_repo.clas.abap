@@ -993,10 +993,10 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     LOOP AT lt_tadir INTO DATA(ls_tadir).
       CLEAR ls_obj.
+      ls_obj = CORRESPONDING #( ls_tadir ).
       ls_obj-name  = is_ci_repo-name.
       ls_obj-phase = iv_phase.
       ls_obj-id    = sy-tabix.
-      ls_obj = CORRESPONDING #( ls_tadir ).
       INSERT ls_obj INTO TABLE lt_obj.
     ENDLOOP.
 
