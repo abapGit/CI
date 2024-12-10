@@ -907,6 +907,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
         OTHERS                = 2.
     ASSERT sy-subrc = 0.
 
+    " Ignore locks related to syntax check
+    DELETE lt_enq WHERE gname = 'E_ABAP_GENPH'.
+
     mo_log->add(
       iv_log_object = |{ is_ci_repo-name }, { is_ci_repo-package(1) }: Locks ({ iv_phase })|
       ig_data       = lt_enq ).
@@ -992,13 +995,16 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
     " - check if all objects are de-/serialized
     " - check if all objects are deleted
     " - check if objects appear in several test cases
-    DELETE FROM zabapgit_ci_objs WHERE name = @is_ci_repo-name AND phase = @iv_phase.
+    DATA(lv_name)  = to_upper( is_ci_repo-name ).
+    DATA(lv_phase) = to_upper( iv_phase ).
+
+    DELETE FROM zabapgit_ci_objs WHERE name = @lv_name AND phase = @lv_phase.
 
     LOOP AT lt_tadir INTO DATA(ls_tadir).
       CLEAR ls_obj.
       ls_obj = CORRESPONDING #( ls_tadir ).
-      ls_obj-name  = is_ci_repo-name.
-      ls_obj-phase = iv_phase.
+      ls_obj-name  = lv_name.
+      ls_obj-phase = lv_phase.
       ls_obj-id    = sy-tabix.
       INSERT ls_obj INTO TABLE lt_obj.
     ENDLOOP.
