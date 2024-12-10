@@ -31,6 +31,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_ALL</KEY>
+     <ENTRY>All-in-on clean-up</ENTRY>
+     <LENGTH>26</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_FORC</KEY>
      <ENTRY>Force deletion (ignore errors)</ENTRY>
      <LENGTH>38</LENGTH>

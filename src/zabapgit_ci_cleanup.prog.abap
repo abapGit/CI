@@ -21,14 +21,16 @@ PARAMETERS: p_uninst TYPE abap_bool RADIOBUTTON GROUP r1.
 SELECTION-SCREEN SKIP.
 SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
   SELECT-OPTIONS: s_pack FOR gv_package.
-  PARAMETERS: p_purge TYPE abap_bool RADIOBUTTON GROUP r2 DEFAULT 'X',
-              p_remov TYPE abap_bool RADIOBUTTON GROUP r2,
-              p_obj   TYPE abap_bool RADIOBUTTON GROUP r2,
-              p_otr   TYPE abap_bool RADIOBUTTON GROUP r2,
-              p_log   TYPE abap_bool RADIOBUTTON GROUP r2,
-              p_pack  TYPE abap_bool RADIOBUTTON GROUP r2,
-              p_popup TYPE abap_bool AS CHECKBOX DEFAULT abap_false,
-              p_forc  TYPE abap_bool AS CHECKBOX DEFAULT abap_false.
+  PARAMETERS:
+    p_all   TYPE abap_bool RADIOBUTTON GROUP r2 DEFAULT 'X',
+    p_purge TYPE abap_bool RADIOBUTTON GROUP r2,
+    p_remov TYPE abap_bool RADIOBUTTON GROUP r2,
+    p_obj   TYPE abap_bool RADIOBUTTON GROUP r2,
+    p_otr   TYPE abap_bool RADIOBUTTON GROUP r2,
+    p_log   TYPE abap_bool RADIOBUTTON GROUP r2,
+    p_pack  TYPE abap_bool RADIOBUTTON GROUP r2,
+    p_popup TYPE abap_bool AS CHECKBOX DEFAULT abap_false,
+    p_forc  TYPE abap_bool AS CHECKBOX DEFAULT abap_false.
 SELECTION-SCREEN END OF BLOCK b1.
 
 SELECTION-SCREEN SKIP.
@@ -93,6 +95,10 @@ CLASS lcl_main DEFINITION.
     CONSTANTS c_count TYPE i VALUE 20.
     TYPES: ty_devc_tt TYPE STANDARD TABLE OF devclass WITH DEFAULT KEY.
     METHODS:
+      get_repositories
+        EXPORTING
+          ev_count TYPE i
+          et_repos TYPE zif_abapgit_repo_srv=>ty_repo_list,
       get_packages
         RETURNING
           VALUE(rt_devclass) TYPE ty_devc_tt,
@@ -115,6 +121,7 @@ CLASS lcl_main DEFINITION.
 ENDCLASS.
 
 CLASS lcl_main IMPLEMENTATION.
+
   METHOD run.
     CASE abap_true.
       WHEN p_list.
@@ -131,12 +138,35 @@ CLASS lcl_main IMPLEMENTATION.
         ELSEIF p_log = abap_true.
           drop_logs( ).
           drop_tadir_logs( ).
+        ELSEIF p_all = abap_true.
+          uninstall_repos( ).
+          drop_packages( ).
+          drop_objects( ).
+          drop_otr( ).
+          drop_logs( ).
+          drop_tadir_logs( ).
         ELSE.
           uninstall_repos( ).
         ENDIF.
       WHEN p_trrel.
         release_transports( ).
     ENDCASE.
+  ENDMETHOD.
+
+  METHOD get_repositories.
+
+    DATA(li_repo_srv) = zcl_abapgit_repo_srv=>get_instance( ).
+
+    TRY.
+        et_repos = li_repo_srv->list( ).
+        LOOP AT et_repos INTO DATA(li_repo).
+          IF li_repo->get_package( ) IN s_pack.
+            ev_count = ev_count + 1.
+          ENDIF.
+        ENDLOOP.
+      CATCH zcx_abapgit_exception.
+    ENDTRY.
+
   ENDMETHOD.
 
   METHOD list.
@@ -158,6 +188,8 @@ CLASS lcl_main IMPLEMENTATION.
   METHOD list_packages.
 
     DATA li_repo_online TYPE REF TO zcl_abapgit_repo_online.
+    DATA lt_repos TYPE zif_abapgit_repo_srv=>ty_repo_list.
+    DATA lv_count TYPE i.
 
     DATA(lv_found) = abap_false.
 
@@ -171,7 +203,7 @@ CLASS lcl_main IMPLEMENTATION.
     IF sy-subrc = 0.
       LOOP AT lt_devclass INTO DATA(lv_devclass).
         FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
-        WRITE: AT /5 lv_devclass HOTSPOT, AT c_width space.
+        WRITE: AT /5 'Package:', lv_devclass HOTSPOT, AT c_width space.
         gv_package = lv_devclass.
         HIDE gv_package.
         FORMAT COLOR OFF INTENSIFIED ON.
@@ -179,17 +211,21 @@ CLASS lcl_main IMPLEMENTATION.
     ELSE.
       FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
+      FORMAT COLOR OFF.
     ENDIF.
     SKIP.
 
+    get_repositories(
+      IMPORTING
+        ev_count = lv_count
+        et_repos = lt_repos ).
+
     FORMAT COLOR COL_KEY.
-    WRITE: / 'Repositories:', AT c_width space.
+    WRITE: / 'Repositories:', AT c_count lv_count, AT c_width space.
     FORMAT COLOR OFF.
     SKIP.
 
-    DATA(li_repo_srv) = zcl_abapgit_repo_srv=>get_instance( ).
-
-    LOOP AT li_repo_srv->list( ) INTO DATA(li_repo).
+    LOOP AT lt_repos INTO DATA(li_repo).
       TRY.
           IF li_repo->get_package( ) IN s_pack.
             lv_found = abap_true.
@@ -217,6 +253,7 @@ CLASS lcl_main IMPLEMENTATION.
     IF lv_found = abap_false.
       FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
+      FORMAT COLOR OFF.
       SKIP.
     ENDIF.
 
@@ -234,7 +271,7 @@ CLASS lcl_main IMPLEMENTATION.
 
     LOOP AT lt_tadir INTO DATA(ls_tadir).
       FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
-      WRITE: AT /5 ls_tadir-object, ls_tadir-obj_name HOTSPOT,
+      WRITE: AT /5 'Object:', ls_tadir-object, ls_tadir-obj_name HOTSPOT,
         ls_tadir-delflag COLOR COL_TOTAL, ls_tadir-devclass, AT c_width space.
       gs_item-obj_type = ls_tadir-object.
       gs_item-obj_name = ls_tadir-obj_name.
@@ -245,6 +282,7 @@ CLASS lcl_main IMPLEMENTATION.
     IF sy-subrc <> 0.
       FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
+      FORMAT COLOR OFF.
     ENDIF.
     SKIP.
 
@@ -263,13 +301,14 @@ CLASS lcl_main IMPLEMENTATION.
 
     LOOP AT lt_logs INTO DATA(ls_log).
       FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
-      WRITE: AT /5 ls_log-objid, ls_log-text, AT c_width space.
+      WRITE: AT /5 'Log:', ls_log-objid, ls_log-text, AT c_width space.
       FORMAT COLOR OFF INTENSIFIED ON.
     ENDLOOP.
 
     IF sy-subrc <> 0.
       FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
+      FORMAT COLOR OFF.
     ENDIF.
     SKIP.
 
@@ -287,13 +326,14 @@ CLASS lcl_main IMPLEMENTATION.
 
     LOOP AT lt_logs INTO DATA(ls_log).
       FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
-      WRITE: AT /5 ls_log-name, AT c_width space.
+      WRITE: AT /5 'Log:', ls_log-name, AT c_width space.
       FORMAT COLOR OFF INTENSIFIED ON.
     ENDLOOP.
 
     IF sy-subrc <> 0.
       FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
+      FORMAT COLOR OFF.
     ENDIF.
     SKIP.
 
@@ -311,7 +351,7 @@ CLASS lcl_main IMPLEMENTATION.
 
     LOOP AT lt_head INTO DATA(ls_head).
       FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
-      WRITE: AT /5 ls_head-concept, ls_head-paket, AT c_width space.
+      WRITE: AT /5 'Text:', ls_head-concept, ls_head-paket, AT c_width space.
       SELECT * FROM sotr_use INTO @DATA(ls_use) WHERE concept = @ls_head-concept ORDER BY PRIMARY KEY.
         WRITE: AT /10 ls_use-object, ls_use-obj_name(70) HOTSPOT, AT c_width space.
         gs_item-obj_type = ls_use-object.
@@ -330,6 +370,7 @@ CLASS lcl_main IMPLEMENTATION.
     IF sy-subrc <> 0.
       FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
+      FORMAT COLOR OFF.
     ENDIF.
     SKIP.
 
@@ -343,7 +384,7 @@ CLASS lcl_main IMPLEMENTATION.
 
     LOOP AT lt_headu INTO DATA(ls_headu).
       FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
-      WRITE: AT /5 ls_headu-concept, ls_headu-paket, AT c_width space.
+      WRITE: AT /5 'Text:', ls_headu-concept, ls_headu-paket, AT c_width space.
       SELECT * FROM sotr_useu INTO @DATA(ls_useu) WHERE concept = @ls_headu-concept ORDER BY PRIMARY KEY.
         WRITE: AT /10 ls_useu-object, ls_useu-obj_name(70) HOTSPOT, AT c_width space.
         gs_item-obj_type = ls_useu-object.
@@ -362,6 +403,7 @@ CLASS lcl_main IMPLEMENTATION.
     IF sy-subrc <> 0.
       FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
+      FORMAT COLOR OFF.
     ENDIF.
     SKIP.
 
@@ -387,6 +429,7 @@ CLASS lcl_main IMPLEMENTATION.
     IF sy-subrc <> 0.
       FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
+      FORMAT COLOR OFF.
     ENDIF.
     SKIP.
 
@@ -415,11 +458,11 @@ CLASS lcl_main IMPLEMENTATION.
     LOOP AT lt_requests INTO DATA(ls_request).
       FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
       IF ls_request-strkorr IS INITIAL.
-        WRITE: AT /5 ls_request-trkorr HOTSPOT, ls_request-as4text, AT c_width space.
+        WRITE: AT /5 'Transport:', ls_request-trkorr HOTSPOT, ls_request-as4text, AT c_width space.
         gv_transport = ls_request-trkorr.
         HIDE gv_transport.
       ELSE.
-        WRITE: AT /10 ls_request-trkorr, ls_request-as4text, AT c_width space.
+        WRITE: AT /18 ls_request-trkorr, ls_request-as4text, AT c_width space.
         SKIP.
       ENDIF.
       FORMAT COLOR OFF INTENSIFIED ON.
@@ -434,12 +477,26 @@ CLASS lcl_main IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD uninstall_repos.
-    DATA: lv_transport TYPE trkorr,
-          lo_repo      TYPE REF TO zcl_abapgit_repo.
+
+    DATA:
+      lv_transport TYPE trkorr,
+      lt_repos     TYPE zif_abapgit_repo_srv=>ty_repo_list,
+      lo_repo      TYPE REF TO zcl_abapgit_repo,
+      lv_count     TYPE i.
+
+    get_repositories(
+      IMPORTING
+        ev_count = lv_count
+        et_repos = lt_repos ).
+
+    FORMAT COLOR COL_KEY.
+    WRITE: / 'Repositories:', AT c_count lv_count, AT c_width space.
+    FORMAT COLOR OFF.
+    SKIP.
 
     DATA(li_repo_srv) = zcl_abapgit_repo_srv=>get_instance( ).
 
-    LOOP AT li_repo_srv->list( ) INTO DATA(li_repo).
+    LOOP AT lt_repos INTO DATA(li_repo).
       lo_repo ?= li_repo.
 
       IF lo_repo->get_package( ) NOT IN s_pack[].
@@ -457,7 +514,7 @@ CLASS lcl_main IMPLEMENTATION.
 
       TRY.
           CASE abap_true.
-            WHEN p_purge.
+            WHEN p_purge OR p_all.
               WRITE: / |Purge { lo_repo->get_name( ) } in { lo_repo->get_package( ) }|.
               li_repo_srv->purge(
                 ii_repo   = lo_repo
@@ -467,11 +524,21 @@ CLASS lcl_main IMPLEMENTATION.
               WRITE: / |Delete { lo_repo->get_name( ) } in { lo_repo->get_package( ) }|.
               li_repo_srv->delete( lo_repo ).
               WRITE: / 'Deleted' COLOR COL_POSITIVE.
+            WHEN OTHERS.
+              ASSERT 1 = 2.
           ENDCASE.
         CATCH zcx_abapgit_exception INTO DATA(lx_ex).
           WRITE: / 'Error' COLOR COL_NEGATIVE, lx_ex->get_text( ).
       ENDTRY.
     ENDLOOP.
+
+    IF lv_count = 0.
+      FORMAT COLOR COL_POSITIVE.
+      WRITE: AT /5 'None', AT c_width space.
+      FORMAT COLOR OFF.
+    ENDIF.
+    SKIP.
+
   ENDMETHOD.
 
   METHOD check_packages.
@@ -506,7 +573,7 @@ CLASS lcl_main IMPLEMENTATION.
     DATA(lt_devclass) = get_packages( ).
 
     FORMAT COLOR COL_KEY.
-    WRITE: / 'Packages:', AT c_count lines( lt_devclass ), AT c_width space.
+    WRITE: / 'Repo Packages:', AT c_count lines( lt_devclass ), AT c_width space.
     FORMAT COLOR OFF.
     SKIP.
 
@@ -540,13 +607,15 @@ CLASS lcl_main IMPLEMENTATION.
         WRITE: 'Not empty' COLOR COL_TOTAL.
       ENDIF.
       WRITE AT c_width space.
-      FORMAT COLOR OFF.
+      FORMAT COLOR OFF INTENSIFIED ON.
     ENDLOOP.
 
     IF sy-subrc <> 0.
       FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
+      FORMAT COLOR OFF.
     ENDIF.
+    SKIP.
 
   ENDMETHOD.
 
@@ -556,14 +625,14 @@ CLASS lcl_main IMPLEMENTATION.
     DATA(lt_devclass) = get_packages( ).
 
     FORMAT COLOR COL_KEY.
-    WRITE: / 'Packages:', AT c_count lines( lt_devclass ), AT c_width space.
+    WRITE: / 'Object Packages:', AT c_count lines( lt_devclass ), AT c_width space.
     FORMAT COLOR OFF.
     SKIP.
 
     LOOP AT lt_devclass INTO DATA(lv_devclass).
       FORMAT COLOR COL_NORMAL INTENSIFIED OFF.
       WRITE: AT /5 lv_devclass, AT c_width space.
-      FORMAT COLOR OFF.
+      FORMAT COLOR OFF INTENSIFIED ON.
       SKIP.
 
       IF lv_devclass(1) <> '$' AND lv_transport IS INITIAL.
@@ -605,7 +674,7 @@ CLASS lcl_main IMPLEMENTATION.
           ENDIF.
         ENDIF.
         WRITE AT c_width space.
-        FORMAT COLOR OFF.
+        FORMAT COLOR OFF INTENSIFIED ON.
       ENDLOOP.
 
       IF sy-subrc = 0.
@@ -616,6 +685,8 @@ CLASS lcl_main IMPLEMENTATION.
     IF sy-subrc <> 0.
       FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
+      FORMAT COLOR OFF.
+      SKIP.
     ENDIF.
 
   ENDMETHOD.
@@ -632,11 +703,14 @@ CLASS lcl_main IMPLEMENTATION.
     LOOP AT lt_head INTO DATA(ls_head).
       drop_otr_short( ls_head ).
     ENDLOOP.
-    SKIP.
+    IF sy-subrc = 0.
+      SKIP.
+    ENDIF.
 
     IF sy-subrc <> 0.
       FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
+      FORMAT COLOR OFF.
       SKIP.
     ENDIF.
 
@@ -650,11 +724,14 @@ CLASS lcl_main IMPLEMENTATION.
     LOOP AT lt_headu INTO DATA(ls_headu).
       drop_otr_long( ls_headu ).
     ENDLOOP.
-    SKIP.
+    IF sy-subrc = 0.
+      SKIP.
+    ENDIF.
 
     IF sy-subrc <> 0.
       FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
+      FORMAT COLOR OFF.
       SKIP.
     ENDIF.
 
@@ -688,12 +765,13 @@ CLASS lcl_main IMPLEMENTATION.
       ENDIF.
 
       WRITE AT c_width space.
-      FORMAT COLOR OFF.
+      FORMAT COLOR OFF INTENSIFIED ON.
     ENDLOOP.
 
     IF sy-subrc <> 0.
       FORMAT COLOR COL_POSITIVE.
       WRITE: AT /5 'None', AT c_width space.
+      FORMAT COLOR OFF.
     ENDIF.
     SKIP.
 
@@ -729,7 +807,7 @@ CLASS lcl_main IMPLEMENTATION.
       WRITE: 'Deleted' COLOR COL_POSITIVE.
     ENDIF.
     WRITE AT c_width space.
-    FORMAT COLOR OFF.
+    FORMAT COLOR OFF INTENSIFIED ON.
   ENDMETHOD.
 
   METHOD drop_otr_short.
@@ -762,12 +840,14 @@ CLASS lcl_main IMPLEMENTATION.
       WRITE: 'Deleted' COLOR COL_POSITIVE.
     ENDIF.
     WRITE AT c_width space.
-    FORMAT COLOR OFF.
+    FORMAT COLOR OFF INTENSIFIED ON.
   ENDMETHOD.
 
   METHOD drop_logs.
 
-    SELECT COUNT(*) FROM wwwdata INTO @DATA(lv_count)
+    DATA lv_count TYPE i.
+
+    SELECT COUNT(*) FROM wwwdata INTO @lv_count
       WHERE objid LIKE @zcl_abapgit_ci_log=>co_all.
 
     FORMAT COLOR COL_KEY.
@@ -780,13 +860,16 @@ CLASS lcl_main IMPLEMENTATION.
 
     FORMAT COLOR COL_POSITIVE.
     WRITE: AT /5 'None', AT c_width space.
+    FORMAT COLOR OFF.
     SKIP.
 
   ENDMETHOD.
 
   METHOD drop_tadir_logs.
 
-    SELECT COUNT(*) FROM zabapgit_ci_objs INTO @DATA(lv_count).
+    DATA lv_count TYPE i.
+
+    SELECT COUNT(*) FROM zabapgit_ci_objs INTO @lv_count.
 
     FORMAT COLOR COL_KEY.
     WRITE: / 'TADIR Logs:', AT c_count lv_count, AT c_width space.
@@ -797,6 +880,7 @@ CLASS lcl_main IMPLEMENTATION.
 
     FORMAT COLOR COL_POSITIVE.
     WRITE: AT /5 'None', AT c_width space.
+    FORMAT COLOR OFF.
     SKIP.
 
   ENDMETHOD.
@@ -1147,11 +1231,13 @@ CLASS lcl_main IMPLEMENTATION.
 ENDCLASS.
 
 INITIALIZATION.
+
   s_pack[] = VALUE #( ( sign = 'I' option = 'CP' low = 'Z___*' )
                       ( sign = 'I' option = 'CP' low = '$___*' )
                       ( sign = 'I' option = 'CP' low = '/ABAPGIT/_*' ) ).
 
 AT LINE-SELECTION.
+
   IF gv_transport IS NOT INITIAL.
     CALL FUNCTION 'TR_DISPLAY_REQUEST'
       EXPORTING
@@ -1167,6 +1253,7 @@ AT LINE-SELECTION.
   CLEAR: gv_transport, gv_package, gs_item.
 
 START-OF-SELECTION.
+
   TRY.
       NEW lcl_main( )->run( ).
     CATCH zcx_abapgit_exception INTO gx_ex.
