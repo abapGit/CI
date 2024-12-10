@@ -54,6 +54,7 @@ CLASS lcl_main DEFINITION.
       drop_packages RAISING zcx_abapgit_exception,
       drop_objects RAISING zcx_abapgit_exception,
       drop_otr RAISING zcx_abapgit_exception,
+      drop_otr_sots RAISING zcx_abapgit_exception,
       drop_logs RAISING zcx_abapgit_exception,
       drop_tadir_logs RAISING zcx_abapgit_exception,
       delete_package
@@ -116,7 +117,9 @@ CLASS lcl_main DEFINITION.
       list_objects,
       list_logs,
       list_tadir_logs,
-      list_otr,
+      list_otr_short,
+      list_otr_long,
+      list_otr_sots,
       list_transports.
 ENDCLASS.
 
@@ -143,6 +146,7 @@ CLASS lcl_main IMPLEMENTATION.
           drop_packages( ).
           drop_objects( ).
           drop_otr( ).
+          drop_otr_sots( ).
           drop_logs( ).
           drop_tadir_logs( ).
         ELSE.
@@ -175,7 +179,9 @@ CLASS lcl_main IMPLEMENTATION.
 
     list_objects( ).
 
-    list_otr( ).
+    list_otr_short( ).
+    list_otr_long( ).
+    list_otr_sots( ).
 
     list_logs( ).
 
@@ -339,7 +345,7 @@ CLASS lcl_main IMPLEMENTATION.
 
   ENDMETHOD.
 
-  METHOD list_otr.
+  METHOD list_otr_short.
 
     SELECT * FROM sotr_head INTO TABLE @DATA(lt_head) WHERE paket IN @s_pack[]
       ORDER BY paket, concept.
@@ -374,6 +380,10 @@ CLASS lcl_main IMPLEMENTATION.
     ENDIF.
     SKIP.
 
+  ENDMETHOD.
+
+  METHOD list_otr_long.
+
     SELECT * FROM sotr_headu INTO TABLE @DATA(lt_headu) WHERE paket IN @s_pack[]
       ORDER BY paket, concept.
 
@@ -406,6 +416,10 @@ CLASS lcl_main IMPLEMENTATION.
       FORMAT COLOR OFF.
     ENDIF.
     SKIP.
+
+  ENDMETHOD.
+
+  METHOD list_otr_sots.
 
     SELECT * FROM tadir INTO TABLE @DATA(lt_tadir)
       WHERE devclass IN @s_pack[] AND ( object = 'SOTR' OR object = 'SOTS' )
@@ -735,6 +749,10 @@ CLASS lcl_main IMPLEMENTATION.
       SKIP.
     ENDIF.
 
+  ENDMETHOD.
+
+  METHOD drop_otr_sots.
+
     " Drop TADIR
     SELECT * FROM tadir INTO TABLE @DATA(lt_tadir)
       WHERE devclass IN @s_pack[] AND ( object = 'SOTR' OR object = 'SOTS' )
@@ -750,9 +768,9 @@ CLASS lcl_main IMPLEMENTATION.
       WRITE: AT /5 ls_tadir-object, ls_tadir-obj_name,
         ls_tadir-delflag COLOR COL_TOTAL, ls_tadir-devclass.
 
-      SELECT * FROM sotr_head INTO TABLE @lt_head WHERE paket = @ls_tadir-devclass ORDER BY PRIMARY KEY.
+      SELECT * FROM sotr_head INTO TABLE @DATA(lt_head) WHERE paket = @ls_tadir-devclass ORDER BY PRIMARY KEY.
       IF sy-subrc <> 0.
-        SELECT * FROM sotr_headu INTO TABLE @lt_headu WHERE paket = @ls_tadir-devclass ORDER BY PRIMARY KEY.
+        SELECT * FROM sotr_headu INTO TABLE @DATA(lt_headu) WHERE paket = @ls_tadir-devclass ORDER BY PRIMARY KEY.
         IF sy-subrc <> 0.
           delete_tadir(
             iv_obj_type = ls_tadir-object
