@@ -1148,7 +1148,8 @@ ENDCLASS.
 
 INITIALIZATION.
   s_pack[] = VALUE #( ( sign = 'I' option = 'CP' low = 'Z___*' )
-                      ( sign = 'I' option = 'CP' low = '$___*' ) ).
+                      ( sign = 'I' option = 'CP' low = '$___*' )
+                      ( sign = 'I' option = 'CP' low = '/ABAPGIT/_*' ) ).
 
 AT LINE-SELECTION.
   IF gv_transport IS NOT INITIAL.

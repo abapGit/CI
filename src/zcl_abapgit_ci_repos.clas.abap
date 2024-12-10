@@ -6,6 +6,10 @@ CLASS zcl_abapgit_ci_repos DEFINITION
     CONSTANTS:
       gc_default_branch TYPE string VALUE 'refs/heads/main'.
 
+    " Open source namespace used for tests
+    CONSTANTS:
+      gc_namespace TYPE namespace VALUE '/ABAPGIT/'.
+
     CLASS-METHODS:
       update_abapgit_repo
         RAISING
@@ -116,6 +120,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
 
   METHOD get_repo_list_with_packages.
+    DATA lv_prefix TYPE namespace.
     FIELD-SYMBOLS: <ls_ci_repo> TYPE zabapgit_ci_result.
 
     " Copy it_repos into rt_repos, creating an entry for local and transportable packages each
@@ -150,10 +155,15 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
       ENDIF.
 
       IF is_options-check_transportable = abap_true.
+        IF <ls_repo>-name CP 'NSPC*'.
+          lv_prefix = gc_namespace && '_'.
+        ELSE.
+          lv_prefix = 'Z___'.
+        ENDIF.
         INSERT CORRESPONDING #( <ls_repo> )
                INTO TABLE rt_repos
                ASSIGNING <ls_ci_repo>.
-        <ls_ci_repo>-package      = CONV devclass( |Z___{ to_upper( <ls_ci_repo>-name ) }| ).
+        <ls_ci_repo>-package      = CONV devclass( |{ lv_prefix }{ to_upper( <ls_ci_repo>-name ) }| ).
         <ls_ci_repo>-layer        = is_options-layer.
         <ls_ci_repo>-do_not_purge = is_options-no_purge.
         <ls_ci_repo>-logging      = is_options-logging.
