@@ -769,9 +769,9 @@ CLASS lcl_main IMPLEMENTATION.
         ls_tadir-delflag COLOR COL_TOTAL, ls_tadir-devclass.
 
       SELECT * FROM sotr_head INTO TABLE @DATA(lt_head) WHERE paket = @ls_tadir-devclass ORDER BY PRIMARY KEY.
-      IF sy-subrc <> 0.
+      IF sy-subrc <> 0 OR lt_head IS INITIAL.
         SELECT * FROM sotr_headu INTO TABLE @DATA(lt_headu) WHERE paket = @ls_tadir-devclass ORDER BY PRIMARY KEY.
-        IF sy-subrc <> 0.
+        IF sy-subrc <> 0 OR lt_headu IS INITIAL.
           delete_tadir(
             iv_obj_type = ls_tadir-object
             iv_obj_name = ls_tadir-obj_name ).
