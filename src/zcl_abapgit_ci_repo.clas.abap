@@ -317,6 +317,9 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       " packages on uninstall. Therefore these might still exist from the last run and might not be contained
       " in this transport.
       rv_check = abap_false.
+    ELSEIF is_item-obj_type = 'NSPC'.
+      " Namespaces are created once and not included in the CI transport (unless it's the very first run)
+      rv_check = abap_false.
     ELSEIF is_item-obj_type = 'SICF' AND iv_deletion = abap_true.
       " Object name of ICF services can not be decoded after deletion since this needs the TADIR entry
       rv_check = abap_false.

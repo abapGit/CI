@@ -68,6 +68,8 @@ CLASS zcl_abapgit_ci_repo_category DEFINITION
       c_category_idoc_label   TYPE string VALUE 'IDoc',
       c_category_iac          TYPE string VALUE 'iac',
       c_category_iac_label    TYPE string VALUE 'Internet Application Components',
+      c_category_nspace       TYPE string VALUE 'namespace',
+      c_category_nspace_label TYPE string VALUE 'Namespace',
       c_category_others       TYPE string VALUE 'other',
       c_category_others_label TYPE string VALUE 'Others'.
 
@@ -157,6 +159,11 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
     " Add "Internet Application Components"
     ls_category-category       = c_category_iac.
     ls_category-category_label = c_category_iac_label.
+    INSERT ls_category INTO TABLE rt_result.
+
+    " Add "Namespace"
+    ls_category-category       = c_category_nspace.
+    ls_category-category_label = c_category_nspace_label.
     INSERT ls_category INTO TABLE rt_result.
 
     SORT rt_result BY category_label.
@@ -320,6 +327,8 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
           rv_result = c_category_docs.
         WHEN 'IDOC' OR 'IEXT'.
           rv_result = c_category_idoc.
+        WHEN 'NSPC'.
+          rv_result = c_category_nspace.
         WHEN 'IARP' OR 'IASP' OR 'IATU' OR 'IAXU'.
           rv_result = c_category_iac.
         WHEN OTHERS.
