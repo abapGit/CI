@@ -94,10 +94,10 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
 
   METHOD constructor.
 
-    " Repositories with certain restrictions
     mt_skipped = VALUE #(
       LET no_ads   = xsdbool( do_we_have_an_ads_connection( ) <> abap_true )
           not_diag = xsdbool( sy-batch = abap_true ) IN
+* Repositories with certain restrictions
       ( repo_name          = |AIFC|
         skip_local         = xsdbool( sy-saprl < '755' )
         skip_transportable = xsdbool( sy-saprl < '755' )
@@ -166,18 +166,6 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Obsolete testcase| )
-      ( repo_name          = |SQSC|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |Requires SAP ERP on HANA\nIssue https://github.com/abapGit-tests/SQSC/issues/1| )
-      ( repo_name          = |SRVB|
-        skip_local         = xsdbool( sy-saprl < '755' )
-        skip_transportable = xsdbool( sy-saprl < '755' )
-        reason             = |Requires release 7.55\nIssue https://github.com/abapGit-tests/SRVB/issues/9| )
-      ( repo_name          = |SRVD|
-        skip_local         = xsdbool( sy-saprl < '755' )
-        skip_transportable = xsdbool( sy-saprl < '755' )
-        reason             = |Requires release 7.55\nIssue https://github.com/abapGit-tests/SRVD/issues/1| )
       ( repo_name          = |SUSC_and_SUSO|
         skip_local         = abap_false
         skip_transportable = abap_true
@@ -190,8 +178,7 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = not_diag
         skip_transportable = not_diag
         reason             = |Requires user-interaction (not available in batch)| )
-
-" Repositories with issues that should get fixed
+* Repositories with issues that should get fixed
       ( repo_name          = |AOBJ|
         skip_local         = abap_true
         skip_transportable = abap_true
@@ -232,6 +219,18 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Issue https://github.com/abapGit/abapGit/issues/4140| )
+      ( repo_name          = |SQSC|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Requires SAP ERP on HANA\nIssue https://github.com/abapGit-tests/SQSC/issues/1| )
+      ( repo_name          = |SRVB|
+        skip_local         = xsdbool( sy-saprl < '755' )
+        skip_transportable = xsdbool( sy-saprl < '755' )
+        reason             = |Requires release 7.55\nIssue https://github.com/abapGit-tests/SRVB/issues/9| )
+      ( repo_name          = |SRVD|
+        skip_local         = xsdbool( sy-saprl < '755' )
+        skip_transportable = xsdbool( sy-saprl < '755' )
+        reason             = |Requires release 7.55\nIssue https://github.com/abapGit-tests/SRVD/issues/1| )
       ( repo_name          = |TABU_custom_table|
         skip_local         = abap_true
         skip_transportable = abap_true
