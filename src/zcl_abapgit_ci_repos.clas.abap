@@ -155,7 +155,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
       ENDIF.
 
       IF is_options-check_transportable = abap_true.
-        IF <ls_ci_repo>-name CP 'NSPC*'.
+        IF <ls_repo>-name CP 'NSPC*'.
           lv_prefix = gc_namespace && '_'.
         ELSE.
           lv_prefix = 'Z___'.

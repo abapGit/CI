@@ -1022,7 +1022,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     DATA(lt_tadir) = zcl_abapgit_factory=>get_tadir( )->read( iv_package ).
 
-    LOOP AT lt_tadir ASSIGNING FIELD-SYMBOL(<ls_tadir>).
+    LOOP AT lt_tadir ASSIGNING FIELD-SYMBOL(<ls_tadir>) WHERE object <> 'NSPC'.
       ls_tadir = CORRESPONDING #( <ls_tadir> ).
 
       CALL FUNCTION 'TRINT_SET_TADIR_CPROJECT'
