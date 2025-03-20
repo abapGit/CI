@@ -346,7 +346,7 @@ CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
   METHOD stage.
 
     ro_stage = NEW zcl_abapgit_stage( ).
-    DATA(ls_files) = zcl_abapgit_factory=>get_stage_logic( )->get( io_repo ).
+    DATA(ls_files) = zcl_abapgit_stage_logic=>get_stage_logic( )->get( io_repo ).
 
     LOOP AT ls_files-local ASSIGNING FIELD-SYMBOL(<ls_local>).
 

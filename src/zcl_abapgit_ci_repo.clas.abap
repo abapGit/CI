@@ -416,7 +416,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     io_repo->refresh_local_objects( ).
 
-    ls_files = zcl_abapgit_factory=>get_stage_logic( )->get( io_repo ).
+    ls_files = zcl_abapgit_stage_logic=>get_stage_logic( )->get( io_repo ).
 
     log_diffs(
       is_ci_repo = cs_ci_repo
