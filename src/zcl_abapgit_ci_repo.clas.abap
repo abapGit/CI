@@ -346,6 +346,11 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
       lv_count TYPE i,
       ls_tadir TYPE tadir.
 
+    " Check makes sense only if we purge it
+    IF cs_ci_repo-do_not_purge = abap_true.
+      RETURN.
+    ENDIF.
+
     cs_ci_repo-check_leftovers = zif_abapgit_ci_definitions=>co_status-not_ok.
 
     " Check for tadir entries (DEVC and NSPC are added automatically so don't check them below)
