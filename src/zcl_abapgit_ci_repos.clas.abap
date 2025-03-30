@@ -369,7 +369,7 @@ CLASS zcl_abapgit_ci_repos IMPLEMENTATION.
 
   METHOD syntax_check.
 
-    DATA(lt_list) = zcl_abapgit_factory=>get_code_inspector( iv_package )->run( 'SYNTAX_CHECK' ).
+    DATA(lt_list) = zcl_abapgit_code_inspector=>get_code_inspector( iv_package )->run( 'SYNTAX_CHECK' ).
 
     ASSIGN lt_list[ kind = 'E' ] TO FIELD-SYMBOL(<ls_error>).
     IF sy-subrc = 0.

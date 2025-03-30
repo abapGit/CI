@@ -1411,7 +1411,7 @@ CLASS zcl_abapgit_ci_repo IMPLEMENTATION.
 
     cs_ci_repo-syntax_check = zif_abapgit_ci_definitions=>co_status-not_ok.
 
-    DATA(lt_list) = zcl_abapgit_factory=>get_code_inspector( cs_ci_repo-package )->run( 'SYNTAX_CHECK' ).
+    DATA(lt_list) = zcl_abapgit_code_inspector=>get_code_inspector( cs_ci_repo-package )->run( 'SYNTAX_CHECK' ).
 
     READ TABLE lt_list INTO DATA(ls_list) WITH KEY kind = 'E'.
     IF sy-subrc = 0.

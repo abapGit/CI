@@ -34,7 +34,7 @@ CLASS zcl_abapgit_ci_run_abapgit_ut IMPLEMENTATION.
       zcx_abapgit_exception=>raise( |Couldn't find abapGit repo| ).
     ENDIF.
 
-    rt_list = zcl_abapgit_factory=>get_code_inspector( lo_repo->get_package( ) )->run( 'SWF_ABAP_UNIT' ).
+    rt_list = zcl_abapgit_code_inspector=>get_code_inspector( lo_repo->get_package( ) )->run( 'SWF_ABAP_UNIT' ).
 
   ENDMETHOD.
 
