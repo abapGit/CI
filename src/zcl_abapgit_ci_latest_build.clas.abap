@@ -1,6 +1,6 @@
 CLASS zcl_abapgit_ci_latest_build DEFINITION
   PUBLIC
-  CREATE PUBLIC .
+  CREATE PUBLIC.
 
   PUBLIC SECTION.
 
