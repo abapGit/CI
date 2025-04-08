@@ -140,7 +140,7 @@ CLASS lcl_gui IMPLEMENTATION.
       ls_event  TYPE cntl_simple_event,
       lt_events TYPE cntl_simple_events.
 
-    mi_html_viewer = zcl_abapgit_ui_factory=>get_html_viewer( ).
+    mi_html_viewer = zcl_abapgit_ui_core_factory=>get_html_viewer( ).
 
     ls_event-eventid    = mi_html_viewer->c_id_sapevent.
     ls_event-appl_event = abap_true.
