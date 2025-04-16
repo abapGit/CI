@@ -253,10 +253,10 @@ CLASS zcl_abapgit_ci_distributor IMPLEMENTATION.
 
     DATA(lo_stage) = stage( lo_repo ).
 
-    DATA(lo_user) = zcl_abapgit_user_record=>get_instance( sy-uname ).
+    DATA(lo_user) = zcl_abapgit_user_record=>get_instance( ).
 
-    ls_comment-committer-name  = lo_user->get_name( ).
-    ls_comment-committer-email = lo_user->get_email( ).
+    ls_comment-committer-name  = lo_user->get_name( sy-uname ).
+    ls_comment-committer-email = lo_user->get_email( sy-uname ).
 
     CALL FUNCTION 'GET_SYSTEM_TIMEZONE'
       IMPORTING
