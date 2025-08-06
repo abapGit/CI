@@ -35,11 +35,11 @@ CLASS zcl_abapgit_ci_skip DEFINITION
       do_we_have_an_ads_connection RETURNING VALUE(rv_is_ads_on) TYPE abap_bool,
       does_system_support_aff RETURNING VALUE(rv_is_aff_on) TYPE abap_bool.
 
-ENDCLASS.
+endclass.
 
 
 
-CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
+class zcl_abapgit_ci_skip implementation.
 
 
   METHOD class_constructor.
@@ -207,6 +207,10 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Missing test case, https://github.com/abapGit/abapGit/issues/7099| )
+      ( repo_name          = |HTTP_order|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Lead application does not exist| )
       ( repo_name          = |PINF_exposing_*|
         skip_local         = abap_false
         skip_transportable = abap_true
@@ -288,4 +292,4 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
       rv_is_ads_on = abap_true.
     ENDIF.
   ENDMETHOD.
-ENDCLASS.
+endclass.
