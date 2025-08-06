@@ -207,6 +207,10 @@ CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Missing test case, https://github.com/abapGit/abapGit/issues/7099| )
+      ( repo_name          = |HTTP_order|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Lead application does not exist| )
       ( repo_name          = |PINF_exposing_*|
         skip_local         = abap_false
         skip_transportable = abap_true
