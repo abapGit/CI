@@ -35,11 +35,11 @@ CLASS zcl_abapgit_ci_skip DEFINITION
       do_we_have_an_ads_connection RETURNING VALUE(rv_is_ads_on) TYPE abap_bool,
       does_system_support_aff RETURNING VALUE(rv_is_aff_on) TYPE abap_bool.
 
-endclass.
+ENDCLASS.
 
 
 
-class zcl_abapgit_ci_skip implementation.
+CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
 
 
   METHOD class_constructor.
@@ -292,4 +292,4 @@ class zcl_abapgit_ci_skip implementation.
       rv_is_ads_on = abap_true.
     ENDIF.
   ENDMETHOD.
-endclass.
+ENDCLASS.
