@@ -143,12 +143,12 @@ CLASS lcl_table_renderer IMPLEMENTATION.
     rv_value = replace( val   = iv_field
                         regex = '(http.*/)(\d*)'
                         with  = '<a href="$1$2">#$2</a>'
-                        occ   = 0 ).
+                        occ   = 0 ) ##REGEX_POSIX.
 
     rv_value = replace( val   = rv_value
                         regex = '\n'
                         with  = '<br/>'
-                        occ   = 0 ).
+                        occ   = 0 ) ##REGEX_POSIX.
 
   ENDMETHOD.
 
