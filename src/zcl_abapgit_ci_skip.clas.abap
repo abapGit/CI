@@ -39,11 +39,11 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_SKIP IMPLEMENTATION.
 
 
   METHOD class_constructor.
-    CREATE OBJECT go_aff_registry TYPE zcl_abapgit_aff_registry.
+    go_aff_registry = zcl_abapgit_aff_factory=>get_registry( ).
   ENDMETHOD.
 
 
