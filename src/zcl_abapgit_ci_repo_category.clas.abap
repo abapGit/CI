@@ -95,7 +95,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_CI_REPO_CATEGORY IMPLEMENTATION.
 
 
   METHOD build_categories.
@@ -216,7 +216,7 @@ CLASS zcl_abapgit_ci_repo_category IMPLEMENTATION.
 
     gt_categories = build_categories( gt_object_categrories ).
 
-    CREATE OBJECT go_aff_registry TYPE zcl_abapgit_aff_registry.
+    go_aff_registry = zcl_abapgit_aff_factory=>get_registry( ).
 
   ENDMETHOD.
 
