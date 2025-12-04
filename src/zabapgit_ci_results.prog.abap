@@ -118,13 +118,9 @@ CLASS lcl_gui DEFINITION.
 
     METHODS back
       RETURNING
-        VALUE(rv_exit) TYPE abap_bool
-      RAISING
-        zcx_abapgit_exception.
+        VALUE(rv_exit) TYPE abap_bool.
 
-    METHODS free
-      RAISING
-        zcx_abapgit_exception.
+    METHODS free.
 
   PRIVATE SECTION.
 
@@ -255,10 +251,15 @@ AT SELECTION-SCREEN ON EXIT-COMMAND.
 
 START-OF-SELECTION.
 
-  CREATE OBJECT go_gui.
+  TRY.
+      CREATE OBJECT go_gui.
 
-  go_gui->startup( ).
+      go_gui->startup( ).
 
-  go_gui->show_mime( '0242AC1100021EEBB1BBC829FAE4FE35' ).
+      go_gui->show_mime( '0242AC1100021EEBB1BBC829FAE4FE35' ).
 
-  CALL SELECTION-SCREEN 1001.
+      CALL SELECTION-SCREEN 1001.
+
+    CATCH cx_root.
+      MESSAGE |Error displaying results (MIME object)| TYPE 'E'.
+  ENDTRY.

@@ -73,9 +73,7 @@ CLASS lcl_controller DEFINITION.
       check_variant
         IMPORTING
           iv_variant TYPE raldb-variant
-          iv_report  TYPE rsvar-report
-        RAISING
-          zcx_abapgit_exception.
+          iv_report  TYPE rsvar-report.
 
     METHODS:
       start
