@@ -60,7 +60,7 @@ CLASS zcl_abapgit_ci_generic_tests IMPLEMENTATION.
           ENDIF.
 
         CATCH zcx_abapgit_exception INTO DATA(lx_error).
-          ls_result-message = lx_error->get_text( ).
+          ls_result-message = lx_error->get_text( ) && ':' && lx_error->get_longtext( ).
       ENDTRY.
 
       GET TIME STAMP FIELD lv_finish_timestamp.
