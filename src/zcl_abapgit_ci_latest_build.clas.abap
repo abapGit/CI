@@ -155,27 +155,36 @@ CLASS zcl_abapgit_ci_latest_build IMPLEMENTATION.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
-    DATA(lo_rest_client) = NEW cl_rest_http_client( li_http_client ).
+    TRY.
+        DATA(lo_rest_client) = NEW cl_rest_http_client( li_http_client ).
 
-    lo_rest_client->if_rest_client~create_request_entity( )->set_header_field(
-        iv_name  = '~request_uri'
-        iv_value = co_program_url ).
+        lo_rest_client->if_rest_client~create_request_entity( )->set_header_field(
+            iv_name  = '~request_uri'
+            iv_value = co_program_url ).
 
-    lo_rest_client->if_rest_client~get( ).
+        lo_rest_client->if_rest_client~get( ).
 
-    DATA(lo_response) = lo_rest_client->if_rest_client~get_response_entity( ).
+        DATA(lo_response) = lo_rest_client->if_rest_client~get_response_entity( ).
 
-    DATA(lv_status) = lo_rest_client->if_rest_client~get_status( ).
+        DATA(lv_status) = lo_rest_client->if_rest_client~get_status( ).
 
-    IF lv_status <> cl_rest_status_code=>gc_success_ok.
-      zcx_abapgit_exception=>raise(
-          |HTTP status code { lv_status } |
-       && |from { co_repository }{ co_program_url }| ).
-    ENDIF.
+        IF lv_status <> cl_rest_status_code=>gc_success_ok.
+          zcx_abapgit_exception=>raise(
+              |HTTP status code { lv_status } |
+           && |from { co_repository }{ co_program_url }| ).
+        ENDIF.
 
-    SPLIT lo_response->get_string_data( )
-      AT cl_abap_char_utilities=>newline
-      INTO TABLE mt_latest_build.
+        SPLIT lo_response->get_string_data( )
+          AT cl_abap_char_utilities=>newline
+          INTO TABLE mt_latest_build.
+      CATCH cx_root INTO DATA(lo_error).
+        IF sy-msgid = '00' AND sy-msgno = '001'.
+          DATA(lv_msg) = sy-msgv1 && sy-msgv2 && sy-msgv3 && sy-msgv4.
+        ENDIF.
+        zcx_abapgit_exception=>raise(
+          iv_text     = |Error fetching latest build: { lo_error->get_text( ) }|
+          iv_longtext = lv_msg ).
+    ENDTRY.
 
   ENDMETHOD.
 
@@ -187,8 +196,7 @@ CLASS zcl_abapgit_ci_latest_build IMPLEMENTATION.
       mi_package->create( VALUE #(
                             as4user  = sy-uname
                             devclass = co_package
-                            ctext    = |abapGit latest build|
-                          ) ).
+                            ctext    = |abapGit latest build| ) ).
 
     ENDIF.
 
