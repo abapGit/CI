@@ -188,29 +188,29 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
     TRY.
         NEW zcl_abapgit_ci_controller(
           ii_repo_provider = NEW zcl_abapgit_ci_test_repos( CORRESPONDING #( s_repos[] ) )
-          ii_view          = NEW zcl_abapgit_ci_alv_view( )
-          is_options       = VALUE #(
-            result_git_repo_url    = p_url
-            save_without_push      = p_save
-            save_to_history        = p_hist
-            post_errors_to_slack   = slack
-            slack_oauth_token      = token
-            exec_generic_checks    = generic
-            exec_repository_checks = repo
-            repo_check_options = VALUE #(
-              check_local         = repol
-              check_transportable = repot
-              layer               = layer
-              create_package      = createp
-              no_purge            = no_purge
-              logging             = p_log
-              ignore_skipping     = p_noskip
-              categories          = CORRESPONDING #( s_cats[] )
-            )
-            sync_processing       = p_sync
-            logging               = p_log
+          ii_view = NEW zcl_abapgit_ci_alv_view( )
+          is_options = VALUE #(
+          result_git_repo_url    = p_url
+          save_without_push      = p_save
+          save_to_history        = p_hist
+          post_errors_to_slack   = slack
+          slack_oauth_token      = token
+          exec_generic_checks    = generic
+          exec_repository_checks = repo
+          repo_check_options     = VALUE #(
+                                        check_local         = repol
+                                        check_transportable = repot
+                                        layer               = layer
+                                        create_package      = createp
+                                        no_purge            = no_purge
+                                        logging             = p_log
+                                        ignore_skipping     = p_noskip
+                                        categories          = CORRESPONDING #( s_cats[] )
           )
-        )->run( ).
+          sync_processing        = p_sync
+          logging                = p_log
+        )
+          )->run( ).
 
         MESSAGE |abapGit CI run completed| TYPE 'S'.
 
@@ -249,25 +249,60 @@ CLASS lcl_abapgit_ci IMPLEMENTATION.
     CASE sy-subrc.
       WHEN 0.
         SUBMIT zabapgit_ci
-          WITH createp = createp
-          WITH generic = generic
-          WITH layer = layer
+          WITH createp  = createp
+          WITH generic  = generic
+          WITH layer    = layer
           WITH no_purge = no_purge
-          WITH p_hist = p_hist
-          WITH p_log = p_log
-          WITH p_save = p_save
-          WITH p_sync = p_sync
+          WITH p_hist   = p_hist
+          WITH p_log    = p_log
+          WITH p_save   = p_save
+          WITH p_sync   = p_sync
           WITH p_noskip = p_noskip
-          WITH p_url = p_url
-          WITH repo = repo
-          WITH repol = repol
-          WITH repot = repot
-          WITH slack = slack
-          WITH s_cats IN s_cats
-          WITH s_repos IN s_repos
-          WITH token = token
+          WITH p_url    = p_url
+          WITH repo     = repo
+          WITH repol    = repol
+          WITH repot    = repot
+          WITH slack    = slack
+          WITH s_cats   IN s_cats
+          WITH s_repos  IN s_repos
+          WITH token    = token
           VIA JOB lv_jobname NUMBER lv_jobcount
           AND RETURN.
+
+        IF sy-subrc <> 0.
+          DATA(ls_symsg) = cl_abap_submit_handling=>get_error_message( ).
+
+          " Delete inconsistent job
+          CALL FUNCTION 'BP_JOB_DELETE'
+            EXPORTING
+              jobcount                 = lv_jobcount
+              jobname                  = lv_jobname
+            EXCEPTIONS
+              cant_delete_event_entry  = 1
+              cant_delete_job          = 2
+              cant_delete_joblog       = 3
+              cant_delete_steps        = 4
+              cant_delete_time_entry   = 5
+              cant_derelease_successor = 6
+              cant_enq_predecessor     = 7
+              cant_enq_successor       = 8
+              cant_enq_tbtco_entry     = 9
+              cant_update_predecessor  = 10
+              cant_update_successor    = 11
+              commit_failed            = 12
+              jobcount_missing         = 13
+              jobname_missing          = 14
+              job_does_not_exist       = 15
+              job_is_already_running   = 16
+              no_delete_authority      = 17
+              OTHERS                   = 18 ##FM_SUBRC_OK.
+
+          MESSAGE ID ls_symsg-msgid TYPE ls_symsg-msgty NUMBER ls_symsg-msgno
+            WITH ls_symsg-msgv1 ls_symsg-msgv2 ls_symsg-msgv3 ls_symsg-msgv4
+            DISPLAY LIKE 'I'.
+
+          RETURN.
+        ENDIF.
 
         CALL FUNCTION 'JOB_CLOSE'
           EXPORTING
