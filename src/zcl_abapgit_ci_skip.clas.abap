@@ -39,7 +39,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CI_SKIP IMPLEMENTATION.
+CLASS zcl_abapgit_ci_skip IMPLEMENTATION.
 
 
   METHOD class_constructor.
@@ -114,6 +114,14 @@ CLASS ZCL_ABAPGIT_CI_SKIP IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |No files found to deserialize| )
+      ( repo_name          = |CHKC_namespace|
+        skip_local         = abap_true
+        skip_transportable = abap_true
+        reason             = |Requires special namespace| )
+      ( repo_name          = |COTA|
+        skip_local         = xsdbool( sy-saprl < '816' )
+        skip_transportable = xsdbool( sy-saprl < '816' )
+        reason             = |Requires release 8.16 or higher| )
       ( repo_name          = |CUS0|
         skip_local         = abap_false
         skip_transportable = not_diag
@@ -122,6 +130,10 @@ CLASS ZCL_ABAPGIT_CI_SKIP IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Obsolete testcase| )
+      ( repo_name          = |DESD|
+        skip_local         = xsdbool( sy-saprl < '816' )
+        skip_transportable = xsdbool( sy-saprl < '816' )
+        reason             = |Requires release 8.16 or higher| )
       ( repo_name          = |DEVC_main_package|
         skip_local         = abap_true
         skip_transportable = abap_false
@@ -134,6 +146,18 @@ CLASS ZCL_ABAPGIT_CI_SKIP IMPLEMENTATION.
         skip_local         = not_diag
         skip_transportable = not_diag
         reason             = |Requires user-interaction (not available in batch)| )
+      ( repo_name          = |DRAS|
+        skip_local         = xsdbool( sy-saprl < '816' )
+        skip_transportable = xsdbool( sy-saprl < '816' )
+        reason             = |Requires release 8.16 or higher| )
+      ( repo_name          = |DSFD|
+        skip_local         = xsdbool( sy-saprl < '816' )
+        skip_transportable = xsdbool( sy-saprl < '816' )
+        reason             = |Requires release 8.16 or higher| )
+      ( repo_name          = |DSFI|
+        skip_local         = xsdbool( sy-saprl < '816' )
+        skip_transportable = xsdbool( sy-saprl < '816' )
+        reason             = |Requires release 8.16 or higher| )
       ( repo_name          = |FDT0|
         skip_local         = abap_false
         skip_transportable = abap_true
@@ -166,6 +190,10 @@ CLASS ZCL_ABAPGIT_CI_SKIP IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Obsolete testcase| )
+      ( repo_name          = |SRVD|
+        skip_local         = xsdbool( sy-saprl < '755' )
+        skip_transportable = xsdbool( sy-saprl < '755' )
+        reason             = |Requires release 7.55 or higher| )
       ( repo_name          = |SUSC_and_SUSO|
         skip_local         = abap_false
         skip_transportable = abap_true
@@ -178,6 +206,22 @@ CLASS ZCL_ABAPGIT_CI_SKIP IMPLEMENTATION.
         skip_local         = not_diag
         skip_transportable = not_diag
         reason             = |Requires user-interaction (not available in batch)| )
+      ( repo_name          = |SWCR|
+        skip_local         = xsdbool( sy-saprl < '816' )
+        skip_transportable = xsdbool( sy-saprl < '816' )
+        reason             = |Requires release 8.16 or higher| )
+      ( repo_name          = |UIAD|
+        skip_local         = xsdbool( sy-saprl < '816' )
+        skip_transportable = xsdbool( sy-saprl < '816' )
+        reason             = |Requires release 8.16 or higher| )
+      ( repo_name          = |UIPG|
+        skip_local         = xsdbool( sy-saprl < '816' )
+        skip_transportable = xsdbool( sy-saprl < '816' )
+        reason             = |Requires release 8.16 or higher| )
+      ( repo_name          = |UIST|
+        skip_local         = xsdbool( sy-saprl < '816' )
+        skip_transportable = xsdbool( sy-saprl < '816' )
+        reason             = |Requires release 8.16 or higher| )
 * Repositories with issues that should get fixed
       ( repo_name          = |AOBJ|
         skip_local         = abap_true
@@ -199,18 +243,14 @@ CLASS ZCL_ABAPGIT_CI_SKIP IMPLEMENTATION.
         skip_local         = abap_true
         skip_transportable = abap_true
         reason             = |Cannot be installed in local package, https://github.com/abapGit/abapGit/issues/6923| )
-      ( repo_name          = |FUGR_lxe|
+      ( repo_name          = |DTEB|
         skip_local         = abap_true
         skip_transportable = abap_true
-        reason             = |Issue https://github.com/abapGit/abapGit/issues/4470| )
-      ( repo_name          = |HTTP|
+        reason             = |CDS view missing, https://github.com/abapGit-tests/DTEB/issues/1| )
+      ( repo_name          = |EEEC|
         skip_local         = abap_true
         skip_transportable = abap_true
-        reason             = |Missing test case, https://github.com/abapGit/abapGit/issues/7099| )
-      ( repo_name          = |HTTP_order|
-        skip_local         = abap_true
-        skip_transportable = abap_true
-        reason             = |Lead application does not exist| )
+        reason             = |No objects found to deserialize| )
       ( repo_name          = |PINF_exposing_*|
         skip_local         = abap_false
         skip_transportable = abap_true
@@ -231,10 +271,6 @@ CLASS ZCL_ABAPGIT_CI_SKIP IMPLEMENTATION.
         skip_local         = xsdbool( sy-saprl < '755' )
         skip_transportable = xsdbool( sy-saprl < '755' )
         reason             = |Requires release 7.55\nIssue https://github.com/abapGit-tests/SRVB/issues/9| )
-      ( repo_name          = |SRVD|
-        skip_local         = xsdbool( sy-saprl < '755' )
-        skip_transportable = xsdbool( sy-saprl < '755' )
-        reason             = |Requires release 7.55\nIssue https://github.com/abapGit-tests/SRVD/issues/1| )
       ( repo_name          = |TABU_custom_table|
         skip_local         = abap_true
         skip_transportable = abap_true
