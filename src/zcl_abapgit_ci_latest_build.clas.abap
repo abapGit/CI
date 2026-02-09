@@ -74,6 +74,8 @@ CLASS zcl_abapgit_ci_latest_build IMPLEMENTATION.
 
   METHOD delete.
 
+    DATA(lo_log) = NEW zcl_abapgit_log( ).
+
     DELETE REPORT co_report_name.
     IF sy-subrc <> 0.
       zcx_abapgit_exception=>raise( |Latest build: Deletion failed. Subrc = { sy-subrc }| ).
@@ -88,7 +90,8 @@ CLASS zcl_abapgit_ci_latest_build IMPLEMENTATION.
 
     lo_package->zif_abapgit_object~delete(
       iv_package   = co_package
-      iv_transport = space ).
+      iv_transport = space
+      ii_log       = lo_log ).
   ENDMETHOD.
 
 
