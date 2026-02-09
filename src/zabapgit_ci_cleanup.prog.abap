@@ -976,6 +976,7 @@ CLASS lcl_main IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD delete_object.
+
     DATA ls_item TYPE zif_abapgit_definitions=>ty_item.
     DATA li_obj TYPE REF TO zif_abapgit_object.
 
@@ -988,13 +989,16 @@ CLASS lcl_main IMPLEMENTATION.
 
     DATA(lv_class_name) = 'ZCL_ABAPGIT_OBJECT_' && iv_obj_type.
 
+    DATA(li_log) = NEW zcl_abapgit_log( ).
+
     CREATE OBJECT li_obj TYPE (lv_class_name)
       EXPORTING
         is_item     = ls_item
         iv_language = zif_abapgit_definitions=>c_english.
 
     li_obj->delete( iv_package   = iv_package
-                    iv_transport = iv_transport ).
+                    iv_transport = iv_transport
+                    ii_log       = li_log ).
 
   ENDMETHOD.
 
