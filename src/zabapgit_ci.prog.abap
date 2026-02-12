@@ -381,4 +381,10 @@ AT SELECTION-SCREEN.
   ENDIF.
 
 START-OF-SELECTION.
+
+  DATA(lv_features) = zcl_abapgit_persist_factory=>get_settings( )->read( )->get_experimental_features( ).
+  IF lv_features IS NOT INITIAL.
+    MESSAGE w398(00) DISPLAY LIKE 'I' WITH 'Experimental features are on:' lv_features.
+  ENDIF.
+
   NEW lcl_abapgit_ci( )->run( ).
